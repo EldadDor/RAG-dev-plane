@@ -1,0 +1,50 @@
+[project]
+name = "rag-dev-plane"
+version = "0.1.0"
+description = "Developer-facing RAG backend with FastAPI, Qdrant, and OpenAI-compatible providers"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "httpx>=0.27.0",
+    "qdrant-client>=1.9.0",
+    "langchain-text-splitters>=0.2.0",
+    "python-multipart>=0.0.9",
+    "pypdf>=4.2.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-httpx>=0.30.0",
+    "httpx>=0.27.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "pytest-httpx>=0.36.2",
+]
