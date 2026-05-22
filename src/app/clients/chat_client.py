@@ -2,6 +2,8 @@ from typing import Any
 
 import httpx
 
+from app.prompts.chat_prompt import SYSTEM_PROMPT
+
 
 class OpenAICompatibleChatClient:
     def __init__(self, base_url: str, api_key: str, timeout: float = 60.0) -> None:
@@ -24,7 +26,7 @@ class OpenAICompatibleChatClient:
                 json={
                     "model": model,
                     "messages": [
-                        {"role": "system", "content": "You answer from provided context only."},
+                        {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt},
                     ],
                     "temperature": 0,

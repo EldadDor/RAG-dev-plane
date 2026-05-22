@@ -5,6 +5,7 @@ from app.clients.embedding_client import EmbeddingClient, OllamaEmbeddingClient
 from app.clients.qdrant_client import QdrantVectorStore
 from app.config import Settings, get_settings
 from app.services.chat_service import ChatService
+from app.services.ingestion_service import IngestionService
 from app.services.retrieval_service import RetrievalService
 
 
@@ -40,3 +41,15 @@ def get_chat_service(
     chat_client: OpenAICompatibleChatClient = Depends(get_chat_client),
 ) -> ChatService:
     return ChatService(settings=settings, retrieval_service=retrieval_service, chat_client=chat_client)
+
+
+def get_ingestion_service(
+    settings: Settings = Depends(get_settings),
+    embedding_client: EmbeddingClient = Depends(get_embedding_client),
+    vector_store: QdrantVectorStore = Depends(get_vector_store),
+) -> IngestionService:
+    return IngestionService(
+        settings=settings,
+        embedding_client=embedding_client,
+        vector_store=vector_store,
+    )
