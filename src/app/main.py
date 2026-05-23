@@ -9,8 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import chat, health, ingest
 from app.config import get_settings
+from app.logging_config import configure_logging
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging before anything else
+configure_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -18,13 +20,19 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     logger.info(
-        "Starting RAG service | env=%s chat_model=%s embedding_model=%s",
+        "🚀 Starting RAG service | env=%s chat_model=%s embedding_model=%s embedding_provider=%s",
         settings.app_env,
         settings.chat_model,
         settings.embedding_model,
+        settings.embedding_provider,
+    )
+    logger.info(
+        "📍 Backends: Ollama=%s Qdrant=%s",
+        settings.embedding_base_url,
+        settings.qdrant_url,
     )
     yield
-    logger.info("Shutting down RAG service")
+    logger.info("🛑 Shutting down RAG service")
 
 
 def create_app() -> FastAPI:
