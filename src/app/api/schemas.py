@@ -53,5 +53,5 @@ class HealthResponse(BaseModel):
 
 class ReadinessResponse(BaseModel):
     status: str
-    qdrant: str
+    vector_store: str
     details: dict | None = None

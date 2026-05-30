@@ -13,9 +13,12 @@ class QdrantVectorStore:
     def __init__(self, url: str, collection_name: str, api_key: str | None = None) -> None:
         self._client = AsyncQdrantClient(url=url, api_key=api_key)
         self._collection_name = collection_name
+        self._ensured = False
 
     async def ensure_collection(self, vector_size: int) -> None:
-        """Create the collection if it does not already exist."""
+        """Create the collection if it does not already exist. Idempotent after first success."""
+        if self._ensured:
+            return
         existing = await self._client.get_collections()
         names = {c.name for c in existing.collections}
         if self._collection_name not in names:
@@ -26,6 +29,7 @@ class QdrantVectorStore:
                     distance=qdrant_models.Distance.COSINE,
                 ),
             )
+        self._ensured = True
 
     async def upsert(self, chunks: list[dict]) -> None:
         """

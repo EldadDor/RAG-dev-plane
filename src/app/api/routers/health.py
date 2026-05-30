@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.schemas import HealthResponse, ReadinessResponse
-from app.clients.qdrant_client import QdrantVectorStore
+from app.clients.vector_store import VectorStore
 from app.config import Settings, get_settings
 from app.dependencies import get_vector_store
 
@@ -15,16 +15,17 @@ async def health(settings: Settings = Depends(get_settings)) -> HealthResponse:
 
 @router.get("/readiness", response_model=ReadinessResponse)
 async def readiness(
-    vector_store: QdrantVectorStore = Depends(get_vector_store),
+    vector_store: VectorStore = Depends(get_vector_store),
     settings: Settings = Depends(get_settings),
 ) -> ReadinessResponse:
-    qdrant_ok = await vector_store.health_check()
-    overall = "ok" if qdrant_ok else "degraded"
+    store_ok = await vector_store.health_check()
+    overall = "ok" if store_ok else "degraded"
     return ReadinessResponse(
         status=overall,
-        qdrant="ok" if qdrant_ok else "unreachable",
+        vector_store="ok" if store_ok else "unreachable",
         details={
             "chat_model": settings.chat_model,
             "embedding_model": settings.embedding_model,
+            "vector_store_type": settings.vector_store,
         },
     )

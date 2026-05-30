@@ -5,7 +5,7 @@ import logging
 from app.api.schemas import IngestResponse, IngestResult
 from app.chunkers.text_chunker import TextChunker
 from app.clients.embedding_client import EmbeddingClient
-from app.clients.qdrant_client import QdrantVectorStore
+from app.clients.vector_store import VectorStore
 from app.config import Settings
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.domain.models import Chunk
@@ -18,7 +18,7 @@ class IngestionService:
             self,
             settings: Settings,
             embedding_client: EmbeddingClient,
-            vector_store: QdrantVectorStore,
+            vector_store: VectorStore,
     ) -> None:
         self._settings = settings
         self._embedding_client = embedding_client
@@ -159,7 +159,7 @@ class IngestionService:
             )
 
         if batch:
-            logger.debug("  📤 Upserting %d vectors to Qdrant collection '%s'", len(batch), self._settings.qdrant_collection)
+            logger.debug("  📤 Upserting %d vectors to vector store", len(batch))
             await self._vector_store.upsert(batch)
             logger.debug("  ✅ Upsert complete")
 

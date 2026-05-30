@@ -1,12 +1,12 @@
 from app.api.schemas import ChatResponse, SourceReference
+from app.clients.chat_client import ChatClient
 from app.config import Settings
 from app.prompts.chat_prompt import build_context_prompt
 from app.services.retrieval_service import RetrievalService
-from app.clients.chat_client import OpenAICompatibleChatClient
 
 
 class ChatService:
-    def __init__(self, settings: Settings, retrieval_service: RetrievalService, chat_client: OpenAICompatibleChatClient) -> None:
+    def __init__(self, settings: Settings, retrieval_service: RetrievalService, chat_client: ChatClient) -> None:
         self._settings = settings
         self._retrieval_service = retrieval_service
         self._chat_client = chat_client

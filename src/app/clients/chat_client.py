@@ -1,8 +1,12 @@
-from typing import Any
+from typing import Any, Protocol
 
 import httpx
 
 from app.prompts.chat_prompt import SYSTEM_PROMPT
+
+
+class ChatClient(Protocol):
+    async def create_chat_completion(self, model: str, prompt: str) -> dict[str, Any]: ...
 
 
 class OpenAICompatibleChatClient:
