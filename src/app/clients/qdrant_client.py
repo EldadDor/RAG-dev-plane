@@ -6,9 +6,6 @@ from qdrant_client.http import models as qdrant_models
 from app.domain.models import RetrievedChunk
 
 
-_VECTOR_SIZE_CACHE: dict[str, int] = {}
-
-
 class QdrantVectorStore:
     def __init__(self, url: str, collection_name: str, api_key: str | None = None) -> None:
         self._client = AsyncQdrantClient(url=url, api_key=api_key)
@@ -52,14 +49,14 @@ class QdrantVectorStore:
 
     async def search(self, query_vector: list[float], limit: int = 5) -> list[RetrievedChunk]:
         """Return the top-k most similar chunks for a query embedding."""
-        results = await self._client.search(
+        response = await self._client.query_points(
             collection_name=self._collection_name,
-            query_vector=query_vector,
+            query=query_vector,
             limit=limit,
             with_payload=True,
         )
         chunks = []
-        for hit in results:
+        for hit in response.points:
             p = hit.payload or {}
             chunks.append(
                 RetrievedChunk(
@@ -86,6 +83,5 @@ class QdrantVectorStore:
 
 def _chunk_id_to_int(chunk_id: str) -> int:
     """Convert a hex chunk ID (sha256 prefix) to an integer Qdrant point ID."""
-    # Use the first 16 hex chars of the chunk_id as an unsigned 64-bit integer
     hex_part = chunk_id.replace("-", "")[:16]
     return int(hex_part, 16)

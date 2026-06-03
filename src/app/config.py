@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     chat_provider: str = Field(default="openai_compatible", alias="CHAT_PROVIDER")
     chat_base_url: str | None = Field(default=None, alias="CHAT_BASE_URL")
     chat_api_key: str = Field(default="dummy", alias="CHAT_API_KEY")
-    chat_model: str = Field(default="Qwen3-Coder-30B-A3B-Instruct-Q4_K_M", alias="CHAT_MODEL")
+    chat_model: str = Field(default="qwen2.5:7b-instruct-q4_K_M", alias="CHAT_MODEL")
 
     # ---- Embedding provider ----
     embedding_provider: str = Field(default="ollama", alias="EMBEDDING_PROVIDER")

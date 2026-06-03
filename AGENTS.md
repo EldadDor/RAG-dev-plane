@@ -14,7 +14,7 @@ This repository implements a production-oriented RAG system for internal develop
 - Docker and Docker Compose for local infrastructure
 
 ## Current provider defaults
-- Chat model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M`
+- Chat model: `qwen2.5:7b-instruct-q4_K_M`
 - Chat endpoint: configured through `CHAT_BASE_URL`
 - Embedding model: `mxbai-embed-large`
 - Embedding endpoint: configured through `EMBEDDING_BASE_URL`

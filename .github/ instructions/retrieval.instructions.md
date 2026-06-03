@@ -9,7 +9,7 @@ applyTo: "src/**/*retriev*.py,src/**/*vector*.py,src/**/*embed*.py,src/**/*reran
 - Use Ollama for embeddings by default.
 - Use `mxbai-embed-large` as the default embedding model.
 - Use an OpenAI-compatible chat provider for final answer generation.
-- Use `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M` as the default chat model.
+- Use `qwen2.5:7b-instruct-q4_K_M` as the default chat model.
 
 ## Implementation rules
 - Keep embedding generation and chat generation in separate adapters.

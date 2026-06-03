@@ -14,7 +14,7 @@ This repository is a Python 3.12+ RAG service for internal developer knowledge r
 
 ## Current provider defaults
 - Chat provider: OpenAI-compatible endpoint at `CHAT_BASE_URL`.
-- Default chat model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M`.
+- Default chat model: `qwen2.5:7b-instruct-q4_K_M`.
 - Embedding provider: Ollama at `EMBEDDING_BASE_URL`.
 - Default embedding model: `mxbai-embed-large`.
 
