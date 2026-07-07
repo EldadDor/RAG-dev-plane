@@ -1,13 +1,13 @@
 # Developer RAG Service
 
-Production-oriented RAG backend built with FastAPI, Pydantic v2, Qdrant, and OpenAI-compatible clients.
+Production-oriented RAG backend built with FastAPI, Pydantic v2, PostgreSQL + pgvector, and OpenAI-compatible clients.
 
 ## Stack
 - Python 3.12+
 - uv
 - FastAPI
 - Pydantic v2
-- Qdrant
+- PostgreSQL + pgvector (default; Qdrant still supported)
 - pytest
 - Docker Compose
 
@@ -21,8 +21,8 @@ uv run uvicorn app.main:app --reload --app-dir src
 
 ## Docker Compose
 ```bash
-# Start Qdrant only (Ollama runs externally)
-docker compose up -d qdrant
+# Start PostgreSQL + pgvector only (Ollama runs externally)
+docker compose up -d postgres-pgvector
 
 # Start everything (requires .env)
 docker compose up -d
@@ -64,7 +64,8 @@ src/app/
 ├── clients/
 │   ├── chat_client.py        OpenAI-compatible chat adapter
 │   ├── embedding_client.py   Ollama embedding adapter
-│   └── qdrant_client.py      Qdrant vector store adapter
+│   ├── qdrant_client.py      Qdrant vector store adapter
+│   └── pg_vector_store.py    PostgreSQL + pgvector adapter
 ├── services/
 │   ├── chat_service.py       Retrieval → prompt → answer orchestration
 │   ├── retrieval_service.py  Embed query → vector search

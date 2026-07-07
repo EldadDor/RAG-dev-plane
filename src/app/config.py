@@ -20,23 +20,24 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, alias="API_PORT")
 
     # ---- Vector store selection ----
-    vector_store: str = Field(default="qdrant", alias="VECTOR_STORE")
+    vector_store: str = Field(default="postgres", alias="VECTOR_STORE")
 
-    # ---- Qdrant (local dev default) ----
+    # ---- Qdrant (local dev alternative) ----
     qdrant_url: str = Field(default="http://localhost:6333", alias="QDRANT_URL")
     qdrant_api_key: str | None = Field(default=None, alias="QDRANT_API_KEY")
     qdrant_collection: str = Field(default="developer_docs", alias="QDRANT_COLLECTION")
 
-    # ---- PostgreSQL + pgvector ----
+    # ---- PostgreSQL + pgvector (matches RAG_Embabel-AI local profile) ----
     pg_host: str | None = Field(default=None, alias="PG_HOST")
     pg_port: int = Field(default=5432, alias="PG_PORT")
     pg_database: str = Field(default="ragdb", alias="PG_DATABASE")
     pg_user: str | None = Field(default=None, alias="PG_USER")
     pg_password: str | None = Field(default=None, alias="PG_PASSWORD")
-    pg_sslmode: str = Field(default="require", alias="PG_SSLMODE")
+    pg_sslmode: str = Field(default="disable", alias="PG_SSLMODE")
     pg_use_entra: bool = Field(default=False, alias="PG_USE_ENTRA")
+    pg_schema: str = Field(default="rag", alias="PG_SCHEMA")
     pg_table: str = Field(default="document_chunks", alias="PG_TABLE")
-    pg_vector_dim: int = Field(default=1536, alias="PG_VECTOR_DIM")
+    pg_vector_dim: int = Field(default=768, alias="PG_VECTOR_DIM")
 
     # ---- Chat provider ----
     chat_provider: str = Field(default="openai_compatible", alias="CHAT_PROVIDER")
@@ -44,11 +45,11 @@ class Settings(BaseSettings):
     chat_api_key: str = Field(default="dummy", alias="CHAT_API_KEY")
     chat_model: str = Field(default="qwen2.5:7b-instruct-q4_K_M", alias="CHAT_MODEL")
 
-    # ---- Embedding provider ----
+    # ---- Embedding provider (matches RAG_Embabel-AI local profile) ----
     embedding_provider: str = Field(default="ollama", alias="EMBEDDING_PROVIDER")
     embedding_base_url: str = Field(default="http://localhost:11434", alias="EMBEDDING_BASE_URL")
     embedding_api_key: str | None = Field(default=None, alias="EMBEDDING_API_KEY")
-    embedding_model: str = Field(default="mxbai-embed-large", alias="EMBEDDING_MODEL")
+    embedding_model: str = Field(default="nomic-embed-text", alias="EMBEDDING_MODEL")
 
     # ---- Azure OpenAI (shared by chat + embeddings when using azure_openai provider) ----
     azure_openai_endpoint: str | None = Field(default=None, alias="AZURE_OPENAI_ENDPOINT")

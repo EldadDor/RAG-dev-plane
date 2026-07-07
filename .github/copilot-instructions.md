@@ -6,7 +6,8 @@ This repository is a Python 3.12+ RAG service for internal developer knowledge r
 - Use `uv` for Python package management and command execution.
 - Use FastAPI for the API layer.
 - Use Pydantic v2 for typed settings and API schemas.
-- Use Qdrant as the vector database.
+- Use PostgreSQL + pgvector as the default vector database (matches RAG_Embabel-AI local profile).
+- Keep Qdrant supported as an alternative vector store.
 - Use an OpenAI-compatible chat provider for generation.
 - Use Ollama for local embeddings by default.
 - Use pytest for tests.
@@ -16,7 +17,8 @@ This repository is a Python 3.12+ RAG service for internal developer knowledge r
 - Chat provider: OpenAI-compatible endpoint at `CHAT_BASE_URL`.
 - Default chat model: `qwen2.5:7b-instruct-q4_K_M`.
 - Embedding provider: Ollama at `EMBEDDING_BASE_URL`.
-- Default embedding model: `mxbai-embed-large`.
+- Default embedding model: `nomic-embed-text` (768 dimensions, matching RAG_Embabel-AI local profile).
+- Vector store: PostgreSQL pgvector (`rag.document_chunks`, 768 dimensions, cosine distance).
 
 ## Implementation rules
 - Keep chat and embedding providers separate in code, config, and dependencies.

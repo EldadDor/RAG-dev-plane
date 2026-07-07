@@ -7,7 +7,8 @@ This repository implements a production-oriented RAG system for internal develop
 - `uv` for dependency management and execution
 - FastAPI for HTTP API
 - Pydantic v2 for typed settings and schemas
-- Qdrant as the vector database
+- PostgreSQL + pgvector as the default vector database (matches RAG_Embabel-AI local profile)
+- Qdrant remains supported as an alternative vector store
 - OpenAI-compatible chat provider for answer generation
 - Ollama embedding provider for local embeddings
 - Pytest for tests
@@ -16,14 +17,15 @@ This repository implements a production-oriented RAG system for internal develop
 ## Current provider defaults
 - Chat model: `qwen2.5:7b-instruct-q4_K_M`
 - Chat endpoint: configured through `CHAT_BASE_URL`
-- Embedding model: `mxbai-embed-large`
+- Embedding model: `nomic-embed-text` (768 dimensions)
 - Embedding endpoint: configured through `EMBEDDING_BASE_URL`
+- Vector store: PostgreSQL pgvector (`rag.document_chunks`, 768 dimensions, cosine distance)
 
 ## Architecture rules
 - Keep chat generation and embedding generation in separate client adapters.
 - Retrieval must depend on the embedding client, not the chat client.
 - Chat answer synthesis must depend on the chat client, not the embedding client.
-- Qdrant payloads must preserve provenance-rich metadata.
+- Vector-store records (Qdrant payloads or PostgreSQL metadata JSONB) must preserve provenance-rich metadata.
 - Prompt templates must be centrally managed and reused.
 
 ## Delivery rules for coding agents

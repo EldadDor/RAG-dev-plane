@@ -9,7 +9,7 @@ These instructions apply to document loading, normalization, metadata extraction
 ## Baseline assumptions
 - Build the ingestion pipeline in Python.
 - Use typed models for intermediate records.
-- Persist provenance-rich metadata that will later be stored in Qdrant payloads.
+- Persist provenance-rich metadata that will later be stored in vector store records (Qdrant payloads or PostgreSQL metadata JSONB).
 
 ## Required behavior
 - Separate loading, parsing, normalization, and chunking into independent units.

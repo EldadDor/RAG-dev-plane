@@ -5,9 +5,10 @@ applyTo: "src/**/*retriev*.py,src/**/*vector*.py,src/**/*embed*.py,src/**/*reran
 # Retrieval, embedding, and answer instructions
 
 ## Current baseline
-- Use Qdrant as the vector database.
+- Use PostgreSQL + pgvector as the default vector database (matches RAG_Embabel-AI local profile).
+- Qdrant remains supported as an alternative vector store.
 - Use Ollama for embeddings by default.
-- Use `mxbai-embed-large` as the default embedding model.
+- Use `nomic-embed-text` as the default local embedding model (768 dimensions).
 - Use an OpenAI-compatible chat provider for final answer generation.
 - Use `qwen2.5:7b-instruct-q4_K_M` as the default chat model.
 

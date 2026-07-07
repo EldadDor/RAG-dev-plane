@@ -34,6 +34,7 @@ async def _init_pg_vector_store(settings: Settings):
         user=settings.pg_user or "",
         password=password,
         sslmode=settings.pg_sslmode,
+        schema=settings.pg_schema,
         table=settings.pg_table,
         vector_dim=settings.pg_vector_dim,
     )
@@ -46,7 +47,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.vector_store == "postgres":
         app.state.vector_store = await _init_pg_vector_store(settings)
         logger.info(
-            "📊 PostgreSQL vector store ready | table=%s dim=%d",
+            "📊 PostgreSQL vector store ready | table=%s.%s dim=%d",
+            settings.pg_schema,
             settings.pg_table,
             settings.pg_vector_dim,
         )

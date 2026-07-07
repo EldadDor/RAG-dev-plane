@@ -14,6 +14,7 @@ def _make_settings(**overrides) -> Settings:
         "EMBEDDING_MODEL": "test-embed",
         "EMBEDDING_PROVIDER": "ollama",
         "EMBEDDING_BASE_URL": "http://localhost:11434",
+        "VECTOR_STORE": "qdrant",
         "QDRANT_URL": "http://localhost:6333",
         "QDRANT_COLLECTION": "test",
         "TOP_K": "5",

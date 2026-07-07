@@ -9,7 +9,8 @@ applyTo: "src/**/*.py,tests/**/*.py,pyproject.toml,.env.example,Dockerfile,docke
 - `uv`
 - FastAPI
 - Pydantic v2
-- Qdrant
+- PostgreSQL + pgvector as the default vector database (matches RAG_Embabel-AI local profile)
+- Qdrant remains supported as an alternative vector store
 - OpenAI-compatible chat provider
 - Ollama embedding provider
 - pytest
