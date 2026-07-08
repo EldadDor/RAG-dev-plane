@@ -22,6 +22,7 @@ matching the convention used by QdrantVectorStore.
 
 from __future__ import annotations
 
+import json
 import uuid
 from typing import Any
 
@@ -91,6 +92,22 @@ def _index_name(schema: str, table: str) -> str:
     return f"idx_{schema}_{table}_embedding_hnsw"
 
 
+async def _init_connection(conn: asyncpg.Connection) -> None:
+    """Register a codec so `jsonb` columns encode/decode as Python dicts.
+
+    Without this, asyncpg treats `jsonb` values as opaque text: passing a
+    dict as a query argument fails to encode, and reading a row back yields
+    a raw JSON string instead of a dict (breaking `metadata.get(...)`).
+    """
+    await conn.set_type_codec(
+        "jsonb",
+        encoder=json.dumps,
+        decoder=json.loads,
+        schema="pg_catalog",
+        format="text",
+    )
+
+
 class PgVectorStore:
     def __init__(self, pool: asyncpg.Pool, schema: str, table: str, vector_dim: int) -> None:
         self._pool = pool
@@ -134,6 +151,7 @@ class PgVectorStore:
             min_size=min_size,
             max_size=max_size,
             max_inactive_connection_lifetime=3000.0,
+            init=_init_connection,
         )
         store = cls(pool=pool, schema=schema, table=table, vector_dim=vector_dim)
         await store.ensure_collection(vector_dim)
@@ -227,6 +245,13 @@ class PgVectorStore:
 
 def _row_to_retrieved_chunk(row: asyncpg.Record) -> RetrievedChunk:
     metadata = row["metadata"] or {}
+    if isinstance(metadata, str):
+        # Defensive fallback for rows written before the jsonb codec was
+        # registered (or by any external process bypassing it).
+        try:
+            metadata = json.loads(metadata)
+        except json.JSONDecodeError:
+            metadata = {}
     return RetrievedChunk(
         chunk_id=metadata.get("chunk_id", str(row["id"])),
         doc_id=metadata.get("doc_id", ""),
