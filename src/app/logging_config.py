@@ -45,7 +45,7 @@ LOGGING_CONFIG: dict[str, Any] = {
             "handlers": ["console"],
             "propagate": False,
         },
-        "uvicorn.error": {
+        "uvicorn.info": {
             "level": "INFO",
             "handlers": ["console"],
             "propagate": False,

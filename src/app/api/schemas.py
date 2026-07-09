@@ -4,9 +4,17 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(..., min_length=1, max_length=4096)
-    top_k: int | None = Field(default=None, ge=1, le=50)
-    debug: bool = Field(default=False)
+    question: str = Field(min_length=1)
+    top_k: int | None = Field(default=None, ge=1, le=20)
+    include_debug: bool = False
+    session_id: str | None = None
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    sources: list["SourceReference"]
+    grounded: bool
+    debug: dict | None = None
 
 
 class SourceReference(BaseModel):
@@ -20,17 +28,9 @@ class SourceReference(BaseModel):
     snippet: str
 
 
-class ChatResponse(BaseModel):
-    answer: str
-    sources: list[SourceReference]
-    grounded: bool
-    debug: dict | None = None
-
-
 class IngestRequest(BaseModel):
-    source_path: str = Field(..., description="File path or directory to ingest")
-    recursive: bool = Field(default=False, description="Recurse into subdirectories")
-    overwrite: bool = Field(default=True, description="Re-ingest existing documents")
+    source_path: str = Field(min_length=1)
+    recursive: bool = False
 
 
 class IngestResult(BaseModel):
@@ -42,7 +42,7 @@ class IngestResult(BaseModel):
 
 
 class IngestResponse(BaseModel):
-    indexed: int = Field(description="Total chunks indexed")
+    indexed: int
     documents: list[IngestResult]
 
 
@@ -54,4 +54,4 @@ class HealthResponse(BaseModel):
 class ReadinessResponse(BaseModel):
     status: str
     vector_store: str
-    details: dict | None = None
+    details: dict
