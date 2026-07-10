@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from app.chunkers.chunker_adapter import ChunkerConfig, ChunkerFactory
-from app.domain.documents import IngestedChunk, IngestionResult
-from app.loaders.registry import LoaderRegistry
+from app.domain.models import IngestedChunk, IngestionResult
+from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.config import Settings
 
 
@@ -14,12 +14,10 @@ class IngestionService:
     def __init__(
             self,
             settings: Settings,
-            loader_registry: LoaderRegistry,
             embedding_client: Any,
             vector_store: Any,
     ) -> None:
         self._settings = settings
-        self._loader_registry = loader_registry
         self._embedding_client = embedding_client
         self._vector_store = vector_store
         self._chunker = ChunkerFactory.build(
@@ -34,16 +32,23 @@ class IngestionService:
         )
 
     async def ingest_path(self, source_path: str) -> IngestionResult:
+        """Ingest a single file or all supported files in a directory."""
         path = Path(source_path)
-        loader = self._loader_registry.get_loader(path)
-        loaded = await loader.load(path)
+
+        if path.is_dir():
+            documents, _skipped = load_directory(source_path, recursive=True)
+        else:
+            try:
+                documents = [load_document(source_path)]
+            except UnsupportedFileTypeError as exc:
+                raise ValueError(str(exc)) from exc
 
         chunks_to_index: list[IngestedChunk] = []
         total_documents = 0
 
-        for document in loaded:
+        for document in documents:
             total_documents += 1
-            text = (document.text or "").strip()
+            text = (document.content or "").strip()
             if not text:
                 continue
 
@@ -66,23 +71,23 @@ class IngestionService:
                 for _, chunk in valid_chunks
             ])
 
-            doc_id = getattr(document, "doc_id", path.stem)
+            chunker_provider = getattr(self._settings, "chunker_provider", "default")
             for (chunk_index, chunk), embedding in zip(valid_chunks, embeddings):
                 chunk_text = chunk.text.strip()
                 chunks_to_index.append(
                     IngestedChunk(
-                        doc_id=doc_id,
-                        chunk_id=f"{doc_id}:{chunk_index}",
+                        doc_id=document.doc_id,
+                        chunk_id=f"{document.doc_id}:{chunk_index}",
                         text=chunk_text,
                         embedding=embedding,
-                        source_path=str(path),
-                        title=getattr(document, "title", None),
-                        page=getattr(document, "page", None),
-                        section=getattr(document, "section", None),
+                        source_path=document.source_path,
+                        title=document.title,
+                        page=document.metadata.get("page"),
+                        section=document.metadata.get("section"),
                         metadata={
-                            **(getattr(document, "metadata", {}) or {}),
+                            **document.metadata,
                             "chunk_index": chunk_index,
-                            "chunker_provider": getattr(self._settings, "chunker_provider", "default"),
+                            "chunker_provider": chunker_provider,
                             "token_count": chunk.token_count,
                             "start_index": chunk.start_index,
                             "end_index": chunk.end_index,
@@ -92,7 +97,7 @@ class IngestionService:
                 )
 
         if chunks_to_index:
-            await self._vector_store.upsert(chunks_to_index)
+            await self._vector_store.upsert([c.to_dict() for c in chunks_to_index])
 
         return IngestionResult(
             source_path=str(path),
