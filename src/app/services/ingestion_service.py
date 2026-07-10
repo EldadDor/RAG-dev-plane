@@ -1,169 +1,86 @@
 from __future__ import annotations
 
-import logging
+from pathlib import Path
+from typing import Any
 
-from app.api.schemas import IngestResponse, IngestResult
-from app.chunkers.text_chunker import TextChunker
-from app.clients.embedding_client import EmbeddingClient
-from app.clients.vector_store import VectorStore
+from app.chunkers.chunker_adapter import ChunkerConfig, ChunkerFactory
+from app.domain.documents import IngestedChunk, IngestionResult
+from app.loaders.registry import LoaderRegistry
 from app.config import Settings
-from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
-from app.domain.models import Chunk
-
-logger = logging.getLogger(__name__)
 
 
 class IngestionService:
     def __init__(
             self,
             settings: Settings,
-            embedding_client: EmbeddingClient,
-            vector_store: VectorStore,
+            loader_registry: LoaderRegistry,
+            embedding_client: Any,
+            vector_store: Any,
     ) -> None:
         self._settings = settings
+        self._loader_registry = loader_registry
         self._embedding_client = embedding_client
         self._vector_store = vector_store
-        self._chunker = TextChunker(
-            chunk_size=settings.chunk_size,
-            chunk_overlap=settings.chunk_overlap,
-        )
-        logger.debug("IngestionService initialized with chunk_size=%d chunk_overlap=%d", settings.chunk_size, settings.chunk_overlap)
-
-    async def ingest_file(self, source_path: str) -> IngestResult:
-        """Load, chunk, embed and index a single file."""
-        logger.debug("Starting ingest_file: %s", source_path)
-        try:
-            document = load_document(source_path)
-            logger.info("  📖 Loaded document: %s (doc_id=%s)", source_path, document.doc_id)
-        except (FileNotFoundError, UnsupportedFileTypeError, Exception) as exc:
-            logger.warning("  ⚠️  Skipping %s: %s", source_path, exc)
-            return IngestResult(
-                doc_id="",
-                source_path=source_path,
-                chunks_indexed=0,
-                skipped=True,
-                skip_reason=str(exc),
+        self._chunker = ChunkerFactory.build(
+            ChunkerConfig(
+                provider=getattr(settings, "chunker_provider", "default"),
+                chunk_size=getattr(settings, "chunk_size", 512),
+                chunk_overlap=getattr(settings, "chunk_overlap", 64),
+                semantic_threshold=getattr(settings, "chunker_semantic_threshold", 0.5),
+                recipe=getattr(settings, "chunker_recipe", None),
+                embedding_model=getattr(settings, "chunker_embedding_model", None),
             )
-
-        chunks = self._chunker.chunk(document)
-        logger.info("  ✂️  Chunked into %d pieces", len(chunks))
-
-        if not chunks:
-            logger.warning("  ⚠️  No chunks produced from %s", source_path)
-            return IngestResult(
-                doc_id=document.doc_id,
-                source_path=source_path,
-                chunks_indexed=0,
-                skipped=True,
-                skip_reason="No chunks produced",
-            )
-
-        indexed = await self._embed_and_upsert(chunks)
-        logger.info("  ✅ File complete: %d chunks embedded & indexed", indexed)
-        return IngestResult(
-            doc_id=document.doc_id,
-            source_path=source_path,
-            chunks_indexed=indexed,
         )
 
-    async def ingest_directory(self, directory: str, recursive: bool = False) -> IngestResponse:
-        """Load, chunk, embed and index all supported files in a directory."""
-        logger.debug("Starting ingest_directory: %s (recursive=%s)", directory, recursive)
+    async def ingest_path(self, source_path: str) -> IngestionResult:
+        path = Path(source_path)
+        loader = self._loader_registry.get_loader(path)
+        loaded = await loader.load(path)
 
-        documents, skipped_files = load_directory(directory, recursive=recursive)
-        logger.info("  📁 Loaded %d documents, %d files skipped", len(documents), len(skipped_files))
+        chunks_to_index: list[IngestedChunk] = []
+        total_documents = 0
 
-        results: list[IngestResult] = []
-        total_indexed = 0
+        for document in loaded:
+            total_documents += 1
+            text = (document.text or "").strip()
+            if not text:
+                continue
 
-        for skip in skipped_files:
-            logger.debug("    ⏭️  Skipped: %s (%s)", skip["path"], skip["reason"])
-            results.append(
-                IngestResult(
-                    doc_id="",
-                    source_path=skip["path"],
-                    chunks_indexed=0,
-                    skipped=True,
-                    skip_reason=skip["reason"],
-                )
-            )
+            chunked = self._chunker.chunk(text)
+            for chunk_index, chunk in enumerate(chunked):
+                chunk_text = (chunk.text or "").strip()
+                if not chunk_text:
+                    continue
 
-        for i, document in enumerate(documents, 1):
-            logger.info("  [%d/%d] Processing: %s", i, len(documents), document.source_path)
-            chunks = self._chunker.chunk(document)
-            logger.debug("    ✂️  Chunked into %d pieces", len(chunks))
-
-            if not chunks:
-                logger.warning("    ⚠️  No chunks produced")
-                results.append(
-                    IngestResult(
-                        doc_id=document.doc_id,
-                        source_path=document.source_path,
-                        chunks_indexed=0,
-                        skipped=True,
-                        skip_reason="No chunks produced",
+                embedding = await self._embedding_client.embed(chunk_text)
+                chunks_to_index.append(
+                    IngestedChunk(
+                        doc_id=getattr(document, "doc_id", path.stem),
+                        chunk_id=f"{getattr(document, 'doc_id', path.stem)}:{chunk_index}",
+                        text=chunk_text,
+                        embedding=embedding,
+                        source_path=str(path),
+                        title=getattr(document, "title", None),
+                        page=getattr(document, "page", None),
+                        section=getattr(document, "section", None),
+                        metadata={
+                            **(getattr(document, "metadata", {}) or {}),
+                            "chunk_index": chunk_index,
+                            "chunker_provider": getattr(self._settings, "chunker_provider", "default"),
+                            "token_count": chunk.token_count,
+                            "start_index": chunk.start_index,
+                            "end_index": chunk.end_index,
+                            "chunker_metadata": chunk.metadata or {},
+                        },
                     )
                 )
-                continue
 
-            indexed = await self._embed_and_upsert(chunks)
-            total_indexed += indexed
-            logger.info("    ✅ Embedded & indexed %d chunks", indexed)
+        if chunks_to_index:
+            await self._vector_store.upsert(chunks_to_index)
 
-            results.append(
-                IngestResult(
-                    doc_id=document.doc_id,
-                    source_path=document.source_path,
-                    chunks_indexed=indexed,
-                )
-            )
-
-        logger.info("  🎯 Directory ingestion complete: %d chunks total", total_indexed)
-        return IngestResponse(indexed=total_indexed, documents=results)
-
-    async def _embed_and_upsert(self, chunks: list[Chunk]) -> int:
-        """Embed each chunk and upsert the batch into Qdrant. Returns chunk count."""
-        logger.debug("Starting _embed_and_upsert for %d chunks", len(chunks))
-        batch: list[dict] = []
-        embedding_errors = 0
-
-        for i, chunk in enumerate(chunks, 1):
-            try:
-                vector = await self._embedding_client.create_embedding(
-                    self._settings.embedding_model, chunk.text
-                )
-                logger.debug("  🔢 [%d/%d] Embedded chunk (dim=%d): %s", i, len(chunks), len(vector), chunk.chunk_id[:12])
-            except Exception as exc:
-                embedding_errors += 1
-                logger.error("  ❌ [%d/%d] Embedding failed for chunk %s: %s", i, len(chunks), chunk.chunk_id[:12], exc)
-                continue
-
-            # Ensure collection exists with the correct vector size on first write
-            await self._vector_store.ensure_collection(vector_size=len(vector))
-
-            batch.append(
-                {
-                    "chunk_id": chunk.chunk_id,
-                    "vector": vector,
-                    "payload": {
-                        "doc_id": chunk.doc_id,
-                        "source_path": chunk.source_path,
-                        "source_type": chunk.source_type.value,
-                        "text": chunk.text,
-                        "chunk_index": chunk.chunk_index,
-                        "title": chunk.title,
-                        "page": chunk.page,
-                        "section": chunk.section,
-                    },
-                }
-            )
-
-        if batch:
-            logger.debug("  📤 Upserting %d vectors to vector store", len(batch))
-            await self._vector_store.upsert(batch)
-            logger.debug("  ✅ Upsert complete")
-
-        if embedding_errors:
-            logger.warning("  ⚠️  %d embedding errors during batch processing", embedding_errors)
-
-        return len(batch)
+        return IngestionResult(
+            source_path=str(path),
+            documents_processed=total_documents,
+            chunks_indexed=len(chunks_to_index),
+            chunker_provider=getattr(self._settings, "chunker_provider", "default"),
+        )

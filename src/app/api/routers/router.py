@@ -28,4 +28,5 @@ async def chat_stream(request: ChatRequest, chat_service: ChatService = Depends(
                 session_id=request.session_id,
         ):
             yield chunk
+
     return StreamingResponse(event_stream(), media_type="text/event-stream")
