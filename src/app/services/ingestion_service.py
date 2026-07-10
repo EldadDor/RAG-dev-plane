@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -47,16 +48,31 @@ class IngestionService:
                 continue
 
             chunked = self._chunker.chunk(text)
-            for chunk_index, chunk in enumerate(chunked):
-                chunk_text = (chunk.text or "").strip()
-                if not chunk_text:
-                    continue
+            valid_chunks = [
+                (chunk_index, chunk)
+                for chunk_index, chunk in enumerate(chunked)
+                if (chunk.text or "").strip()
+            ]
 
-                embedding = await self._embedding_client.embed(chunk_text)
+            if not valid_chunks:
+                continue
+
+            # Embed all chunks for this document concurrently
+            embeddings = await asyncio.gather(*[
+                self._embedding_client.create_embedding(
+                    self._settings.embedding_model,
+                    chunk.text.strip(),
+                )
+                for _, chunk in valid_chunks
+            ])
+
+            doc_id = getattr(document, "doc_id", path.stem)
+            for (chunk_index, chunk), embedding in zip(valid_chunks, embeddings):
+                chunk_text = chunk.text.strip()
                 chunks_to_index.append(
                     IngestedChunk(
-                        doc_id=getattr(document, "doc_id", path.stem),
-                        chunk_id=f"{getattr(document, 'doc_id', path.stem)}:{chunk_index}",
+                        doc_id=doc_id,
+                        chunk_id=f"{doc_id}:{chunk_index}",
                         text=chunk_text,
                         embedding=embedding,
                         source_path=str(path),

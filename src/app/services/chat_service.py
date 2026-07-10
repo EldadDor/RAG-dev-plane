@@ -54,126 +54,125 @@ class ChatService:
         if not history:
             return question
 
-        history_text = "
-".join(f"{turn.role}: {turn.content}" for turn in history[-6:])
-prompt = [
-    {
-        "role": "system",
-        "content": (
-            "Rewrite the user's latest question into a standalone retrieval query. "
-            "Use conversation context only when needed to resolve references. "
-            "Return only the rewritten question."
-        ),
-    },
-    {
-        "role": "user",
-        "content": f"Conversation:
-        {history_text}
+        history_text = "\n".join(f"{turn.role}: {turn.content}" for turn in history[-6:])
+        prompt = [
+            {
+                "role": "system",
+                "content": (
+                    "Rewrite the user's latest question into a standalone retrieval query. "
+                    "Use conversation context only when needed to resolve references. "
+                    "Return only the rewritten question."
+                ),
+            },
+            {
+                "role": "user",
+                "content": f"Conversation:\n{history_text}\n\nLatest question: {question}",
+            },
+        ]
+        raw = await self._chat_client.create_chat_completion(self._settings.chat_model, prompt)
+        rewritten = raw["choices"][0]["message"]["content"].strip()
+        return rewritten or question
 
-            Latest question: {question}",
-    },
-]
-raw = await self._chat_client.create_chat_completion(self._settings.chat_model, prompt)
-rewritten = raw["choices"][0]["message"]["content"].strip()
-return rewritten or question
+    async def _answer_impl(
+            self,
+            question: str,
+            top_k: int | None = None,
+            include_debug: bool = False,
+            session_id: str | None = None,
+    ) -> tuple[ChatResponse, str]:
+        session_id = session_id or str(uuid4())
+        history = await self._conversation_store.get(session_id)
+        rewritten_question = await self._rewrite_question(question, history)
 
-async def _answer_impl(
-        self,
-        question: str,
-        top_k: int | None = None,
-        include_debug: bool = False,
-        session_id: str | None = None,
-) -> tuple[ChatResponse, str]:
-    session_id = session_id or str(uuid4())
-    history = await self._conversation_store.get(session_id)
-    rewritten_question = await self._rewrite_question(question, history)
+        retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k)
+        if not retrieved:
+            answer = "I don't know based on the indexed documents."
+            await self._conversation_store.append(session_id, "user", question)
+            await self._conversation_store.append(session_id, "assistant", answer)
+            debug = None
+            if include_debug:
+                debug = {
+                    "retrieved_count": 0,
+                    "chat_model": self._settings.chat_model,
+                    "embedding_model": self._settings.embedding_model,
+                    "embedding_provider": self._settings.embedding_provider,
+                    "session_id": session_id,
+                    "rewritten_question": rewritten_question,
+                }
+            return ChatResponse(answer=answer, sources=[], grounded=False, debug=debug), session_id
 
-    retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k)
-    if not retrieved:
-        answer = "I don't know based on the indexed documents."
-        await self._conversation_store.append(session_id, "user", question)
-        await self._conversation_store.append(session_id, "assistant", answer)
+        prompt = build_context_prompt(question, [item.text for item in retrieved])
+        try:
+            raw = await self._chat_client.create_chat_completion(self._settings.chat_model, prompt)
+            answer = raw["choices"][0]["message"]["content"]
+        except Exception:
+            raise
+        else:
+            await self._conversation_store.append(session_id, "user", question)
+            await self._conversation_store.append(session_id, "assistant", answer)
+
+        sources = [
+            SourceReference(
+                doc_id=item.doc_id,
+                chunk_id=item.chunk_id,
+                source_path=item.source_path,
+                title=item.title,
+                page=item.page,
+                section=item.section,
+                score=item.score,
+                snippet=item.text[:300],
+            )
+            for item in retrieved
+        ]
+
         debug = None
         if include_debug:
             debug = {
-                "retrieved_count": 0,
+                "retrieved_count": len(retrieved),
                 "chat_model": self._settings.chat_model,
                 "embedding_model": self._settings.embedding_model,
                 "embedding_provider": self._settings.embedding_provider,
                 "session_id": session_id,
                 "rewritten_question": rewritten_question,
             }
-        return ChatResponse(answer=answer, sources=[], grounded=False, debug=debug), session_id
 
-    prompt = build_context_prompt(question, [item.text for item in retrieved])
-    raw = await self._chat_client.create_chat_completion(self._settings.chat_model, prompt)
-    answer = raw["choices"][0]["message"]["content"]
+        return ChatResponse(answer=answer, sources=sources, grounded=True, debug=debug), session_id
 
-    sources = [
-        SourceReference(
-            doc_id=item.doc_id,
-            chunk_id=item.chunk_id,
-            source_path=item.source_path,
-            title=item.title,
-            page=item.page,
-            section=item.section,
-            score=item.score,
-            snippet=item.text[:300],
+    async def answer(
+            self,
+            question: str,
+            top_k: int | None = None,
+            include_debug: bool = False,
+            session_id: str | None = None,
+    ) -> ChatResponse:
+        response, _ = await self._answer_impl(
+            question=question,
+            top_k=top_k,
+            include_debug=include_debug,
+            session_id=session_id,
         )
-        for item in retrieved
-    ]
+        return response
 
-    await self._conversation_store.append(session_id, "user", question)
-    await self._conversation_store.append(session_id, "assistant", answer)
-
-    debug = None
-    if include_debug:
-        debug = {
-            "retrieved_count": len(retrieved),
-            "chat_model": self._settings.chat_model,
-            "embedding_model": self._settings.embedding_model,
-            "embedding_provider": self._settings.embedding_provider,
-            "session_id": session_id,
-            "rewritten_question": rewritten_question,
+    async def answer_stream(
+            self,
+            question: str,
+            top_k: int | None = None,
+            include_debug: bool = False,
+            session_id: str | None = None,
+    ) -> AsyncIterator[str]:
+        response, resolved_session_id = await self._answer_impl(
+            question=question,
+            top_k=top_k,
+            include_debug=include_debug,
+            session_id=session_id,
+        )
+        meta = {
+            "session_id": resolved_session_id,
+            "grounded": response.grounded,
+            "sources": [source.model_dump() for source in response.sources],
+            "debug": response.debug,
         }
-
-    return ChatResponse(answer=answer, sources=sources, grounded=True, debug=debug), session_id
-
-async def answer(
-        self,
-        question: str,
-        top_k: int | None = None,
-        include_debug: bool = False,
-        session_id: str | None = None,
-) -> ChatResponse:
-    response, _ = await self._answer_impl(
-        question=question,
-        top_k=top_k,
-        include_debug=include_debug,
-        session_id=session_id,
-    )
-    return response
-
-async def answer_stream(
-        self,
-        question: str,
-        top_k: int | None = None,
-        include_debug: bool = False,
-        session_id: str | None = None,
-) -> AsyncIterator[str]:
-    response, resolved_session_id = await self._answer_impl(
-        question=question,
-        top_k=top_k,
-        include_debug=include_debug,
-        session_id=session_id,
-    )
-    meta = {
-        "session_id": resolved_session_id,
-        "grounded": response.grounded,
-        "sources": [source.model_dump() for source in response.sources],
-        "debug": response.debug,
-    }
-    yield f"event: meta\ndata: {json.dumps(meta, ensure_ascii=False)}\n\n"
-    for token in response.answer.split():
-        yield f"data: {token}\n\n"
-    yield "event: done\ndata: [DONE]\n\n"
+        yield f"event: meta\ndata: {json.dumps(meta, ensure_ascii=False)}\n\n"
+        for token in response.answer.split():
+            yield f"data: {token}\n\n"
+        yield "event: done\ndata: [DONE]\n\n"
