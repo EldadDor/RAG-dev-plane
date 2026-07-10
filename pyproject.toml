@@ -16,6 +16,8 @@ dependencies = [
     "pypdf>=4.2.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=5.2.0",
+    # Chunking
+    "chonkie[recursive,semantic]>=1.0.0",
     # Azure / PostgreSQL providers
     "asyncpg>=0.29.0",
     "azure-identity>=1.17.0",

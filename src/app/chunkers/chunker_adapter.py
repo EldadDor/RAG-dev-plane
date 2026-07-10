@@ -70,13 +70,13 @@ class ChonkieRecursiveAdapter:
 
 class ChonkieSemanticAdapter:
     def __init__(self, config: ChunkerConfig) -> None:
-        from chonkie import SDPMChunker
+        # SDPMChunker was deprecated in chonkie v1.2.0 and replaced by SemanticChunker
+        from chonkie import SemanticChunker
 
-        self._chunker = SDPMChunker(
-            embedding_model=config.embedding_model or "minishlab/potion-base-8M",
+        self._chunker = SemanticChunker(
+            embedding_model=config.embedding_model or "minishlab/potion-base-32M",
             threshold=config.semantic_threshold,
             chunk_size=config.chunk_size,
-            skip_window=1,
         )
 
     def chunk(self, text: str) -> list[ChunkedText]:
