@@ -26,20 +26,24 @@ async def ingest(
     try:
         if path.is_dir():
             logger.info("📂 Processing directory: %s (recursive=%s)", request.source_path, request.recursive)
-            result = await ingestion_service.ingest_directory(
-                directory=request.source_path,
-                recursive=request.recursive,
-            )
         else:
             logger.info("📄 Processing file: %s", request.source_path)
-            result = await ingestion_service.ingest_file(request.source_path)
-            result = IngestResponse(
-                indexed=result.chunks_indexed,
-                documents=[result],
-            )
+        # The service owns loading and supports both files and directories.
+        result = await ingestion_service.ingest_path(request.source_path, recursive=request.recursive)
+        response = IngestResponse(
+            indexed=result.chunks_indexed,
+            documents=[
+                IngestResult(
+                    doc_id=item.doc_id,
+                    source_path=item.source_path,
+                    chunks_indexed=item.chunks_indexed,
+                )
+                for item in result.documents
+            ],
+        )
 
-        logger.info("✅ Ingestion complete: %d chunks indexed across %d documents", result.indexed, len(result.documents))
-        return result
+        logger.info("✅ Ingestion complete: %d chunks indexed across %d documents", response.indexed, len(response.documents))
+        return response
     except Exception as exc:
         logger.error("❌ Ingestion failed for %s: %s", request.source_path, exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Ingestion failed") from exc

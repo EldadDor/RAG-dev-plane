@@ -87,6 +87,13 @@ class IngestedChunk:
 
 
 @dataclass
+class IngestedDocumentResult:
+    doc_id: str
+    source_path: str
+    chunks_indexed: int
+
+
+@dataclass
 class IngestionResult:
     """Summary returned after ingesting a file or directory."""
 
@@ -94,3 +101,4 @@ class IngestionResult:
     documents_processed: int
     chunks_indexed: int
     chunker_provider: str
+    documents: list[IngestedDocumentResult] = field(default_factory=list)

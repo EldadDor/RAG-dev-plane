@@ -42,6 +42,11 @@ curl -X POST http://localhost:8000/chat \
   -d '{"question": "How does the ingestion pipeline work?"}'
 ```
 
+`/chat` returns a `session_id`. Send it with a follow-up request to retain a
+short conversation memory. With PostgreSQL this memory is shared across API
+workers and retained for `MEMORY_RETENTION_DAYS` (90 days by default); it is
+kept separate from the document index and is not embedded for retrieval.
+
 ## Run tests
 ```bash
 uv run python -m pytest tests/ -v

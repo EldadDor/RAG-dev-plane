@@ -6,6 +6,7 @@ from app.clients.qdrant_client import QdrantVectorStore
 from app.clients.vector_store import VectorStore
 from app.config import Settings, get_settings
 from app.services.chat_service import ChatService
+from app.services.conversation_store import ConversationStore
 from app.services.ingestion_service import IngestionService
 from app.services.retrieval_service import RetrievalService
 
@@ -56,11 +57,18 @@ def get_retrieval_service(
 
 
 def get_chat_service(
+    request: Request,
     settings: Settings = Depends(get_settings),
     retrieval_service: RetrievalService = Depends(get_retrieval_service),
     chat_client: ChatClient = Depends(get_chat_client),
 ) -> ChatService:
-    return ChatService(settings=settings, retrieval_service=retrieval_service, chat_client=chat_client)
+    conversation_store: ConversationStore = request.app.state.conversation_store
+    return ChatService(
+        settings=settings,
+        retrieval_service=retrieval_service,
+        chat_client=chat_client,
+        conversation_store=conversation_store,
+    )
 
 
 def get_ingestion_service(

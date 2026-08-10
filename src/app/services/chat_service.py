@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import asyncio
-from collections import defaultdict
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
 from uuid import uuid4
 import json
 
@@ -11,30 +8,9 @@ from app.api.schemas import ChatResponse, SourceReference
 from app.clients.chat_client import ChatClient
 from app.config import Settings
 from app.prompts.chat_prompt import build_context_prompt
+from app.prompts.chat_prompt import QUESTION_REWRITE_SYSTEM_PROMPT
 from app.services.retrieval_service import RetrievalService
-
-
-@dataclass
-class ChatTurn:
-    role: str
-    content: str
-
-
-class ConversationStore:
-    def __init__(self, max_turns: int = 10) -> None:
-        self._max_turns = max_turns
-        self._sessions: dict[str, list[ChatTurn]] = defaultdict(list)
-        self._lock = asyncio.Lock()
-
-    async def get(self, session_id: str) -> list[ChatTurn]:
-        async with self._lock:
-            return list(self._sessions.get(session_id, []))
-
-    async def append(self, session_id: str, role: str, content: str) -> None:
-        async with self._lock:
-            turns = self._sessions[session_id]
-            turns.append(ChatTurn(role=role, content=content))
-            self._sessions[session_id] = turns[-self._max_turns:]
+from app.services.conversation_store import ChatTurn, ConversationStore, InMemoryConversationStore
 
 
 class ChatService:
@@ -48,28 +24,19 @@ class ChatService:
         self._settings = settings
         self._retrieval_service = retrieval_service
         self._chat_client = chat_client
-        self._conversation_store = conversation_store or ConversationStore()
+        self._conversation_store = conversation_store or InMemoryConversationStore(settings.memory_max_turns)
 
     async def _rewrite_question(self, question: str, history: list[ChatTurn]) -> str:
         if not history:
             return question
 
         history_text = "\n".join(f"{turn.role}: {turn.content}" for turn in history[-6:])
-        prompt = [
-            {
-                "role": "system",
-                "content": (
-                    "Rewrite the user's latest question into a standalone retrieval query. "
-                    "Use conversation context only when needed to resolve references. "
-                    "Return only the rewritten question."
-                ),
-            },
-            {
-                "role": "user",
-                "content": f"Conversation:\n{history_text}\n\nLatest question: {question}",
-            },
-        ]
-        raw = await self._chat_client.create_chat_completion(self._settings.chat_model, prompt)
+        prompt = f"Conversation:\n{history_text}\n\nLatest question: {question}"
+        raw = await self._chat_client.create_chat_completion(
+            self._settings.chat_model,
+            prompt,
+            system_prompt=QUESTION_REWRITE_SYSTEM_PROMPT,
+        )
         rewritten = raw["choices"][0]["message"]["content"].strip()
         return rewritten or question
 
@@ -99,7 +66,13 @@ class ChatService:
                     "session_id": session_id,
                     "rewritten_question": rewritten_question,
                 }
-            return ChatResponse(answer=answer, sources=[], grounded=False, debug=debug), session_id
+            return ChatResponse(
+                answer=answer,
+                sources=[],
+                grounded=False,
+                session_id=session_id,
+                debug=debug,
+            ), session_id
 
         prompt = build_context_prompt(question, [item.text for item in retrieved])
         try:
@@ -136,7 +109,13 @@ class ChatService:
                 "rewritten_question": rewritten_question,
             }
 
-        return ChatResponse(answer=answer, sources=sources, grounded=True, debug=debug), session_id
+        return ChatResponse(
+            answer=answer,
+            sources=sources,
+            grounded=True,
+            session_id=session_id,
+            debug=debug,
+        ), session_id
 
     async def answer(
             self,

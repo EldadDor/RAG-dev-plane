@@ -19,7 +19,8 @@ async def chat(
         return await chat_service.answer(
             question=request.question,
             top_k=request.top_k,
-            include_debug=request.debug,
+            include_debug=request.include_debug,
+            session_id=request.session_id,
         )
     except Exception as exc:
         logger.exception("Chat upstream error: %s", exc)

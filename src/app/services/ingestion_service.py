@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from app.chunkers.chunker_adapter import ChunkerConfig, ChunkerFactory
-from app.domain.models import IngestedChunk, IngestionResult
+from app.domain.models import IngestedChunk, IngestedDocumentResult, IngestionResult
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.config import Settings
 
@@ -31,12 +31,12 @@ class IngestionService:
             )
         )
 
-    async def ingest_path(self, source_path: str) -> IngestionResult:
+    async def ingest_path(self, source_path: str, recursive: bool = False) -> IngestionResult:
         """Ingest a single file or all supported files in a directory."""
         path = Path(source_path)
 
         if path.is_dir():
-            documents, _skipped = load_directory(source_path, recursive=True)
+            documents, _skipped = load_directory(source_path, recursive=recursive)
         else:
             try:
                 documents = [load_document(source_path)]
@@ -44,6 +44,7 @@ class IngestionService:
                 raise ValueError(str(exc)) from exc
 
         chunks_to_index: list[IngestedChunk] = []
+        document_results: list[IngestedDocumentResult] = []
         total_documents = 0
 
         for document in documents:
@@ -60,6 +61,13 @@ class IngestionService:
             ]
 
             if not valid_chunks:
+                document_results.append(
+                    IngestedDocumentResult(
+                        doc_id=document.doc_id,
+                        source_path=document.source_path,
+                        chunks_indexed=0,
+                    )
+                )
                 continue
 
             # Embed all chunks for this document concurrently
@@ -95,6 +103,13 @@ class IngestionService:
                         },
                     )
                 )
+            document_results.append(
+                IngestedDocumentResult(
+                    doc_id=document.doc_id,
+                    source_path=document.source_path,
+                    chunks_indexed=len(valid_chunks),
+                )
+            )
 
         if chunks_to_index:
             await self._vector_store.upsert([c.to_dict() for c in chunks_to_index])
@@ -104,4 +119,5 @@ class IngestionService:
             documents_processed=total_documents,
             chunks_indexed=len(chunks_to_index),
             chunker_provider=getattr(self._settings, "chunker_provider", "default"),
+            documents=document_results,
         )

@@ -116,6 +116,11 @@ class PgVectorStore:
         self._vector_dim = vector_dim
         self._ensured = False
 
+    @property
+    def pool(self) -> asyncpg.Pool:
+        """Pool shared with first-party persistence components."""
+        return self._pool
+
     # ------------------------------------------------------------------
     # Factory — creates pool + runs one-time DDL at startup
     # ------------------------------------------------------------------
@@ -201,14 +206,10 @@ class PgVectorStore:
         for item in chunks:
             payload = item["payload"]
             chunk_id = item["chunk_id"]
-            metadata = {
-                "doc_id": payload.get("doc_id", ""),
-                "source_path": payload.get("source_path", ""),
-                "source_type": payload.get("source_type", ""),
-                "title": payload.get("title"),
-                "section": payload.get("section"),
-                "chunk_id": chunk_id,
-            }
+            # Keep all provenance metadata. This supports repository, revision,
+            # workspace and future ACL filters without a schema migration.
+            metadata = {key: value for key, value in payload.items() if key != "text"}
+            metadata["chunk_id"] = chunk_id
             records.append(
                 (
                     _chunk_id_to_uuid(chunk_id),

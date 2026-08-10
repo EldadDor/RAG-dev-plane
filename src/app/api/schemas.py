@@ -14,6 +14,7 @@ class ChatResponse(BaseModel):
     answer: str
     sources: list["SourceReference"]
     grounded: bool
+    session_id: str | None = None
     debug: dict | None = None
 
 

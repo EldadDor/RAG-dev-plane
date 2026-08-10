@@ -6,7 +6,9 @@ from app.prompts.chat_prompt import SYSTEM_PROMPT
 
 
 class ChatClient(Protocol):
-    async def create_chat_completion(self, model: str, prompt: str) -> dict[str, Any]: ...
+    async def create_chat_completion(
+        self, model: str, prompt: str, system_prompt: str = SYSTEM_PROMPT
+    ) -> dict[str, Any]: ...
 
 
 class OpenAICompatibleChatClient:
@@ -22,7 +24,9 @@ class OpenAICompatibleChatClient:
             "Content-Type": "application/json",
         }
 
-    async def create_chat_completion(self, model: str, prompt: str) -> dict[str, Any]:
+    async def create_chat_completion(
+        self, model: str, prompt: str, system_prompt: str = SYSTEM_PROMPT
+    ) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.post(
                 f"{self._base_url}/chat/completions",
@@ -30,7 +34,7 @@ class OpenAICompatibleChatClient:
                 json={
                     "model": model,
                     "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt},
                     ],
                     "temperature": 0,

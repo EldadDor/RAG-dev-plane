@@ -5,6 +5,12 @@ SYSTEM_PROMPT = (
     "\"I don't have enough information in the indexed documents to answer this question.\""
 )
 
+QUESTION_REWRITE_SYSTEM_PROMPT = (
+    "Rewrite the user's latest question into a standalone retrieval query. "
+    "Use conversation context only when needed to resolve references. "
+    "Return only the rewritten question."
+)
+
 _CONTEXT_TEMPLATE = """Context passages:
 {context}
 

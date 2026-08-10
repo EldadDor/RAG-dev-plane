@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers import chat, health, ingest
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
+from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
 
 # Configure logging before anything else
 configure_logging()
@@ -43,9 +44,17 @@ async def _init_pg_vector_store(settings: Settings):
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
+    app.state.conversation_store = InMemoryConversationStore(settings.memory_max_turns)
 
     if settings.vector_store == "postgres":
         app.state.vector_store = await _init_pg_vector_store(settings)
+        app.state.conversation_store = PostgresConversationStore(
+            pool=app.state.vector_store.pool,
+            schema=settings.pg_schema,
+            max_turns=settings.memory_max_turns,
+            retention_days=settings.memory_retention_days,
+        )
+        await app.state.conversation_store.ensure_schema()
         logger.info(
             "📊 PostgreSQL vector store ready | table=%s.%s dim=%d",
             settings.pg_schema,

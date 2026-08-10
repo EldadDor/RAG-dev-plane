@@ -40,7 +40,9 @@ class AzureOpenAIChatClient:
             return {"Authorization": f"Bearer {get_azure_openai_token()}", "Content-Type": "application/json"}
         return {"api-key": self._api_key or "", "Content-Type": "application/json"}
 
-    async def create_chat_completion(self, model: str, prompt: str) -> dict[str, Any]:
+    async def create_chat_completion(
+        self, model: str, prompt: str, system_prompt: str = SYSTEM_PROMPT
+    ) -> dict[str, Any]:
         """Send a chat completion request. `model` is the Azure deployment name."""
         url = (
             f"{self._endpoint}/openai/deployments/{model}"
@@ -52,7 +54,7 @@ class AzureOpenAIChatClient:
                 headers=self._headers(),
                 json={
                     "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt},
                     ],
                     "temperature": 0,

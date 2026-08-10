@@ -12,4 +12,6 @@ class RetrievalService:
 
     async def retrieve(self, question: str, top_k: int | None = None) -> list[RetrievedChunk]:
         embedding = await self._embedding_client.create_embedding(self._settings.embedding_model, question)
-        return await self._vector_store.search(embedding, limit=top_k or self._settings.top_k)
+        retrieved = await self._vector_store.search(embedding, limit=top_k or self._settings.top_k)
+        # Avoid treating unrelated semantic matches as grounded evidence.
+        return [item for item in retrieved if item.score >= self._settings.min_retrieval_score]
