@@ -9,6 +9,7 @@ from app.clients.chat_client import ChatClient
 from app.config import Settings
 from app.prompts.chat_prompt import build_context_prompt
 from app.prompts.chat_prompt import QUESTION_REWRITE_SYSTEM_PROMPT
+from app.prompts.chat_prompt import MEMORY_SUMMARY_SYSTEM_PROMPT
 from app.services.retrieval_service import RetrievalService
 from app.services.conversation_store import ChatTurn, ConversationStore, InMemoryConversationStore
 
@@ -26,12 +27,15 @@ class ChatService:
         self._chat_client = chat_client
         self._conversation_store = conversation_store or InMemoryConversationStore(settings.memory_max_turns)
 
-    async def _rewrite_question(self, question: str, history: list[ChatTurn]) -> str:
-        if not history:
+    async def _rewrite_question(self, question: str, history: list[ChatTurn], summary: str | None) -> str:
+        if not history and not summary:
             return question
 
         history_text = "\n".join(f"{turn.role}: {turn.content}" for turn in history[-6:])
-        prompt = f"Conversation:\n{history_text}\n\nLatest question: {question}"
+        prompt = (
+            f"Session summary:\n{summary or '(none)'}\n\n"
+            f"Recent conversation:\n{history_text or '(none)'}\n\nLatest question: {question}"
+        )
         raw = await self._chat_client.create_chat_completion(
             self._settings.chat_model,
             prompt,
@@ -39,6 +43,22 @@ class ChatService:
         )
         rewritten = raw["choices"][0]["message"]["content"].strip()
         return rewritten or question
+
+    async def _refresh_summary_if_needed(self, session_id: str) -> None:
+        turns = await self._conversation_store.get_unsummarized_turns(session_id)
+        if len(turns) < self._settings.memory_summary_after_turns:
+            return
+        existing_summary = await self._conversation_store.get_summary(session_id)
+        turns_text = "\n".join(f"{turn.role}: {turn.content}" for turn in turns)
+        prompt = f"Existing summary:\n{existing_summary or '(none)'}\n\nNew turns:\n{turns_text}"
+        raw = await self._chat_client.create_chat_completion(
+            self._settings.chat_model,
+            prompt,
+            system_prompt=MEMORY_SUMMARY_SYSTEM_PROMPT,
+        )
+        summary = raw["choices"][0]["message"]["content"].strip()
+        if summary:
+            await self._conversation_store.save_summary(session_id, summary)
 
     async def _answer_impl(
             self,
@@ -49,13 +69,19 @@ class ChatService:
     ) -> tuple[ChatResponse, str]:
         session_id = session_id or str(uuid4())
         history = await self._conversation_store.get(session_id)
-        rewritten_question = await self._rewrite_question(question, history)
+        summary = await self._conversation_store.get_summary(session_id)
+        rewritten_question = await self._rewrite_question(question, history, summary)
 
         retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k)
         if not retrieved:
             answer = "I don't know based on the indexed documents."
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
+            try:
+                await self._refresh_summary_if_needed(session_id)
+            except Exception:
+                # Memory enrichment must never make an otherwise valid answer fail.
+                pass
             debug = None
             if include_debug:
                 debug = {
@@ -83,6 +109,10 @@ class ChatService:
         else:
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
+            try:
+                await self._refresh_summary_if_needed(session_id)
+            except Exception:
+                pass
 
         sources = [
             SourceReference(

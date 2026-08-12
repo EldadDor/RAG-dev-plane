@@ -23,6 +23,9 @@ class ChatTurn:
 class ConversationStore(Protocol):
     async def get(self, session_id: str) -> list[ChatTurn]: ...
     async def append(self, session_id: str, role: str, content: str) -> None: ...
+    async def get_summary(self, session_id: str) -> str | None: ...
+    async def get_unsummarized_turns(self, session_id: str) -> list[ChatTurn]: ...
+    async def save_summary(self, session_id: str, summary: str) -> None: ...
 
 
 class InMemoryConversationStore:
@@ -31,17 +34,31 @@ class InMemoryConversationStore:
     def __init__(self, max_turns: int = 10) -> None:
         self._max_turns = max_turns
         self._sessions: dict[str, list[ChatTurn]] = defaultdict(list)
+        self._summaries: dict[str, str] = {}
+        self._summarized_counts: dict[str, int] = defaultdict(int)
         self._lock = asyncio.Lock()
 
     async def get(self, session_id: str) -> list[ChatTurn]:
         async with self._lock:
-            return list(self._sessions.get(session_id, []))
+            return list(self._sessions.get(session_id, [])[-self._max_turns:])
 
     async def append(self, session_id: str, role: str, content: str) -> None:
         async with self._lock:
             turns = self._sessions[session_id]
             turns.append(ChatTurn(role=role, content=content))
-            self._sessions[session_id] = turns[-self._max_turns:]
+
+    async def get_summary(self, session_id: str) -> str | None:
+        async with self._lock:
+            return self._summaries.get(session_id)
+
+    async def get_unsummarized_turns(self, session_id: str) -> list[ChatTurn]:
+        async with self._lock:
+            return list(self._sessions.get(session_id, [])[self._summarized_counts[session_id]:])
+
+    async def save_summary(self, session_id: str, summary: str) -> None:
+        async with self._lock:
+            self._summaries[session_id] = summary
+            self._summarized_counts[session_id] = len(self._sessions.get(session_id, []))
 
 
 class PostgresConversationStore:
@@ -73,6 +90,12 @@ class PostgresConversationStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_{self._schema}_conversation_turns_session_created
                     ON {self._schema}.conversation_turns (session_id, created_at DESC, id DESC);
+                CREATE TABLE IF NOT EXISTS {self._schema}.conversation_summaries (
+                    session_id TEXT PRIMARY KEY,
+                    summary TEXT NOT NULL,
+                    last_turn_id BIGINT NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                );
                 """
             )
 
@@ -110,4 +133,49 @@ class PostgresConversationStore:
                 session_id,
                 role,
                 content,
+            )
+
+    async def get_summary(self, session_id: str) -> str | None:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(
+                f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id = $1",
+                session_id,
+            )
+
+    async def get_unsummarized_turns(self, session_id: str) -> list[ChatTurn]:
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"""
+                SELECT role, content
+                FROM {self._schema}.conversation_turns
+                WHERE session_id = $1
+                  AND id > COALESCE(
+                      (SELECT last_turn_id FROM {self._schema}.conversation_summaries WHERE session_id = $1),
+                      0
+                  )
+                ORDER BY id ASC
+                """,
+                session_id,
+            )
+        return [ChatTurn(role=row["role"], content=row["content"]) for row in rows]
+
+    async def save_summary(self, session_id: str, summary: str) -> None:
+        async with self._pool.acquire() as conn:
+            last_turn_id = await conn.fetchval(
+                f"SELECT COALESCE(MAX(id), 0) FROM {self._schema}.conversation_turns WHERE session_id = $1",
+                session_id,
+            )
+            await conn.execute(
+                f"""
+                INSERT INTO {self._schema}.conversation_summaries
+                    (session_id, summary, last_turn_id)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (session_id) DO UPDATE SET
+                    summary = EXCLUDED.summary,
+                    last_turn_id = EXCLUDED.last_turn_id,
+                    updated_at = now()
+                """,
+                session_id,
+                summary,
+                last_turn_id,
             )

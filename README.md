@@ -44,8 +44,10 @@ curl -X POST http://localhost:8000/chat \
 
 `/chat` returns a `session_id`. Send it with a follow-up request to retain a
 short conversation memory. With PostgreSQL this memory is shared across API
-workers and retained for `MEMORY_RETENTION_DAYS` (90 days by default); it is
-kept separate from the document index and is not embedded for retrieval.
+workers and retained for `MEMORY_RETENTION_DAYS` (90 days by default). A
+compact session summary refreshes after `MEMORY_SUMMARY_AFTER_TURNS` new turns
+(8 by default). Memory is kept separate from the document index and is not
+embedded for retrieval.
 
 ## Run tests
 ```bash

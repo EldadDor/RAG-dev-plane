@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     # ---- Conversation memory ----
     memory_max_turns: int = Field(default=10, alias="MEMORY_MAX_TURNS")
     memory_retention_days: int = Field(default=90, alias="MEMORY_RETENTION_DAYS")
+    memory_summary_after_turns: int = Field(default=8, alias="MEMORY_SUMMARY_AFTER_TURNS")
 
     @model_validator(mode="after")
     def validate_providers(self) -> Self:

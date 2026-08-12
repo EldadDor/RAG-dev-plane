@@ -11,6 +11,13 @@ QUESTION_REWRITE_SYSTEM_PROMPT = (
     "Return only the rewritten question."
 )
 
+MEMORY_SUMMARY_SYSTEM_PROMPT = (
+    "Maintain a concise factual working-memory summary of this developer support "
+    "conversation. Keep only the user's project context, confirmed decisions, "
+    "important constraints, and unresolved questions. Do not invent facts or "
+    "treat assistant claims as confirmed. Return only the replacement summary."
+)
+
 _CONTEXT_TEMPLATE = """Context passages:
 {context}
 
