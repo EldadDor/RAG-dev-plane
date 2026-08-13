@@ -20,6 +20,7 @@ def _make_settings(**overrides) -> Settings:
         "TOP_K": "5",
         "CHUNK_SIZE": "800",
         "CHUNK_OVERLAP": "120",
+        "HYBRID_SEARCH_ENABLED": "false",
     }
     defaults.update(overrides)
     return Settings(**{k: v for k, v in defaults.items()})
@@ -148,3 +149,27 @@ async def test_embedding_client_and_chat_client_are_independent():
 
     chat_client.create_chat_completion.assert_not_called()
     embedding_client.create_embedding.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_hybrid_retrieval_fuses_semantic_and_keyword_results():
+    settings = _make_settings(HYBRID_SEARCH_ENABLED="true", RETRIEVAL_CANDIDATE_K="10")
+    embedding_client = AsyncMock()
+    embedding_client.create_embedding.return_value = [0.1, 0.2]
+
+    class HybridStore:
+        async def search(self, query_vector, limit):
+            return [
+                RetrievedChunk("semantic", "doc-1", "docs/guide.md", "semantic", 0.9),
+                RetrievedChunk("shared", "doc-2", "src/config.py", "shared", 0.8),
+            ]
+
+        async def search_text(self, query, limit):
+            return [
+                RetrievedChunk("shared", "doc-2", "src/config.py", "shared", 0.2),
+                RetrievedChunk("keyword", "doc-3", "src/config.py", "keyword", 0.1),
+            ]
+
+    result = await RetrievalService(settings, embedding_client, HybridStore()).retrieve("PG_HOST", top_k=3)
+
+    assert [chunk.chunk_id for chunk in result] == ["shared", "semantic", "keyword"]

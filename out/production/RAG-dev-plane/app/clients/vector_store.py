@@ -1,4 +1,4 @@
-from typing import Protocol, runtime_checkable
+from typing import Protocol
 
 from app.domain.models import RetrievedChunk
 
@@ -8,10 +8,3 @@ class VectorStore(Protocol):
     async def upsert(self, chunks: list[dict]) -> None: ...
     async def search(self, query_vector: list[float], limit: int = 5) -> list[RetrievedChunk]: ...
     async def health_check(self) -> bool: ...
-
-
-@runtime_checkable
-class LexicalSearchVectorStore(Protocol):
-    """Optional exact-keyword retrieval capability for hybrid search."""
-
-    async def search_text(self, query: str, limit: int = 5) -> list[RetrievedChunk]: ...

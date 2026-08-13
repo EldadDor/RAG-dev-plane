@@ -54,12 +54,6 @@ CREATE INDEX IF NOT EXISTS {index_name}
     USING hnsw (embedding vector_cosine_ops);
 """
 
-_CREATE_TEXT_INDEX = """
-CREATE INDEX IF NOT EXISTS {index_name}
-    ON {schema}.{table}
-    USING gin (to_tsvector('simple', content));
-"""
-
 _UPSERT_SQL = """
 INSERT INTO {schema}.{table}
     (id, content, metadata, embedding, source, page_number, chunk_index)
@@ -82,15 +76,6 @@ ORDER BY embedding <=> $1::vector
 LIMIT $2;
 """
 
-_TEXT_SEARCH_SQL = """
-SELECT id, content, metadata, source, page_number, chunk_index,
-       ts_rank_cd(to_tsvector('simple', content), websearch_to_tsquery('simple', $1)) AS score
-FROM {schema}.{table}
-WHERE to_tsvector('simple', content) @@ websearch_to_tsquery('simple', $1)
-ORDER BY score DESC, id
-LIMIT $2;
-"""
-
 
 def _vec_str(vector: list[float]) -> str:
     """Encode a float list as a pgvector text literal: '[0.1,0.2,...]'."""
@@ -105,10 +90,6 @@ def _chunk_id_to_uuid(chunk_id: str) -> uuid.UUID:
 def _index_name(schema: str, table: str) -> str:
     """Generate a Postgres-safe HNSW index name from schema and table."""
     return f"idx_{schema}_{table}_embedding_hnsw"
-
-
-def _text_index_name(schema: str, table: str) -> str:
-    return f"idx_{schema}_{table}_content_fts"
 
 
 async def _init_connection(conn: asyncpg.Connection) -> None:
@@ -134,11 +115,6 @@ class PgVectorStore:
         self._table = table
         self._vector_dim = vector_dim
         self._ensured = False
-
-    @property
-    def pool(self) -> asyncpg.Pool:
-        """Pool shared with first-party persistence components."""
-        return self._pool
 
     # ------------------------------------------------------------------
     # Factory — creates pool + runs one-time DDL at startup
@@ -214,13 +190,6 @@ class PgVectorStore:
                     index_name=_index_name(self._schema, self._table),
                 )
             )
-            await conn.execute(
-                _CREATE_TEXT_INDEX.format(
-                    schema=self._schema,
-                    table=self._table,
-                    index_name=_text_index_name(self._schema, self._table),
-                )
-            )
         self._ensured = True
 
     async def upsert(self, chunks: list[dict]) -> None:
@@ -232,10 +201,14 @@ class PgVectorStore:
         for item in chunks:
             payload = item["payload"]
             chunk_id = item["chunk_id"]
-            # Keep all provenance metadata. This supports repository, revision,
-            # workspace and future ACL filters without a schema migration.
-            metadata = {key: value for key, value in payload.items() if key != "text"}
-            metadata["chunk_id"] = chunk_id
+            metadata = {
+                "doc_id": payload.get("doc_id", ""),
+                "source_path": payload.get("source_path", ""),
+                "source_type": payload.get("source_type", ""),
+                "title": payload.get("title"),
+                "section": payload.get("section"),
+                "chunk_id": chunk_id,
+            }
             records.append(
                 (
                     _chunk_id_to_uuid(chunk_id),
@@ -259,16 +232,6 @@ class PgVectorStore:
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(sql, _vec_str(query_vector), limit)
 
-        return [_row_to_retrieved_chunk(row) for row in rows]
-
-    async def search_text(self, query: str, limit: int = 5) -> list[RetrievedChunk]:
-        """Return exact-term matches, optimized for symbols, paths and error text."""
-        if not self._ensured:
-            await self.ensure_collection()
-
-        sql = _TEXT_SEARCH_SQL.format(schema=self._schema, table=self._table)
-        async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, limit)
         return [_row_to_retrieved_chunk(row) for row in rows]
 
     async def health_check(self) -> bool:

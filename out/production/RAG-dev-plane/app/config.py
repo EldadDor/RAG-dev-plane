@@ -61,15 +61,6 @@ class Settings(BaseSettings):
     chunk_size: int = Field(default=800, alias="CHUNK_SIZE")
     chunk_overlap: int = Field(default=120, alias="CHUNK_OVERLAP")
     rerank_enabled: bool = Field(default=False, alias="RERANK_ENABLED")
-    min_retrieval_score: float = Field(default=0.35, alias="MIN_RETRIEVAL_SCORE")
-    hybrid_search_enabled: bool = Field(default=True, alias="HYBRID_SEARCH_ENABLED")
-    retrieval_candidate_k: int = Field(default=20, alias="RETRIEVAL_CANDIDATE_K")
-    rrf_k: int = Field(default=60, alias="RRF_K")
-
-    # ---- Conversation memory ----
-    memory_max_turns: int = Field(default=10, alias="MEMORY_MAX_TURNS")
-    memory_retention_days: int = Field(default=90, alias="MEMORY_RETENTION_DAYS")
-    memory_summary_after_turns: int = Field(default=8, alias="MEMORY_SUMMARY_AFTER_TURNS")
 
     @model_validator(mode="after")
     def validate_providers(self) -> Self:

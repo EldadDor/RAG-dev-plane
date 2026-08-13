@@ -42,6 +42,11 @@ curl -X POST http://localhost:8000/chat \
   -d '{"question": "How does the ingestion pipeline work?"}'
 ```
 
+PostgreSQL retrieval uses hybrid search by default: pgvector semantic search
+plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
+especially useful for file paths, code symbols, configuration names, and error
+messages. Set `HYBRID_SEARCH_ENABLED=false` to use semantic search alone.
+
 `/chat` returns a `session_id`. Send it with a follow-up request to retain a
 short conversation memory. With PostgreSQL this memory is shared across API
 workers and retained for `MEMORY_RETENTION_DAYS` (90 days by default). A
