@@ -1,8 +1,12 @@
+import logging
+import time
 from typing import Any, Protocol
 
 import httpx
 
 from app.prompts.chat_prompt import SYSTEM_PROMPT
+
+logger = logging.getLogger(__name__)
 
 
 class ChatClient(Protocol):
@@ -12,10 +16,19 @@ class ChatClient(Protocol):
 
 
 class OpenAICompatibleChatClient:
-    def __init__(self, base_url: str, api_key: str, timeout: float = 60.0) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        api_key: str,
+        timeout: float = 240.0,
+        max_tokens: int = 400,
+        think: bool = False,
+    ) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._timeout = timeout
+        self._max_tokens = max_tokens
+        self._think = think
 
     @property
     def headers(self) -> dict[str, str]:
@@ -27,18 +40,39 @@ class OpenAICompatibleChatClient:
     async def create_chat_completion(
         self, model: str, prompt: str, system_prompt: str = SYSTEM_PROMPT
     ) -> dict[str, Any]:
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(
-                f"{self._base_url}/chat/completions",
-                headers=self.headers,
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0,
-                },
+        request_body = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0,
+            "max_tokens": self._max_tokens,
+            # Ollama's OpenAI-compatible endpoint maps this to its thinking control.
+            "think": self._think,
+        }
+        started = time.perf_counter()
+        logger.info(
+            "Chat request started | provider=openai_compatible model=%s prompt_chars=%d "
+            "timeout_seconds=%.1f max_tokens=%d think=%s",
+            model, len(prompt), self._timeout, self._max_tokens, self._think,
+        )
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.post(
+                    f"{self._base_url}/chat/completions", headers=self.headers, json=request_body
+                )
+                response.raise_for_status()
+                payload = response.json()
+        except Exception as exc:
+            logger.warning(
+                "Chat request failed | provider=openai_compatible model=%s duration_ms=%d error_type=%s",
+                model, (time.perf_counter() - started) * 1000, type(exc).__name__,
             )
-            response.raise_for_status()
-            return response.json()
+            raise
+        logger.info(
+            "Chat request completed | provider=openai_compatible model=%s status=%d duration_ms=%d output_chars=%d",
+            model, response.status_code, (time.perf_counter() - started) * 1000,
+            len(payload.get("choices", [{}])[0].get("message", {}).get("content", "")),
+        )
+        return payload

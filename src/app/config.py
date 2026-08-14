@@ -44,12 +44,16 @@ class Settings(BaseSettings):
     chat_base_url: str | None = Field(default=None, alias="CHAT_BASE_URL")
     chat_api_key: str = Field(default="dummy", alias="CHAT_API_KEY")
     chat_model: str = Field(default="qwen2.5:7b-instruct-q4_K_M", alias="CHAT_MODEL")
+    chat_timeout_seconds: float = Field(default=240.0, alias="CHAT_TIMEOUT_SECONDS", gt=0)
+    chat_max_tokens: int = Field(default=400, alias="CHAT_MAX_TOKENS", ge=1)
+    chat_think: bool = Field(default=False, alias="CHAT_THINK")
 
     # ---- Embedding provider (matches RAG_Embabel-AI local profile) ----
     embedding_provider: str = Field(default="ollama", alias="EMBEDDING_PROVIDER")
     embedding_base_url: str = Field(default="http://localhost:11434", alias="EMBEDDING_BASE_URL")
     embedding_api_key: str | None = Field(default=None, alias="EMBEDDING_API_KEY")
     embedding_model: str = Field(default="nomic-embed-text", alias="EMBEDDING_MODEL")
+    embedding_timeout_seconds: float = Field(default=120.0, alias="EMBEDDING_TIMEOUT_SECONDS", gt=0)
 
     # ---- Azure OpenAI (shared by chat + embeddings when using azure_openai provider) ----
     azure_openai_endpoint: str | None = Field(default=None, alias="AZURE_OPENAI_ENDPOINT")

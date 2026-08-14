@@ -71,7 +71,7 @@ class IngestedChunk:
     def to_dict(self) -> dict:
         """Serialise to the dict format expected by VectorStore.upsert()."""
         return {
-            "id": self.chunk_id,
+            "chunk_id": self.chunk_id,
             "vector": self.embedding,
             "payload": {
                 "doc_id": self.doc_id,

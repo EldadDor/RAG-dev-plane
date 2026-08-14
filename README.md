@@ -47,6 +47,15 @@ plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error
 messages. Set `HYBRID_SEARCH_ENABLED=false` to use semantic search alone.
 
+## Local-model performance and logs
+
+The chat client logs request start, completion/failure, elapsed time, prompt
+length, output length, and model name without writing prompt or document
+content to logs. For slower local GPUs, tune `CHAT_TIMEOUT_SECONDS` (default
+`240`) and `CHAT_MAX_TOKENS` (default `400`). `CHAT_THINK=false` is the normal
+RAG setting; enable it only for Ollama models that explicitly support thinking
+and where the added latency is acceptable.
+
 `/chat` returns a `session_id`. Send it with a follow-up request to retain a
 short conversation memory. With PostgreSQL this memory is shared across API
 workers and retained for `MEMORY_RETENTION_DAYS` (90 days by default). A

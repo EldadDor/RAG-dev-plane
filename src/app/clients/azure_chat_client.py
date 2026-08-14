@@ -12,11 +12,15 @@ Auth:
 
 from __future__ import annotations
 
+import logging
+import time
 from typing import Any
 
 import httpx
 
 from app.prompts.chat_prompt import SYSTEM_PROMPT
+
+logger = logging.getLogger(__name__)
 
 
 class AzureOpenAIChatClient:
@@ -26,13 +30,15 @@ class AzureOpenAIChatClient:
         api_version: str,
         api_key: str | None = None,
         use_entra: bool = False,
-        timeout: float = 60.0,
+        timeout: float = 240.0,
+        max_tokens: int = 400,
     ) -> None:
         self._endpoint = endpoint.rstrip("/")
         self._api_version = api_version
         self._api_key = api_key
         self._use_entra = use_entra
         self._timeout = timeout
+        self._max_tokens = max_tokens
 
     def _headers(self) -> dict[str, str]:
         if self._use_entra:
@@ -48,17 +54,20 @@ class AzureOpenAIChatClient:
             f"{self._endpoint}/openai/deployments/{model}"
             f"/chat/completions?api-version={self._api_version}"
         )
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(
-                url,
-                headers=self._headers(),
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0,
-                },
-            )
-            response.raise_for_status()
-            return response.json()
+        started = time.perf_counter()
+        logger.info("Chat request started | provider=azure_openai model=%s prompt_chars=%d timeout_seconds=%.1f max_tokens=%d", model, len(prompt), self._timeout, self._max_tokens)
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.post(
+                    url, headers=self._headers(), json={
+                        "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
+                        "temperature": 0, "max_tokens": self._max_tokens,
+                    },
+                )
+                response.raise_for_status()
+                payload = response.json()
+        except Exception as exc:
+            logger.warning("Chat request failed | provider=azure_openai model=%s duration_ms=%d error_type=%s", model, (time.perf_counter() - started) * 1000, type(exc).__name__)
+            raise
+        logger.info("Chat request completed | provider=azure_openai model=%s status=%d duration_ms=%d output_chars=%d", model, response.status_code, (time.perf_counter() - started) * 1000, len(payload.get("choices", [{}])[0].get("message", {}).get("content", "")))
+        return payload

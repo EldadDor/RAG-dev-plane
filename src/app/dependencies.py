@@ -19,8 +19,16 @@ def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
             api_version=settings.azure_openai_api_version,
             api_key=settings.chat_api_key if not settings.azure_openai_use_entra else None,
             use_entra=settings.azure_openai_use_entra,
+            timeout=settings.chat_timeout_seconds,
+            max_tokens=settings.chat_max_tokens,
         )
-    return OpenAICompatibleChatClient(base_url=settings.chat_base_url or "", api_key=settings.chat_api_key)
+    return OpenAICompatibleChatClient(
+        base_url=settings.chat_base_url or "",
+        api_key=settings.chat_api_key,
+        timeout=settings.chat_timeout_seconds,
+        max_tokens=settings.chat_max_tokens,
+        think=settings.chat_think,
+    )
 
 
 def get_embedding_client(settings: Settings = Depends(get_settings)) -> EmbeddingClient:
@@ -31,9 +39,13 @@ def get_embedding_client(settings: Settings = Depends(get_settings)) -> Embeddin
             api_version=settings.azure_openai_api_version,
             api_key=settings.embedding_api_key if not settings.azure_openai_use_entra else None,
             use_entra=settings.azure_openai_use_entra,
+            timeout=settings.embedding_timeout_seconds,
         )
     if settings.embedding_provider == "ollama":
-        return OllamaEmbeddingClient(base_url=settings.embedding_base_url)
+        return OllamaEmbeddingClient(
+            base_url=settings.embedding_base_url,
+            timeout=settings.embedding_timeout_seconds,
+        )
     raise ValueError(f"Unsupported embedding provider: {settings.embedding_provider}")
 
 
