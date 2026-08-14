@@ -47,6 +47,11 @@ plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error
 messages. Set `HYBRID_SEARCH_ENABLED=false` to use semantic search alone.
 
+Python repositories can be ingested directly. Python files are chunked by
+module/class/function and retain language, symbol, line-range, Git branch,
+commit, repository, and repository-relative-path metadata. Other common code
+and configuration extensions are indexed with language metadata.
+
 ## Local-model performance and logs
 
 The chat client logs request start, completion/failure, elapsed time, prompt

@@ -5,9 +5,11 @@ from pathlib import Path
 from typing import Any
 
 from app.chunkers.chunker_adapter import ChunkerConfig, ChunkerFactory
-from app.domain.models import IngestedChunk, IngestedDocumentResult, IngestionResult
+from app.chunkers.python_code_chunker import chunk_python_document
+from app.domain.models import IngestedChunk, IngestedDocumentResult, IngestionResult, SourceType
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.config import Settings
+from app.services.repository_metadata import get_repository_metadata
 
 
 class IngestionService:
@@ -42,6 +44,7 @@ class IngestionService:
                 documents = [load_document(source_path)]
             except UnsupportedFileTypeError as exc:
                 raise ValueError(str(exc)) from exc
+        repository_context = get_repository_metadata(str(path if path.is_dir() else path.parent))
 
         chunks_to_index: list[IngestedChunk] = []
         document_results: list[IngestedDocumentResult] = []
@@ -53,7 +56,19 @@ class IngestionService:
             if not text:
                 continue
 
-            chunked = self._chunker.chunk(text)
+            if document.source_type == SourceType.code and document.metadata.get("language") == "python":
+                chunked = chunk_python_document(document)
+            else:
+                chunked = self._chunker.chunk(text)
+            repository_metadata = dict(repository_context)
+            repository_root = repository_metadata.get("repository_path")
+            if repository_root:
+                try:
+                    repository_metadata["repository_relative_path"] = str(
+                        Path(document.source_path).resolve().relative_to(Path(repository_root))
+                    )
+                except ValueError:
+                    pass
             valid_chunks = [
                 (chunk_index, chunk)
                 for chunk_index, chunk in enumerate(chunked)
@@ -94,11 +109,14 @@ class IngestionService:
                         section=document.metadata.get("section"),
                         metadata={
                             **document.metadata,
+                            **repository_metadata,
+                            "source_type": document.source_type.value,
                             "chunk_index": chunk_index,
                             "chunker_provider": chunker_provider,
                             "token_count": chunk.token_count,
                             "start_index": chunk.start_index,
                             "end_index": chunk.end_index,
+                            **(chunk.metadata or {}),
                             "chunker_metadata": chunk.metadata or {},
                         },
                     )

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from app.domain.models import Document, SourceType
 from app.loaders.html_loader import HTMLLoader
+from app.loaders.code_loader import CodeLoader
 from app.loaders.markdown_loader import MarkdownLoader
 from app.loaders.pdf_loader import PDFLoader
 from app.loaders.text_loader import TextLoader
@@ -15,6 +16,20 @@ _LOADER_MAP = {
     ".htm": HTMLLoader,
     ".pdf": PDFLoader,
     ".txt": TextLoader,
+    ".py": CodeLoader,
+    ".js": CodeLoader,
+    ".jsx": CodeLoader,
+    ".ts": CodeLoader,
+    ".tsx": CodeLoader,
+    ".java": CodeLoader,
+    ".cs": CodeLoader,
+    ".go": CodeLoader,
+    ".rs": CodeLoader,
+    ".sql": CodeLoader,
+    ".json": CodeLoader,
+    ".yaml": CodeLoader,
+    ".yml": CodeLoader,
+    ".toml": CodeLoader,
 }
 
 SUPPORTED_EXTENSIONS = set(_LOADER_MAP.keys())
