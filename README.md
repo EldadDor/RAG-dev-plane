@@ -52,6 +52,11 @@ module/class/function and retain language, symbol, line-range, Git branch,
 commit, repository, and repository-relative-path metadata. Other common code
 and configuration extensions are indexed with language metadata.
 
+Java files use Tree-sitter parsing and are chunked into package/import
+preambles, type headers, and fields/methods/constructors. Chunks preserve the
+fully qualified in-file symbol, enclosing type, and line range. Malformed Java
+falls back to generic text chunking rather than failing ingestion.
+
 ## Local-model performance and logs
 
 The chat client logs request start, completion/failure, elapsed time, prompt

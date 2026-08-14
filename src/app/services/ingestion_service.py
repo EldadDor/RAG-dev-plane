@@ -6,6 +6,7 @@ from typing import Any
 
 from app.chunkers.chunker_adapter import ChunkerConfig, ChunkerFactory
 from app.chunkers.python_code_chunker import chunk_python_document
+from app.chunkers.java_code_chunker import chunk_java_document
 from app.domain.models import IngestedChunk, IngestedDocumentResult, IngestionResult, SourceType
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.config import Settings
@@ -58,6 +59,8 @@ class IngestionService:
 
             if document.source_type == SourceType.code and document.metadata.get("language") == "python":
                 chunked = chunk_python_document(document)
+            elif document.source_type == SourceType.code and document.metadata.get("language") == "java":
+                chunked = chunk_java_document(document) or self._chunker.chunk(text)
             else:
                 chunked = self._chunker.chunk(text)
             repository_metadata = dict(repository_context)
