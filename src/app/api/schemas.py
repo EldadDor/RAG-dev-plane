@@ -32,6 +32,7 @@ class SourceReference(BaseModel):
 class IngestRequest(BaseModel):
     source_path: str = Field(min_length=1)
     recursive: bool = False
+    workspace_id: str | None = Field(default=None, min_length=1)
 
 
 class IngestResult(BaseModel):

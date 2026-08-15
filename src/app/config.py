@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     pg_schema: str = Field(default="rag", alias="PG_SCHEMA")
     pg_table: str = Field(default="document_chunks", alias="PG_TABLE")
     pg_vector_dim: int = Field(default=768, alias="PG_VECTOR_DIM")
+    default_workspace_id: str = Field(default="local", alias="DEFAULT_WORKSPACE_ID")
 
     # ---- Chat provider ----
     chat_provider: str = Field(default="openai_compatible", alias="CHAT_PROVIDER")

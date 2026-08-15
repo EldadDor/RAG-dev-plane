@@ -60,6 +60,22 @@ CREATE INDEX IF NOT EXISTS {index_name}
     USING gin (to_tsvector('simple', content));
 """
 
+_CREATE_DOCUMENTS_TABLE = """
+CREATE TABLE IF NOT EXISTS {schema}.source_documents (
+    doc_id TEXT NOT NULL,
+    workspace_id TEXT NOT NULL,
+    root_path TEXT,
+    source_path TEXT NOT NULL,
+    source_type TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    metadata JSONB NOT NULL DEFAULT '{{}}'::jsonb,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (workspace_id, doc_id)
+);
+CREATE INDEX IF NOT EXISTS idx_{schema}_source_documents_root
+    ON {schema}.source_documents (workspace_id, root_path);
+"""
+
 _UPSERT_SQL = """
 INSERT INTO {schema}.{table}
     (id, content, metadata, embedding, source, page_number, chunk_index)
@@ -206,6 +222,7 @@ class PgVectorStore:
         async with self._pool.acquire() as conn:
             await conn.execute(_CREATE_EXT)
             await conn.execute(_CREATE_SCHEMA.format(schema=self._schema))
+            await conn.execute(_CREATE_DOCUMENTS_TABLE.format(schema=self._schema))
             await conn.execute(_CREATE_TABLE.format(schema=self._schema, table=self._table, dim=self._vector_dim))
             await conn.execute(
                 _CREATE_INDEX.format(
@@ -226,7 +243,10 @@ class PgVectorStore:
     async def upsert(self, chunks: list[dict]) -> None:
         if not self._ensured:
             await self.ensure_collection()
+        async with self._pool.acquire() as conn:
+            await self._upsert_on_connection(conn, chunks)
 
+    async def _upsert_on_connection(self, conn: asyncpg.Connection, chunks: list[dict]) -> None:
         sql = _UPSERT_SQL.format(schema=self._schema, table=self._table)
         records: list[tuple[Any, ...]] = []
         for item in chunks:
@@ -248,7 +268,7 @@ class PgVectorStore:
                 )
             )
 
-        async with self._pool.acquire() as conn:
+        if records:
             await conn.executemany(sql, records)
 
     async def search(self, query_vector: list[float], limit: int = 5) -> list[RetrievedChunk]:
@@ -270,6 +290,49 @@ class PgVectorStore:
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(sql, query, limit)
         return [_row_to_retrieved_chunk(row) for row in rows]
+
+    async def get_document_hash(self, doc_id: str, workspace_id: str) -> str | None:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(
+                f"SELECT content_hash FROM {self._schema}.source_documents WHERE doc_id = $1 AND workspace_id = $2",
+                doc_id, workspace_id,
+            )
+
+    async def replace_document(self, document: dict, chunks: list[dict]) -> None:
+        """Atomically replace a document's chunks only after embeddings are ready."""
+        async with self._pool.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute(
+                    f"""DELETE FROM {self._schema}.{self._table}
+                    WHERE metadata->>'doc_id' = $1
+                      AND (metadata->>'workspace_id' = $2 OR NOT (metadata ? 'workspace_id'))""",
+                    document["doc_id"], document["workspace_id"],
+                )
+                await conn.execute(
+                    f"""INSERT INTO {self._schema}.source_documents
+                    (doc_id, workspace_id, root_path, source_path, source_type, content_hash, metadata)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    ON CONFLICT (workspace_id, doc_id) DO UPDATE SET
+                      root_path=EXCLUDED.root_path, source_path=EXCLUDED.source_path, source_type=EXCLUDED.source_type,
+                      content_hash=EXCLUDED.content_hash, metadata=EXCLUDED.metadata, updated_at=now()""",
+                    document["doc_id"], document["workspace_id"], document.get("root_path"), document["source_path"],
+                    document["source_type"], document["content_hash"], document.get("metadata", {}),
+                )
+                await self._upsert_on_connection(conn, chunks)
+
+    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str]) -> int:
+        async with self._pool.acquire() as conn:
+            async with conn.transaction():
+                rows = await conn.fetch(
+                    f"SELECT doc_id FROM {self._schema}.source_documents WHERE root_path=$1 AND workspace_id=$2 AND NOT (doc_id = ANY($3::text[]))",
+                    root_path, workspace_id, present_doc_ids,
+                )
+                doc_ids = [row["doc_id"] for row in rows]
+                if not doc_ids:
+                    return 0
+                await conn.execute(f"DELETE FROM {self._schema}.{self._table} WHERE metadata->>'doc_id' = ANY($1::text[]) AND metadata->>'workspace_id' = $2", doc_ids, workspace_id)
+                await conn.execute(f"DELETE FROM {self._schema}.source_documents WHERE doc_id = ANY($1::text[]) AND workspace_id = $2", doc_ids, workspace_id)
+                return len(doc_ids)
 
     async def health_check(self) -> bool:
         try:

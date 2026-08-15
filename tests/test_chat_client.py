@@ -7,7 +7,13 @@ from app.clients.chat_client import OpenAICompatibleChatClient
 
 @pytest.mark.asyncio
 async def test_ollama_compatible_chat_request_uses_limits_and_thinking_control(httpx_mock):
-    httpx_mock.add_response(json={"choices": [{"message": {"content": "Answer"}}]})
+    # Qdrant may run a background compatibility probe while the shared app is imported.
+    httpx_mock.add_response(url="http://localhost:6333", method="GET", json={}, is_optional=True)
+    httpx_mock.add_response(
+        url="http://ollama.test/v1/chat/completions",
+        method="POST",
+        json={"choices": [{"message": {"content": "Answer"}}]},
+    )
     client = OpenAICompatibleChatClient(
         base_url="http://ollama.test/v1",
         api_key="dummy",
@@ -18,7 +24,9 @@ async def test_ollama_compatible_chat_request_uses_limits_and_thinking_control(h
 
     response = await client.create_chat_completion("llama3.2:3b", "What is RAG?")
 
-    request = httpx_mock.get_request()
+    request = httpx_mock.get_request(
+        url="http://ollama.test/v1/chat/completions", method="POST"
+    )
     assert request is not None
     payload = json.loads(request.content)
     assert payload["max_tokens"] == 400

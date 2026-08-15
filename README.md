@@ -42,6 +42,12 @@ curl -X POST http://localhost:8000/chat \
   -d '{"question": "How does the ingestion pipeline work?"}'
 ```
 
+Ingestion is workspace-aware. Omit `workspace_id` for the configured local
+default, or provide it explicitly in the request. PostgreSQL tracks each
+source document's content hash; unchanged files are skipped, changed files
+replace their old chunks atomically, and files missing from a re-scanned
+directory have their stale chunks removed.
+
 PostgreSQL retrieval uses hybrid search by default: pgvector semantic search
 plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error

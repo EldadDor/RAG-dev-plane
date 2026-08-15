@@ -6,7 +6,7 @@ from app.clients.qdrant_client import QdrantVectorStore
 from app.clients.vector_store import VectorStore
 from app.config import Settings, get_settings
 from app.services.chat_service import ChatService
-from app.services.conversation_store import ConversationStore
+from app.services.conversation_store import ConversationStore, InMemoryConversationStore
 from app.services.ingestion_service import IngestionService
 from app.services.retrieval_service import RetrievalService
 
@@ -74,7 +74,11 @@ def get_chat_service(
     retrieval_service: RetrievalService = Depends(get_retrieval_service),
     chat_client: ChatClient = Depends(get_chat_client),
 ) -> ChatService:
-    conversation_store: ConversationStore = request.app.state.conversation_store
+    # ASGI unit tests may not run the application lifespan; production always
+    # sets the shared store during startup.
+    conversation_store: ConversationStore = getattr(
+        request.app.state, "conversation_store", InMemoryConversationStore(settings.memory_max_turns)
+    )
     return ChatService(
         settings=settings,
         retrieval_service=retrieval_service,

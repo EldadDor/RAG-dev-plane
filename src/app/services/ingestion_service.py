@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -34,7 +35,9 @@ class IngestionService:
             )
         )
 
-    async def ingest_path(self, source_path: str, recursive: bool = False) -> IngestionResult:
+    async def ingest_path(
+        self, source_path: str, recursive: bool = False, workspace_id: str | None = None
+    ) -> IngestionResult:
         """Ingest a single file or all supported files in a directory."""
         path = Path(source_path)
 
@@ -46,15 +49,42 @@ class IngestionService:
             except UnsupportedFileTypeError as exc:
                 raise ValueError(str(exc)) from exc
         repository_context = get_repository_metadata(str(path if path.is_dir() else path.parent))
+        workspace_id = workspace_id or self._settings.default_workspace_id
+        root_path = str(path.resolve()) if path.is_dir() else None
 
         chunks_to_index: list[IngestedChunk] = []
         document_results: list[IngestedDocumentResult] = []
         total_documents = 0
+        present_doc_ids: list[str] = []
 
         for document in documents:
             total_documents += 1
+            present_doc_ids.append(document.doc_id)
             text = (document.content or "").strip()
+            content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
             if not text:
+                await self._vector_store.replace_document(
+                    {
+                        "doc_id": document.doc_id,
+                        "workspace_id": workspace_id,
+                        "root_path": root_path,
+                        "source_path": document.source_path,
+                        "source_type": document.source_type.value,
+                        "content_hash": content_hash,
+                        "metadata": {**document.metadata, **repository_context},
+                    },
+                    [],
+                )
+                document_results.append(IngestedDocumentResult(
+                    doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
+                    skipped=True, skip_reason="empty",
+                ))
+                continue
+            if await self._vector_store.get_document_hash(document.doc_id, workspace_id) == content_hash:
+                document_results.append(IngestedDocumentResult(
+                    doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
+                    skipped=True, skip_reason="unchanged",
+                ))
                 continue
 
             if document.source_type == SourceType.code and document.metadata.get("language") == "python":
@@ -98,9 +128,10 @@ class IngestionService:
             ])
 
             chunker_provider = getattr(self._settings, "chunker_provider", "default")
+            document_chunks: list[IngestedChunk] = []
             for (chunk_index, chunk), embedding in zip(valid_chunks, embeddings):
                 chunk_text = chunk.text.strip()
-                chunks_to_index.append(
+                document_chunks.append(
                     IngestedChunk(
                         doc_id=document.doc_id,
                         chunk_id=f"{document.doc_id}:{chunk_index}",
@@ -113,6 +144,7 @@ class IngestionService:
                         metadata={
                             **document.metadata,
                             **repository_metadata,
+                            "workspace_id": workspace_id,
                             "source_type": document.source_type.value,
                             "chunk_index": chunk_index,
                             "chunker_provider": chunker_provider,
@@ -124,6 +156,19 @@ class IngestionService:
                         },
                     )
                 )
+            await self._vector_store.replace_document(
+                {
+                    "doc_id": document.doc_id,
+                    "workspace_id": workspace_id,
+                    "root_path": root_path,
+                    "source_path": document.source_path,
+                    "source_type": document.source_type.value,
+                    "content_hash": content_hash,
+                    "metadata": {**document.metadata, **repository_metadata},
+                },
+                [chunk.to_dict() for chunk in document_chunks],
+            )
+            chunks_to_index.extend(document_chunks)
             document_results.append(
                 IngestedDocumentResult(
                     doc_id=document.doc_id,
@@ -132,8 +177,8 @@ class IngestionService:
                 )
             )
 
-        if chunks_to_index:
-            await self._vector_store.upsert([c.to_dict() for c in chunks_to_index])
+        if root_path:
+            await self._vector_store.delete_missing_documents(root_path, workspace_id, present_doc_ids)
 
         return IngestionResult(
             source_path=str(path),

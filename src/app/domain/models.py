@@ -92,6 +92,8 @@ class IngestedDocumentResult:
     doc_id: str
     source_path: str
     chunks_indexed: int
+    skipped: bool = False
+    skip_reason: str | None = None
 
 
 @dataclass

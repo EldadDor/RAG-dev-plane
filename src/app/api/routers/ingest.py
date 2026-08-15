@@ -29,7 +29,11 @@ async def ingest(
         else:
             logger.info("📄 Processing file: %s", request.source_path)
         # The service owns loading and supports both files and directories.
-        result = await ingestion_service.ingest_path(request.source_path, recursive=request.recursive)
+        result = await ingestion_service.ingest_path(
+            request.source_path,
+            recursive=request.recursive,
+            workspace_id=request.workspace_id,
+        )
         response = IngestResponse(
             indexed=result.chunks_indexed,
             documents=[
@@ -37,6 +41,8 @@ async def ingest(
                     doc_id=item.doc_id,
                     source_path=item.source_path,
                     chunks_indexed=item.chunks_indexed,
+                    skipped=item.skipped,
+                    skip_reason=item.skip_reason,
                 )
                 for item in result.documents
             ],
