@@ -94,6 +94,7 @@ _SEARCH_SQL = """
 SELECT id, content, metadata, source, page_number, chunk_index,
        (1.0 - (embedding <=> $1::vector)) AS score
 FROM {schema}.{table}
+WHERE metadata->>'workspace_id' = $3
 ORDER BY embedding <=> $1::vector
 LIMIT $2;
 """
@@ -103,6 +104,7 @@ SELECT id, content, metadata, source, page_number, chunk_index,
        ts_rank_cd(to_tsvector('simple', content), websearch_to_tsquery('simple', $1)) AS score
 FROM {schema}.{table}
 WHERE to_tsvector('simple', content) @@ websearch_to_tsquery('simple', $1)
+  AND metadata->>'workspace_id' = $3
 ORDER BY score DESC, id
 LIMIT $2;
 """
@@ -271,24 +273,24 @@ class PgVectorStore:
         if records:
             await conn.executemany(sql, records)
 
-    async def search(self, query_vector: list[float], limit: int = 5) -> list[RetrievedChunk]:
+    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, _vec_str(query_vector), limit)
+            rows = await conn.fetch(sql, _vec_str(query_vector), limit, workspace_id or "local")
 
         return [_row_to_retrieved_chunk(row) for row in rows]
 
-    async def search_text(self, query: str, limit: int = 5) -> list[RetrievedChunk]:
+    async def search_text(self, query: str, limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
         """Return exact-term matches, optimized for symbols, paths and error text."""
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _TEXT_SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, limit)
+            rows = await conn.fetch(sql, query, limit, workspace_id or "local")
         return [_row_to_retrieved_chunk(row) for row in rows]
 
     async def get_document_hash(self, doc_id: str, workspace_id: str) -> str | None:

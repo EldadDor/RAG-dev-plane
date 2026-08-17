@@ -3,7 +3,7 @@ name = "rag-dev-plane"
 version = "0.1.0"
 description = "Developer-facing RAG backend with FastAPI, PostgreSQL + pgvector, Qdrant, and OpenAI-compatible providers"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14,<3.15"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.30.0",

@@ -13,6 +13,16 @@ def test_python_loader_preserves_language_metadata(tmp_path):
     assert document.metadata["language"] == "python"
 
 
+def test_kotlin_loader_preserves_language_metadata(tmp_path):
+    source = tmp_path / "Example.kt"
+    source.write_text("class Example", encoding="utf-8")
+
+    document = CodeLoader().load(str(source))
+
+    assert document.source_type == SourceType.code
+    assert document.metadata["language"] == "kotlin"
+
+
 def test_python_chunker_preserves_symbol_and_line_range():
     document = Document(
         doc_id="doc", source_path="example.py", source_type=SourceType.code,

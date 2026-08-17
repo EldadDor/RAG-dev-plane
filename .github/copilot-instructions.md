@@ -1,6 +1,6 @@
 # Copilot instructions
 
-This repository is a Python 3.12+ RAG service for internal developer knowledge retrieval.
+This repository is a Python 3.14 RAG service for internal developer knowledge retrieval.
 
 ## Current baseline stack
 - Use `uv` for Python package management and command execution.

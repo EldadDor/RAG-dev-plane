@@ -10,18 +10,18 @@ class RetrievalService:
         self._embedding_client = embedding_client
         self._vector_store = vector_store
 
-    async def retrieve(self, question: str, top_k: int | None = None) -> list[RetrievedChunk]:
+    async def retrieve(self, question: str, top_k: int | None = None, workspace_id: str | None = None) -> list[RetrievedChunk]:
         embedding = await self._embedding_client.create_embedding(self._settings.embedding_model, question)
         limit = top_k or self._settings.top_k
         candidate_limit = max(limit, self._settings.retrieval_candidate_k)
-        semantic = await self._vector_store.search(embedding, limit=candidate_limit)
+        semantic = await self._vector_store.search(embedding, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id)
         # Avoid treating unrelated semantic matches as grounded evidence.
         semantic = [item for item in semantic if item.score >= self._settings.min_retrieval_score]
 
         if not self._settings.hybrid_search_enabled or not isinstance(self._vector_store, LexicalSearchVectorStore):
             return semantic[:limit]
 
-        lexical = await self._vector_store.search_text(question, limit=candidate_limit)
+        lexical = await self._vector_store.search_text(question, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id)
         return self._reciprocal_rank_fusion(semantic, lexical, limit)
 
     def _reciprocal_rank_fusion(

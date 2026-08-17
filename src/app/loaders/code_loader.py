@@ -9,7 +9,8 @@ from app.domain.models import Document, SourceType
 _LANGUAGES = {
     ".py": "python", ".js": "javascript", ".jsx": "javascript", ".ts": "typescript",
     ".tsx": "typescript", ".java": "java", ".cs": "csharp", ".go": "go", ".rs": "rust",
-    ".sql": "sql", ".json": "json", ".yaml": "yaml", ".yml": "yaml", ".toml": "toml",
+    ".kt": "kotlin", ".kts": "kotlin", ".sql": "sql", ".json": "json", ".yaml": "yaml",
+    ".yml": "yaml", ".toml": "toml",
 }
 
 

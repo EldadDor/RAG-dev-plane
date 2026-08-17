@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from app.domain.models import Document, SourceType
@@ -22,6 +23,8 @@ _LOADER_MAP = {
     ".ts": CodeLoader,
     ".tsx": CodeLoader,
     ".java": CodeLoader,
+    ".kt": CodeLoader,
+    ".kts": CodeLoader,
     ".cs": CodeLoader,
     ".go": CodeLoader,
     ".rs": CodeLoader,
@@ -33,6 +36,9 @@ _LOADER_MAP = {
 }
 
 SUPPORTED_EXTENSIONS = set(_LOADER_MAP.keys())
+_EXCLUDED_DIRECTORY_NAMES = {".git", ".idea", ".gradle", ".venv", "build", "node_modules", "out", "target"}
+
+logger = logging.getLogger(__name__)
 
 
 class UnsupportedFileTypeError(ValueError):
@@ -83,16 +89,28 @@ def load_directory(
     pattern = "**/*" if recursive else "*"
     documents: list[Document] = []
     skipped: list[dict] = []
+    ignored_unsupported = 0
 
     for path in sorted(base.glob(pattern)):
         if not path.is_file():
             continue
+        relative_parts = path.relative_to(base).parts
+        if any(part in _EXCLUDED_DIRECTORY_NAMES for part in relative_parts[:-1]):
+            continue
         if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            ignored_unsupported += 1
             continue
         try:
             doc = load_document(str(path), max_bytes=max_bytes)
             documents.append(doc)
         except (UnsupportedFileTypeError, FileTooLargeError, Exception) as exc:
             skipped.append({"path": str(path), "reason": str(exc)})
+
+    logger.info(
+        "Directory scan complete | path=%s loaded=%d supported_failures=%d ignored_unsupported=%d",
+        directory, len(documents), len(skipped), ignored_unsupported,
+    )
+    for item in skipped:
+        logger.warning("Supported file skipped during load | path=%s reason=%s", item["path"], item["reason"])
 
     return documents, skipped

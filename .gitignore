@@ -49,7 +49,6 @@ secrets/
 service-account.json
 
 # ---- Python version management ----
-.python-version
 
 # ---- Azure env (contains real secrets when filled in — do not commit) ----
 .env.azure.local

@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
     top_k: int | None = Field(default=None, ge=1, le=20)
     include_debug: bool = False
     session_id: str | None = None
+    workspace_id: str | None = Field(default=None, min_length=1)
 
 
 class ChatResponse(BaseModel):

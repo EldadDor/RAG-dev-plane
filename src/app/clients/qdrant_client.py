@@ -49,13 +49,14 @@ class QdrantVectorStore:
         ]
         await self._client.upsert(collection_name=self._collection_name, points=points)
 
-    async def search(self, query_vector: list[float], limit: int = 5) -> list[RetrievedChunk]:
+    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
         """Return the top-k most similar chunks for a query embedding."""
         response = await self._client.query_points(
             collection_name=self._collection_name,
             query=query_vector,
             limit=limit,
             with_payload=True,
+            query_filter=qdrant_models.Filter(must=[qdrant_models.FieldCondition(key="workspace_id", match=qdrant_models.MatchValue(value=workspace_id or "local"))]),
         )
         chunks = []
         for hit in response.points:

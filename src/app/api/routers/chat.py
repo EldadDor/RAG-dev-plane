@@ -21,6 +21,7 @@ async def chat(
             top_k=request.top_k,
             include_debug=request.include_debug,
             session_id=request.session_id,
+            workspace_id=request.workspace_id,
         )
     except Exception as exc:
         logger.exception("Chat upstream error: %s", exc)

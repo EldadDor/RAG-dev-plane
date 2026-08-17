@@ -3,7 +3,7 @@
 This repository implements a production-oriented RAG system for internal developer documentation and chat.
 
 ## Stack baseline
-- Python 3.12+
+- Python 3.14
 - `uv` for dependency management and execution
 - FastAPI for HTTP API
 - Pydantic v2 for typed settings and schemas

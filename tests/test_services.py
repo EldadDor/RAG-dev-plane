@@ -158,13 +158,13 @@ async def test_hybrid_retrieval_fuses_semantic_and_keyword_results():
     embedding_client.create_embedding.return_value = [0.1, 0.2]
 
     class HybridStore:
-        async def search(self, query_vector, limit):
+        async def search(self, query_vector, limit, workspace_id=None):
             return [
                 RetrievedChunk("semantic", "doc-1", "docs/guide.md", "semantic", 0.9),
                 RetrievedChunk("shared", "doc-2", "src/config.py", "shared", 0.8),
             ]
 
-        async def search_text(self, query, limit):
+        async def search_text(self, query, limit, workspace_id=None):
             return [
                 RetrievedChunk("shared", "doc-2", "src/config.py", "shared", 0.2),
                 RetrievedChunk("keyword", "doc-3", "src/config.py", "keyword", 0.1),

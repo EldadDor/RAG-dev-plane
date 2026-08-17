@@ -60,3 +60,18 @@ def test_file_too_large_raises(tmp_path):
     f.write_bytes(b"x" * 100)
     with pytest.raises(FileTooLargeError):
         load_document(str(f), max_bytes=50)
+
+
+def test_directory_loader_includes_java_and_excludes_maven_target(tmp_path):
+    java_dir = tmp_path / "src" / "main" / "java"
+    java_dir.mkdir(parents=True)
+    (java_dir / "App.java").write_text("class App {}", encoding="utf-8")
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "Generated.java").write_text("class Generated {}", encoding="utf-8")
+
+    from app.loaders.registry import load_directory
+    documents, skipped = load_directory(str(tmp_path), recursive=True)
+
+    assert [Path(document.source_path).name for document in documents] == ["App.java"]
+    assert skipped == []

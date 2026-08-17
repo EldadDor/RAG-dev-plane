@@ -5,7 +5,7 @@ applyTo: "src/**/*.py,tests/**/*.py,pyproject.toml,.env.example,Dockerfile,docke
 # Backend stack instructions
 
 ## Current stack
-- Python 3.12+
+- Python 3.14
 - `uv`
 - FastAPI
 - Pydantic v2

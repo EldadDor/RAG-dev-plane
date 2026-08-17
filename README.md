@@ -3,7 +3,7 @@
 Production-oriented RAG backend built with FastAPI, Pydantic v2, PostgreSQL + pgvector, and OpenAI-compatible clients.
 
 ## Stack
-- Python 3.12+
+- Python 3.14
 - uv
 - FastAPI
 - Pydantic v2
@@ -42,6 +42,9 @@ curl -X POST http://localhost:8000/chat \
   -d '{"question": "How does the ingestion pipeline work?"}'
 ```
 
+The project is pinned to Python 3.14. Install Python 3.14, then let `uv` create
+the repository-local `.venv`; configure IntelliJ to use `.venv/Scripts/python.exe`.
+
 Ingestion is workspace-aware. Omit `workspace_id` for the configured local
 default, or provide it explicitly in the request. PostgreSQL tracks each
 source document's content hash; unchanged files are skipped, changed files
@@ -57,6 +60,10 @@ Python repositories can be ingested directly. Python files are chunked by
 module/class/function and retain language, symbol, line-range, Git branch,
 commit, repository, and repository-relative-path metadata. Other common code
 and configuration extensions are indexed with language metadata.
+
+Kotlin (`.kt`, `.kts`) is supported with language and repository metadata. It
+currently uses generic code chunking; parser-aware Kotlin symbol chunking can
+be added as a follow-up when Kotlin retrieval becomes a primary use case.
 
 Java files use Tree-sitter parsing and are chunked into package/import
 preambles, type headers, and fields/methods/constructors. Chunks preserve the

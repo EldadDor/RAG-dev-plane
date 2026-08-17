@@ -66,13 +66,15 @@ class ChatService:
             top_k: int | None = None,
             include_debug: bool = False,
             session_id: str | None = None,
+            workspace_id: str | None = None,
     ) -> tuple[ChatResponse, str]:
         session_id = session_id or str(uuid4())
         history = await self._conversation_store.get(session_id)
         summary = await self._conversation_store.get_summary(session_id)
         rewritten_question = await self._rewrite_question(question, history, summary)
 
-        retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k)
+        workspace_id = workspace_id or self._settings.default_workspace_id
+        retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k, workspace_id=workspace_id)
         if not retrieved:
             answer = "I don't know based on the indexed documents."
             await self._conversation_store.append(session_id, "user", question)
@@ -153,12 +155,14 @@ class ChatService:
             top_k: int | None = None,
             include_debug: bool = False,
             session_id: str | None = None,
+            workspace_id: str | None = None,
     ) -> ChatResponse:
         response, _ = await self._answer_impl(
             question=question,
             top_k=top_k,
             include_debug=include_debug,
             session_id=session_id,
+            workspace_id=workspace_id,
         )
         return response
 
@@ -168,12 +172,14 @@ class ChatService:
             top_k: int | None = None,
             include_debug: bool = False,
             session_id: str | None = None,
+            workspace_id: str | None = None,
     ) -> AsyncIterator[str]:
         response, resolved_session_id = await self._answer_impl(
             question=question,
             top_k=top_k,
             include_debug=include_debug,
             session_id=session_id,
+            workspace_id=workspace_id,
         )
         meta = {
             "session_id": resolved_session_id,
