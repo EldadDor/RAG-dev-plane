@@ -44,6 +44,9 @@ packages = ["src/app"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "integration: calls the already-running RAG API and its configured live dependencies",
+]
 
 [tool.uv]
 package = false
