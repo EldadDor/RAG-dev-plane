@@ -57,6 +57,7 @@ def get_vector_store(request: Request, settings: Settings = Depends(get_settings
         url=settings.qdrant_url,
         api_key=settings.qdrant_api_key,
         collection_name=settings.qdrant_collection,
+        check_compatibility=settings.qdrant_check_compatibility,
     )
 
 

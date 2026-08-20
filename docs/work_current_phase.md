@@ -1,10 +1,10 @@
-# Current Work Phase — Architecture Documentation Refresh
+# Current Work Phase — Qdrant Compatibility Probe Policy
 
 **Status:** Complete
 **Last reviewed:** 2026-08-20
 **Owner:** Project team
-**Phase goal:** Make the architecture documentation accurately describe the
-implemented RAG service without changing runtime behavior.
+**Phase goal:** Preserve Qdrant compatibility protection in live deployments
+while eliminating its background warning from mocked unit tests.
 
 ## Scope
 
@@ -22,12 +22,10 @@ or test implementation.
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Inventory implemented behavior | Complete | Reviewed API, ingestion, retrieval, chat, memory, configuration, README, and phase records. |
-| CW-02 | Replace outdated architecture overview | Complete | `docs/architecture.md` now describes current rather than starter-state behavior. |
-| CW-03 | Document provider boundaries | Complete | Chat, embedding, vector-store, lexical-search, and memory adapters are distinguished. |
-| CW-04 | Document workspace and lifecycle behavior | Complete | Metadata, content hashes, replacement, and stale-document removal are documented. |
-| CW-05 | Document testing boundary | Complete | Unit tests and opt-in live integration validation are linked to `docs/testing.md`. |
-| CW-06 | Index updated architecture | Complete | Architecture and phase records were indexed after approval. |
+| CW-01 | Preserve production protection | Complete | Compatibility validation remains enabled by default. |
+| CW-02 | Make the setting configurable | Complete | Added `QDRANT_CHECK_COMPATIBILITY` to typed settings and client construction. |
+| CW-03 | Isolate mocked tests | Complete | Test environment sets the probe to false. |
+| CW-04 | Validate | Complete | 36 passed, 1 live-integration test skipped, and no warnings. |
 
 ## Validation Record
 

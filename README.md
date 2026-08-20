@@ -56,6 +56,10 @@ plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error
 messages. Set `HYBRID_SEARCH_ENABLED=false` to use semantic search alone.
 
+Qdrant remains supported as an alternative vector store. Its client/server
+compatibility check is enabled by default (`QDRANT_CHECK_COMPATIBILITY=true`)
+and is disabled only in the mocked unit-test environment.
+
 Python repositories can be ingested directly. Python files are chunked by
 module/class/function and retain language, symbol, line-range, Git branch,
 commit, repository, and repository-relative-path metadata. Other common code

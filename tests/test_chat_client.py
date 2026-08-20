@@ -7,8 +7,6 @@ from app.clients.chat_client import OpenAICompatibleChatClient
 
 @pytest.mark.asyncio
 async def test_ollama_compatible_chat_request_uses_limits_and_thinking_control(httpx_mock):
-    # Qdrant may run a background compatibility probe while the shared app is imported.
-    httpx_mock.add_response(url="http://localhost:6333", method="GET", json={}, is_optional=True)
     httpx_mock.add_response(
         url="http://ollama.test/v1/chat/completions",
         method="POST",

@@ -7,8 +7,8 @@ from app.domain.models import RetrievedChunk
 
 
 class QdrantVectorStore:
-    def __init__(self, url: str, collection_name: str, api_key: str | None = None) -> None:
-        self._client = AsyncQdrantClient(url=url, api_key=api_key)
+    def __init__(self, url: str, collection_name: str, api_key: str | None = None, check_compatibility: bool = True) -> None:
+        self._client = AsyncQdrantClient(url=url, api_key=api_key, check_compatibility=check_compatibility)
         self._collection_name = collection_name
         self._ensured = False
         self._document_hashes: dict[tuple[str, str], str] = {}

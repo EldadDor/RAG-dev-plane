@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     qdrant_url: str = Field(default="http://localhost:6333", alias="QDRANT_URL")
     qdrant_api_key: str | None = Field(default=None, alias="QDRANT_API_KEY")
     qdrant_collection: str = Field(default="developer_docs", alias="QDRANT_COLLECTION")
+    qdrant_check_compatibility: bool = Field(default=True, alias="QDRANT_CHECK_COMPATIBILITY")
 
     # ---- PostgreSQL + pgvector (matches RAG_Embabel-AI local profile) ----
     pg_host: str | None = Field(default=None, alias="PG_HOST")
