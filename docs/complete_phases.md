@@ -53,8 +53,9 @@ including `a1caf85` and subsequent correctness fixes.
 
 ## Phase: Validation and Developer Workflow
 
-**Status:** In progress — close only after the approval gate in
-`docs/work_current_phase.md` is accepted and the working tree is committed.
+**Status:** Complete
+**Completed:** 2026-08-20
+**Commit:** `a73eea9` (`Adding phases docs`)
 
 **Delivered so far:**
 
@@ -65,8 +66,9 @@ including `a1caf85` and subsequent correctness fixes.
   enabled.
 - Testing guide indexed into the default workspace.
 
-**Outstanding:** Commit the approved workflow/documentation cleanup and record
-the resulting commit hash here.
+**Validation:** 36 isolated tests passed; 37 tests passed with the live
+integration test enabled. The testing guide was indexed into the default
+workspace.
 
 ## Record Template
 

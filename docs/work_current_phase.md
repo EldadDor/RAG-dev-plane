@@ -1,75 +1,69 @@
-# Current Work Phase — Validation and Developer Workflow
+# Current Work Phase — Architecture Documentation Refresh
 
-**Status:** Awaiting review and approval to commit  
-**Last reviewed:** 2026-08-20  
-**Owner:** Project team  
-**Phase goal:** Make the local developer workflow repeatable and prove the
-running RAG stack works end to end without making live integration checks part
-of the normal unit-test path.
+**Status:** Active
+**Last reviewed:** 2026-08-20
+**Owner:** Project team
+**Phase goal:** Make the architecture documentation accurately describe the
+implemented RAG service without changing runtime behavior.
 
 ## Scope
 
 This phase covers only:
 
-- Python 3.14 as the declared project and container runtime;
-- a live, opt-in API integration test for the running local stack;
-- test documentation and PyCharm execution guidance;
-- removal of an accidental nested `tests` uv project.
+- the request, ingestion, retrieval, memory, provider, and persistence flows;
+- workspace/source-lifecycle behavior;
+- current testing and validation boundaries;
+- explicitly identifying deferred work.
 
-It does not change retrieval behavior, providers, database schema, or model
-configuration.
+It does not change runtime behavior, providers, database schema, API contracts,
+or test implementation.
 
 ## Task Board
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Declare and lock Python 3.14 | Complete | Root `pyproject.toml`, `uv.lock`, Dockerfiles, README, and guidance use Python 3.14. |
-| CW-02 | Establish a usable shared repository venv | Complete | Project `.venv` uses Python 3.14.2 and is executable from PyCharm and Codex. |
-| CW-03 | Keep unit tests independent of live services | Complete | Normal suite uses mocked adapters and passed with 36 tests before the integration test was enabled. |
-| CW-04 | Add a live-stack integration test | Complete | `tests/integration/test_live_stack.py` validates readiness, ingestion, grounding, source attribution, workspace isolation, and cleanup. |
-| CW-05 | Validate the live stack in PyCharm | Complete | 37 tests passed against the running Uvicorn API, pgvector, embedding endpoint, and chat model. |
-| CW-06 | Document testing and PyCharm configuration | Complete | `docs/testing.md` documents both test layers and the stable `--basetemp` configuration. |
-| CW-07 | Index the testing guide | Complete | `docs/testing.md` was indexed into the default workspace as 7 chunks. |
-| CW-08 | Remove accidental nested tests project | Complete, pending commit | `tests/pyproject.toml` is deleted; its untracked `tests/uv.lock` was removed. |
+| CW-01 | Inventory implemented behavior | Complete | Reviewed API, ingestion, retrieval, chat, memory, configuration, README, and phase records. |
+| CW-02 | Replace outdated architecture overview | Complete | `docs/architecture.md` now describes current rather than starter-state behavior. |
+| CW-03 | Document provider boundaries | Complete | Chat, embedding, vector-store, lexical-search, and memory adapters are distinguished. |
+| CW-04 | Document workspace and lifecycle behavior | Complete | Metadata, content hashes, replacement, and stale-document removal are documented. |
+| CW-05 | Document testing boundary | Complete | Unit tests and opt-in live integration validation are linked to `docs/testing.md`. |
+| CW-06 | Index updated architecture | Pending | Index only after documentation review is complete. |
 
 ## Validation Record
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| Unit and API-contract suite | Pass | 36 tests passed when integration was skipped. |
-| Full suite with live integration enabled | Pass | 37 passed in 19.83 seconds. |
-| API readiness | Pass | Running API reported `status: ok`, PostgreSQL vector store available. |
-| Testing guide indexing | Pass | One document / seven chunks indexed. |
+| Documentation inventory | Pass | Current code and committed behavior were reviewed before the architecture refresh. |
+| Runtime changes | Not applicable | This phase is documentation-only. |
+| Architecture indexing | Pending | Performed after the approval review. |
 
 ## Known Non-Blocking Item
 
-The unit suite emits one Qdrant client compatibility-probe warning. It is caused
-by Qdrant's background version check in the mocked test environment. The
-warning does not contact the configured live pgvector stack and did not affect
-test results. Do not suppress or change production Qdrant behavior without a
-separate approved task.
+The architecture document describes implemented behavior, not an aspirational
+roadmap. Proposed future changes belong in `docs/next_phase.md` and need their
+own approval.
 
 ## Current Working Tree Expected at Phase Close
 
-- Modified `.gitignore` — ignores the local integration-test temp directory.
-- Modified `docs/testing.md` — records the proven PyCharm test settings.
-- Deleted `tests/pyproject.toml` — removes the unintended nested uv project.
-- Added this phase-management documentation set.
+- Modified `docs/architecture.md` — current system architecture.
+- Modified `docs/work_current_phase.md` — active NP-01 task ledger.
+- Modified `docs/next_phase.md` — NP-01 marked active.
+- Modified `docs/complete_phases.md` — prior phase closed with its commit.
 
 ## Approval Gate
 
 Approve all of the following before closing this phase:
 
-- [ ] The documented test commands and PyCharm settings match the team workflow.
-- [ ] The live test is intentionally opt-in and is not suitable for CI by default.
-- [ ] The generated nested `tests` project should remain removed.
-- [ ] The known Qdrant warning can remain until separately prioritized.
-- [ ] The current changes may be committed as a documentation/workflow cleanup.
+- [ ] The architecture description matches the running service and current code.
+- [ ] Provider separation and PostgreSQL-first behavior are accurately stated.
+- [ ] Current deferrals are acceptable and no unapproved roadmap work was added.
+- [ ] The updated architecture may be indexed in the default workspace.
+- [ ] The documentation-only changes may be committed.
 
 ## Close-Out Procedure
 
-1. Review the working tree against the list above.
-2. Commit only the current phase changes.
-3. Update `docs/complete_phases.md` with the commit hash and final validation.
-4. Move the first approved item from `docs/next_phase.md` into a new current
-   phase document.
+1. Review the architecture and phase records.
+2. Index the approved architecture document.
+3. Commit only the current phase documentation changes.
+4. Update `docs/complete_phases.md` with the commit hash.
+5. Activate the next approved item from `docs/next_phase.md`.
