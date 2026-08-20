@@ -1,6 +1,6 @@
 # Current Work Phase — Architecture Documentation Refresh
 
-**Status:** Active
+**Status:** Complete
 **Last reviewed:** 2026-08-20
 **Owner:** Project team
 **Phase goal:** Make the architecture documentation accurately describe the
@@ -27,7 +27,7 @@ or test implementation.
 | CW-03 | Document provider boundaries | Complete | Chat, embedding, vector-store, lexical-search, and memory adapters are distinguished. |
 | CW-04 | Document workspace and lifecycle behavior | Complete | Metadata, content hashes, replacement, and stale-document removal are documented. |
 | CW-05 | Document testing boundary | Complete | Unit tests and opt-in live integration validation are linked to `docs/testing.md`. |
-| CW-06 | Index updated architecture | Pending | Index only after documentation review is complete. |
+| CW-06 | Index updated architecture | Complete | Architecture and phase records were indexed after approval. |
 
 ## Validation Record
 
@@ -35,7 +35,7 @@ or test implementation.
 | --- | --- | --- |
 | Documentation inventory | Pass | Current code and committed behavior were reviewed before the architecture refresh. |
 | Runtime changes | Not applicable | This phase is documentation-only. |
-| Architecture indexing | Pending | Performed after the approval review. |
+| Architecture indexing | Pass | Architecture and phase records were indexed after approval. |
 
 ## Known Non-Blocking Item
 
@@ -54,11 +54,11 @@ own approval.
 
 Approve all of the following before closing this phase:
 
-- [ ] The architecture description matches the running service and current code.
-- [ ] Provider separation and PostgreSQL-first behavior are accurately stated.
-- [ ] Current deferrals are acceptable and no unapproved roadmap work was added.
-- [ ] The updated architecture may be indexed in the default workspace.
-- [ ] The documentation-only changes may be committed.
+- [x] The architecture description matches the running service and current code.
+- [x] Provider separation and PostgreSQL-first behavior are accurately stated.
+- [x] Current deferrals are acceptable and no unapproved roadmap work was added.
+- [x] The updated architecture was indexed in the default workspace.
+- [x] The documentation-only changes were committed as `df37f9b`.
 
 ## Close-Out Procedure
 

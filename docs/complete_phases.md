@@ -70,6 +70,23 @@ including `a1caf85` and subsequent correctness fixes.
 integration test enabled. The testing guide was indexed into the default
 workspace.
 
+## Phase: Architecture Documentation Refresh
+
+**Status:** Complete
+**Completed:** 2026-08-20
+**Commit:** `df37f9b` (`Refresh RAG architecture documentation`)
+**Validation:** Documentation review, clean diff check, and indexing of the
+architecture plus phase records.
+
+**Delivered:**
+
+- Replaced the starter architecture description with the implemented API,
+  ingestion, workspace lifecycle, retrieval, memory, provider, persistence,
+  and testing flows.
+- Added diagrams for system context and chat/retrieval execution.
+- Removed the obsolete architecture gap list; approved future work remains in
+  `docs/next_phase.md`.
+
 ## Record Template
 
 Use this structure for future completed phases:

@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-01 is active; all other items require explicit approval.
+**Status:** No active phase; all remaining items require explicit approval.
 **Last reviewed:** 2026-08-20
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -10,7 +10,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 
 | Priority | ID | Candidate task | Why it matters | Approval required |
 | --- | --- | --- | --- | --- |
-| 1 | NP-01 | Refresh architecture documentation | **Active.** Documentation-only refresh of the implemented system architecture. | Approved 2026-08-20 |
+| 1 | NP-01 | Refresh architecture documentation | Complete in `df37f9b`. | Completed 2026-08-20 |
 | 2 | NP-02 | Decide the Qdrant warning policy | Keep the production compatibility check, make it configurable, or isolate it from mocked tests. | Yes |
 | 3 | NP-03 | Parser-aware Kotlin chunking | Kotlin ingestion currently preserves language/repository metadata but uses generic chunking. | Yes |
 | 4 | NP-04 | Add operational observability | Define request correlation, retrieval metrics, provider latency, and safe error diagnostics. | Yes |
@@ -18,7 +18,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 
 ## Recommended Next Phase
 
-### NP-01 — Refresh Architecture Documentation (Active)
+### NP-01 — Refresh Architecture Documentation (Complete)
 
 **Proposed objective:** Make `docs/architecture.md` accurately describe the
 current RAG request, ingestion, workspace, hybrid retrieval, memory, and
@@ -37,8 +37,7 @@ changes.
 - Conversation memory and its separation from document retrieval are stated.
 - The document is indexed after approval and completion.
 
-**Activation record:** Approved 2026-08-20. Progress and final approval are
-recorded in `docs/work_current_phase.md`.
+**Completion record:** Approved and completed 2026-08-20 in `df37f9b`.
 
 ## Phase Intake Checklist
 
