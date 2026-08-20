@@ -53,15 +53,23 @@ Run it only when the app, model endpoints, and PostgreSQL/pgvector are ready:
 ```powershell
 $env:RUN_LIVE_INTEGRATION = "1"
 $env:RAG_API_BASE_URL = "http://127.0.0.1:8000" # optional when using the default
-.\.venv\Scripts\python.exe -m pytest tests\integration\ -q
+.\.venv\Scripts\python.exe -m pytest tests\integration\ -q --basetemp .pytest-integration-tmp
 Remove-Item Env:RUN_LIVE_INTEGRATION
 ```
 
-The test writes temporary source files under pytest's normal temporary
-directory and cleans its indexed data before it finishes. If the test is
-interrupted during cleanup, re-run it with the same workspace only if you have
-captured its generated workspace ID from test output; otherwise the stale data
-is harmless because its ID is unique.
+For PyCharm, use a Pytest configuration with the repository `.venv`, working
+directory set to the project root, and these environment variables:
+
+```text
+RUN_LIVE_INTEGRATION=1
+RAG_API_BASE_URL=http://127.0.0.1:8000
+```
+
+Set its additional arguments to `--basetemp .pytest-integration-tmp`. This
+uses a stable project-local temporary directory and avoids Windows cleanup
+noise from pytest's `%TEMP%` directory. The test cleans its indexed data before
+it finishes. If it is interrupted during cleanup, any stale data is isolated
+by its unique workspace ID.
 
 ## Indexing this guide
 
