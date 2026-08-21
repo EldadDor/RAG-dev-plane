@@ -1,10 +1,10 @@
-# Current Work Phase — Qdrant Compatibility Probe Policy
+# Current Work Phase — Parser-Aware Kotlin Chunking
 
 **Status:** Complete
 **Last reviewed:** 2026-08-20
 **Owner:** Project team
-**Phase goal:** Preserve Qdrant compatibility protection in live deployments
-while eliminating its background warning from mocked unit tests.
+**Phase goal:** Replace generic Kotlin chunking with parser-aware symbols and
+line-range metadata while preserving the existing loader/provider boundaries.
 
 ## Scope
 
@@ -22,10 +22,11 @@ or test implementation.
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Preserve production protection | Complete | Compatibility validation remains enabled by default. |
-| CW-02 | Make the setting configurable | Complete | Added `QDRANT_CHECK_COMPATIBILITY` to typed settings and client construction. |
-| CW-03 | Isolate mocked tests | Complete | Test environment sets the probe to false. |
-| CW-04 | Validate | Complete | 36 passed, 1 live-integration test skipped, and no warnings. |
+| CW-01 | Assess Kotlin parser options | In progress | Select a supported parser strategy compatible with the current adapter design. |
+| CW-02 | Implement Kotlin symbol chunking | Pending | Preserve package/type/function context and line ranges. |
+| CW-03 | Route Kotlin ingestion to the new chunker | Pending | Keep malformed-source fallback behavior. |
+| CW-04 | Add focused unit coverage | Pending | Validate symbols, line ranges, and fallback behavior. |
+| CW-05 | Update documentation and index it | Pending | Document Kotlin behavior after validation. |
 
 ## Validation Record
 
