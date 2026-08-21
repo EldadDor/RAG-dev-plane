@@ -1,10 +1,10 @@
-# Current Work Phase — Parser-Aware Kotlin Chunking
+# Current Work Phase — Langfuse Observability
 
 **Status:** Complete
 **Last reviewed:** 2026-08-20
 **Owner:** Project team
-**Phase goal:** Replace generic Kotlin chunking with parser-aware symbols and
-line-range metadata while preserving the existing loader/provider boundaries.
+**Phase goal:** Add the safe, optional Langfuse tracing foundation without
+exporting raw internal content by default.
 
 ## Scope
 
@@ -22,11 +22,11 @@ or test implementation.
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Assess Kotlin parser options | Complete | `tree-sitter-kotlin` selected and added as a project dependency. |
-| CW-02 | Implement Kotlin symbol chunking | Complete | Tree-sitter adapter emits type/function symbols, enclosing types, and line ranges. |
-| CW-03 | Route Kotlin ingestion to the new chunker | Complete | Kotlin now uses the parser-aware adapter, with generic chunking on parse failure. |
-| CW-04 | Add focused unit coverage | Complete | Kotlin and Java chunker tests passed (4 passed). |
-| CW-05 | Update documentation and index it | In progress | README and architecture updated; index after full unit validation. |
+| CW-01 | Add optional Langfuse dependency/configuration | Complete | `langfuse` added; disabled by default with explicit key/content-capture settings. |
+| CW-02 | Add no-op observability boundary | Complete | `Observability` returns a no-op context unless Langfuse is enabled. |
+| CW-03 | Trace chat requests safely | Complete | `/chat` emits `chat.request` with workspace/session metadata only. |
+| CW-04 | Add nested RAG spans | Deferred | Separate follow-up: memory, rewrite, embedding, retrieval, and generation spans. |
+| CW-05 | Add unit tests and documentation/Q&A tracking | Complete | No-op unit coverage added; phase Q&A documents Langfuse safety and intended spans. |
 
 ## Execution Constraint
 

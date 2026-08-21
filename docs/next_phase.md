@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-03 is active; all remaining items require explicit approval.
+**Status:** NP-04 foundation complete; all remaining items require explicit approval.
 **Last reviewed:** 2026-08-20
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -12,8 +12,8 @@ defined scope, acceptance checks, and an approval decision before implementation
 | --- | --- | --- | --- | --- |
 | 1 | NP-01 | Refresh architecture documentation | Complete in `df37f9b`. | Completed 2026-08-20 |
 | 2 | NP-02 | Decide the Qdrant warning policy | Complete: production check retained; mocked tests disable the probe. | Completed 2026-08-20 |
-| 3 | NP-03 | Parser-aware Kotlin chunking | **Active.** Add parser-aware Kotlin symbols and line-range metadata. | Approved 2026-08-20 |
-| 4 | NP-04 | Add operational observability | Define request correlation, retrieval metrics, provider latency, and safe error diagnostics. | Yes |
+| 3 | NP-03 | Parser-aware Kotlin chunking | Complete: Tree-sitter symbols, line ranges, fallback behavior, and unit validation. | Completed 2026-08-21 |
+| 4 | NP-04 | Add operational observability | Foundation complete: optional safe root tracing. Nested RAG spans are deferred. | Completed 2026-08-21 |
 | 5 | NP-05 | Define CI test lanes | Add a CI-safe unit lane and retain the live integration test as a manually triggered environment-specific lane. | Yes |
 
 ## Recommended Next Phase

@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.schemas import ChatRequest, ChatResponse
 from app.dependencies import get_chat_service
 from app.services.chat_service import ChatService
+from app.services.observability import Observability
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -16,13 +18,14 @@ async def chat(
         chat_service: ChatService = Depends(get_chat_service),
 ) -> ChatResponse:
     try:
-        return await chat_service.answer(
+        with Observability(get_settings()).request("chat.request", {"workspace_id": request.workspace_id, "session_id": request.session_id}):
+            return await chat_service.answer(
             question=request.question,
             top_k=request.top_k,
             include_debug=request.include_debug,
             session_id=request.session_id,
             workspace_id=request.workspace_id,
-        )
+            )
     except Exception as exc:
         logger.exception("Chat upstream error: %s", exc)
         raise HTTPException(status_code=502, detail=f"Upstream provider error: {exc}") from exc

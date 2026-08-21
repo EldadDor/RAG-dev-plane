@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
 
+    # ---- Observability (optional Langfuse) ----
+    langfuse_enabled: bool = Field(default=False, alias="LANGFUSE_ENABLED")
+    langfuse_public_key: str | None = Field(default=None, alias="LANGFUSE_PUBLIC_KEY")
+    langfuse_secret_key: str | None = Field(default=None, alias="LANGFUSE_SECRET_KEY")
+    langfuse_base_url: str | None = Field(default=None, alias="LANGFUSE_BASE_URL")
+    langfuse_capture_content: bool = Field(default=False, alias="LANGFUSE_CAPTURE_CONTENT")
+
     # ---- Vector store selection ----
     vector_store: str = Field(default="postgres", alias="VECTOR_STORE")
 
@@ -79,6 +86,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_providers(self) -> Self:
+        if self.langfuse_enabled and (not self.langfuse_public_key or not self.langfuse_secret_key):
+            raise ValueError("LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required when LANGFUSE_ENABLED=true")
         if self.chat_provider == "openai_compatible" and not self.chat_base_url:
             raise ValueError("CHAT_BASE_URL is required when CHAT_PROVIDER=openai_compatible")
         if self.chat_provider == "azure_openai" and not self.azure_openai_endpoint:
