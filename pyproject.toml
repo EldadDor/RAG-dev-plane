@@ -23,6 +23,7 @@ dependencies = [
     # Azure / PostgreSQL providers
     "asyncpg>=0.29.0",
     "azure-identity>=1.17.0",
+    "tree-sitter-kotlin>=1.1.0",
 ]
 
 [project.optional-dependencies]

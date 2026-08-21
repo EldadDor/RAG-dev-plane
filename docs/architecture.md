@@ -55,7 +55,7 @@ The loader registry supports Markdown, HTML, plain text, PDF, Python, Java, Kotl
 
 - Python files are chunked by module, class, and function using the Python AST.
 - Java files use Tree-sitter to preserve package/type/member symbols and line ranges; malformed Java falls back to generic text chunking.
-- Kotlin (`.kt`, `.kts`) retains language and repository metadata but currently uses generic chunking.
+- Kotlin (`.kt`, `.kts`) uses Tree-sitter declaration-aware chunking for type and function symbols, enclosing types, and line ranges; malformed Kotlin falls back to generic chunking.
 - Documents retain provenance-rich metadata, including source path, repository details when available, language/symbol information for code, line ranges, workspace ID, and chunk position.
 
 For PostgreSQL, `rag.source_documents` records a content hash per `(workspace_id, doc_id)`. During rescans, unchanged files are skipped, changed files replace their old chunks, and documents missing from the scanned root are removed. This prevents stale chunks from remaining retrievable.
@@ -128,6 +128,5 @@ The normal pytest suite uses mocks and in-process FastAPI transport, so it does 
 
 ## Current Boundaries and Planned Work
 
-- Kotlin symbol-aware parsing is deferred until Kotlin retrieval becomes a primary use case.
 - Reranking remains configuration-visible but is not yet an active retrieval stage.
 - The next approved improvements are tracked in [next_phase.md](next_phase.md), rather than as an outdated architecture gap list.

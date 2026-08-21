@@ -39,6 +39,15 @@ changes.
 
 **Completion record:** Approved and completed 2026-08-20 in `df37f9b`.
 
+### NP-03 — Parser-Aware Kotlin Chunking (Active)
+
+**Current progress:** Tree-sitter Kotlin dependency and initial ingestion
+routing are implemented. The remaining work is grammar-shape verification,
+focused unit tests, fallback validation, documentation, and indexing.
+
+**Execution note:** The planned tests are unit-only. Uvicorn is not required;
+any live API validation will be proposed before execution.
+
 ## Phase Intake Checklist
 
 Before a candidate becomes active, record:

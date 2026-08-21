@@ -22,11 +22,17 @@ or test implementation.
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Assess Kotlin parser options | In progress | Select a supported parser strategy compatible with the current adapter design. |
-| CW-02 | Implement Kotlin symbol chunking | Pending | Preserve package/type/function context and line ranges. |
-| CW-03 | Route Kotlin ingestion to the new chunker | Pending | Keep malformed-source fallback behavior. |
-| CW-04 | Add focused unit coverage | Pending | Validate symbols, line ranges, and fallback behavior. |
-| CW-05 | Update documentation and index it | Pending | Document Kotlin behavior after validation. |
+| CW-01 | Assess Kotlin parser options | Complete | `tree-sitter-kotlin` selected and added as a project dependency. |
+| CW-02 | Implement Kotlin symbol chunking | Complete | Tree-sitter adapter emits type/function symbols, enclosing types, and line ranges. |
+| CW-03 | Route Kotlin ingestion to the new chunker | Complete | Kotlin now uses the parser-aware adapter, with generic chunking on parse failure. |
+| CW-04 | Add focused unit coverage | Complete | Kotlin and Java chunker tests passed (4 passed). |
+| CW-05 | Update documentation and index it | In progress | README and architecture updated; index after full unit validation. |
+
+## Execution Constraint
+
+Focused Kotlin parser tests are unit-only and do **not** require Uvicorn, model
+endpoints, or pgvector. Any proposed live integration/API test will be announced
+before it is run.
 
 ## Validation Record
 

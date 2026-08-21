@@ -65,9 +65,9 @@ module/class/function and retain language, symbol, line-range, Git branch,
 commit, repository, and repository-relative-path metadata. Other common code
 and configuration extensions are indexed with language metadata.
 
-Kotlin (`.kt`, `.kts`) is supported with language and repository metadata. It
-currently uses generic code chunking; parser-aware Kotlin symbol chunking can
-be added as a follow-up when Kotlin retrieval becomes a primary use case.
+Kotlin (`.kt`, `.kts`) uses Tree-sitter parser-aware chunking for type and
+function symbols, enclosing types, and line ranges. Malformed Kotlin falls back
+to generic text chunking rather than failing ingestion.
 
 Java files use Tree-sitter parsing and are chunked into package/import
 preambles, type headers, and fields/methods/constructors. Chunks preserve the
