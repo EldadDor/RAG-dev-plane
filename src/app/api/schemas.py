@@ -19,6 +19,23 @@ class ChatResponse(BaseModel):
     debug: dict | None = None
 
 
+class ChatSessionSummary(BaseModel):
+    session_id: str
+    workspace_id: str
+    title: str
+    last_preview: str | None = None
+    updated_at: str | None = None
+
+
+class ChatSessionDetail(ChatSessionSummary):
+    summary: str | None = None
+    turns: list[dict[str, str]] = []
+
+
+class RenameChatSessionRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+
+
 class SourceReference(BaseModel):
     doc_id: str
     chunk_id: str

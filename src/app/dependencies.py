@@ -1,4 +1,4 @@
-from fastapi import Depends, Request
+from fastapi import Depends, Header, HTTPException, Request
 
 from app.clients.chat_client import ChatClient, OpenAICompatibleChatClient
 from app.clients.embedding_client import EmbeddingClient, OllamaEmbeddingClient
@@ -29,6 +29,11 @@ def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
         max_tokens=settings.chat_max_tokens,
         think=settings.chat_think,
     )
+
+def get_current_user(settings: Settings = Depends(get_settings), x_forwarded_user: str | None = Header(default=None)) -> str:
+    if x_forwarded_user: return x_forwarded_user
+    if settings.app_env == "local": return "local-dev"
+    raise HTTPException(status_code=401, detail="Trusted user identity header is required")
 
 
 def get_embedding_client(settings: Settings = Depends(get_settings)) -> EmbeddingClient:

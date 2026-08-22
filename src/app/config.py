@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
+    chat_identity_header: str = Field(default="X-Forwarded-User", alias="CHAT_IDENTITY_HEADER")
+    chat_history_retention_days: int = Field(default=90, alias="CHAT_HISTORY_RETENTION_DAYS", ge=1)
 
     # ---- Observability (optional Langfuse) ----
     langfuse_enabled: bool = Field(default=False, alias="LANGFUSE_ENABLED")

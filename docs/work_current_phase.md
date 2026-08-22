@@ -1,4 +1,4 @@
-# Current Work Phase — Langfuse Observability
+# Current Work Phase — Frontend Backend Contract
 
 **Status:** Complete
 **Last reviewed:** 2026-08-20
@@ -22,11 +22,11 @@ or test implementation.
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Add optional Langfuse dependency/configuration | Complete | `langfuse` added; disabled by default with explicit key/content-capture settings. |
-| CW-02 | Add no-op observability boundary | Complete | `Observability` returns a no-op context unless Langfuse is enabled. |
-| CW-03 | Trace chat requests safely | Complete | `/chat` emits `chat.request` with workspace/session metadata only. |
-| CW-04 | Add nested RAG spans | Deferred | Separate follow-up: memory, rewrite, embedding, retrieval, and generation spans. |
-| CW-05 | Add unit tests and documentation/Q&A tracking | Complete | No-op unit coverage added; phase Q&A documents Langfuse safety and intended spans. |
+| CW-01 | Add user-owned session persistence | Complete | PostgreSQL and local stores track owner/workspace/title/preview/archive state. |
+| CW-02 | Add history APIs | Complete | List, detail, rename, and archive routes enforce derived user ownership. |
+| CW-03 | Add supported SSE route | Complete | Active `/chat/stream` derives user identity and emits final source metadata. |
+| CW-04 | Define bounded retention | Complete | Summary plus last 10 turns; summary refresh purges older raw turns. |
+| CW-05 | Create frontend architecture handoff | Complete | `docs/frontend_architecture.md` records delivery, privacy, and unresolved office inputs. |
 
 ## Execution Constraint
 

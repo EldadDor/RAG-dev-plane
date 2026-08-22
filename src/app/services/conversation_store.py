@@ -26,6 +26,12 @@ class ConversationStore(Protocol):
     async def get_summary(self, session_id: str) -> str | None: ...
     async def get_unsummarized_turns(self, session_id: str) -> list[ChatTurn]: ...
     async def save_summary(self, session_id: str, summary: str) -> None: ...
+    async def ensure_session(self, session_id: str, owner_id: str, workspace_id: str, title: str) -> None: ...
+    async def update_session(self, session_id: str, preview: str, summary: str | None = None) -> None: ...
+    async def list_sessions(self, owner_id: str, workspace_id: str) -> list[dict]: ...
+    async def get_session(self, session_id: str, owner_id: str) -> dict | None: ...
+    async def rename_session(self, session_id: str, owner_id: str, title: str) -> bool: ...
+    async def archive_session(self, session_id: str, owner_id: str) -> bool: ...
 
 
 class InMemoryConversationStore:
@@ -37,6 +43,7 @@ class InMemoryConversationStore:
         self._summaries: dict[str, str] = {}
         self._summarized_counts: dict[str, int] = defaultdict(int)
         self._lock = asyncio.Lock()
+        self._session_meta: dict[str, dict] = {}
 
     async def get(self, session_id: str) -> list[ChatTurn]:
         async with self._lock:
@@ -59,6 +66,27 @@ class InMemoryConversationStore:
         async with self._lock:
             self._summaries[session_id] = summary
             self._summarized_counts[session_id] = len(self._sessions.get(session_id, []))
+
+    async def ensure_session(self, session_id, owner_id, workspace_id, title):
+        async with self._lock:
+            self._session_meta.setdefault(session_id, {"session_id": session_id, "owner_id": owner_id, "workspace_id": workspace_id, "title": title, "last_preview": None, "archived": False})
+    async def update_session(self, session_id, preview, summary=None):
+        async with self._lock:
+            if session_id in self._session_meta: self._session_meta[session_id]["last_preview"] = preview[:300]
+    async def list_sessions(self, owner_id, workspace_id):
+        async with self._lock: return [v for v in self._session_meta.values() if v["owner_id"] == owner_id and v["workspace_id"] == workspace_id and not v["archived"]]
+    async def get_session(self, session_id, owner_id):
+        async with self._lock:
+            v = self._session_meta.get(session_id)
+            return v if v and v["owner_id"] == owner_id and not v["archived"] else None
+    async def rename_session(self, session_id, owner_id, title):
+        v = await self.get_session(session_id, owner_id)
+        if not v: return False
+        v["title"] = title; return True
+    async def archive_session(self, session_id, owner_id):
+        v = await self.get_session(session_id, owner_id)
+        if not v: return False
+        v["archived"] = True; return True
 
 
 class PostgresConversationStore:
@@ -96,6 +124,13 @@ class PostgresConversationStore:
                     last_turn_id BIGINT NOT NULL,
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 );
+                CREATE TABLE IF NOT EXISTS {self._schema}.chat_sessions (
+                    session_id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
+                    title TEXT NOT NULL, last_preview TEXT, archived BOOLEAN NOT NULL DEFAULT FALSE,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                );
+                CREATE INDEX IF NOT EXISTS idx_{self._schema}_chat_sessions_owner_workspace
+                    ON {self._schema}.chat_sessions (owner_id, workspace_id, updated_at DESC) WHERE NOT archived;
                 """
             )
 
@@ -179,3 +214,23 @@ class PostgresConversationStore:
                 summary,
                 last_turn_id,
             )
+            await conn.execute(f"DELETE FROM {self._schema}.conversation_turns WHERE session_id=$1 AND id < (SELECT id FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY id DESC OFFSET $2 LIMIT 1)", session_id, self._max_turns)
+
+    async def ensure_session(self, session_id, owner_id, workspace_id, title):
+        async with self._pool.acquire() as conn:
+            await conn.execute(f"INSERT INTO {self._schema}.chat_sessions (session_id, owner_id, workspace_id, title) VALUES ($1,$2,$3,$4) ON CONFLICT (session_id) DO NOTHING", session_id, owner_id, workspace_id, title[:200])
+    async def update_session(self, session_id, preview, summary=None):
+        async with self._pool.acquire() as conn:
+            await conn.execute(f"UPDATE {self._schema}.chat_sessions SET last_preview=$2, updated_at=now() WHERE session_id=$1", session_id, preview[:300])
+    async def list_sessions(self, owner_id, workspace_id):
+        async with self._pool.acquire() as conn:
+            return [dict(r) for r in await conn.fetch(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC", owner_id, workspace_id)]
+    async def get_session(self, session_id, owner_id):
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id)
+            if not row: return None
+            result=dict(row); result["summary"] = await conn.fetchval(f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id=$1", session_id); result["turns"]=[dict(r) for r in await conn.fetch(f"SELECT role, content FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY id", session_id)]; return result
+    async def rename_session(self, session_id, owner_id, title):
+        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET title=$3, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id, title[:200]) == "UPDATE 1"
+    async def archive_session(self, session_id, owner_id):
+        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET archived=true, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id) == "UPDATE 1"

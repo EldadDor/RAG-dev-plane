@@ -67,6 +67,7 @@ class ChatService:
             include_debug: bool = False,
             session_id: str | None = None,
             workspace_id: str | None = None,
+            owner_id: str = "local-dev",
     ) -> tuple[ChatResponse, str]:
         session_id = session_id or str(uuid4())
         history = await self._conversation_store.get(session_id)
@@ -74,11 +75,13 @@ class ChatService:
         rewritten_question = await self._rewrite_question(question, history, summary)
 
         workspace_id = workspace_id or self._settings.default_workspace_id
+        await self._conversation_store.ensure_session(session_id, owner_id, workspace_id, question[:80])
         retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k, workspace_id=workspace_id)
         if not retrieved:
             answer = "I don't know based on the indexed documents."
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
+            await self._conversation_store.update_session(session_id, answer)
             try:
                 await self._refresh_summary_if_needed(session_id)
             except Exception:
@@ -111,6 +114,7 @@ class ChatService:
         else:
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
+            await self._conversation_store.update_session(session_id, answer)
             try:
                 await self._refresh_summary_if_needed(session_id)
             except Exception:
@@ -156,6 +160,7 @@ class ChatService:
             include_debug: bool = False,
             session_id: str | None = None,
             workspace_id: str | None = None,
+            owner_id: str = "local-dev",
     ) -> ChatResponse:
         response, _ = await self._answer_impl(
             question=question,
@@ -163,6 +168,7 @@ class ChatService:
             include_debug=include_debug,
             session_id=session_id,
             workspace_id=workspace_id,
+            owner_id=owner_id,
         )
         return response
 
@@ -173,6 +179,7 @@ class ChatService:
             include_debug: bool = False,
             session_id: str | None = None,
             workspace_id: str | None = None,
+            owner_id: str = "local-dev",
     ) -> AsyncIterator[str]:
         response, resolved_session_id = await self._answer_impl(
             question=question,
@@ -180,6 +187,7 @@ class ChatService:
             include_debug=include_debug,
             session_id=session_id,
             workspace_id=workspace_id,
+            owner_id=owner_id,
         )
         meta = {
             "session_id": resolved_session_id,

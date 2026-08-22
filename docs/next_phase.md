@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-04 foundation complete; all remaining items require explicit approval.
+**Status:** Frontend backend-contract work in progress; NP-05 remains pending approval.
 **Last reviewed:** 2026-08-20
 
 This is the ordered backlog for the next approved phase. Each item must have a
