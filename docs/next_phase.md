@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** Frontend backend-contract work in progress; NP-05 remains pending approval.
+**Status:** NP-05 is active; all other future work requires explicit approval.
 **Last reviewed:** 2026-08-20
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -14,7 +14,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 2 | NP-02 | Decide the Qdrant warning policy | Complete: production check retained; mocked tests disable the probe. | Completed 2026-08-20 |
 | 3 | NP-03 | Parser-aware Kotlin chunking | Complete: Tree-sitter symbols, line ranges, fallback behavior, and unit validation. | Completed 2026-08-21 |
 | 4 | NP-04 | Add operational observability | Foundation complete: optional safe root tracing. Nested RAG spans are deferred. | Completed 2026-08-21 |
-| 5 | NP-05 | Define CI test lanes | Add a CI-safe unit lane and retain the live integration test as a manually triggered environment-specific lane. | Yes |
+| 5 | NP-05 | Define CI test lanes | **Active.** Separate required unit/API CI from a manual environment-specific live lane. | Approved 2026-08-22 |
 
 ## Recommended Next Phase
 
@@ -39,14 +39,18 @@ changes.
 
 **Completion record:** Approved and completed 2026-08-20 in `df37f9b`.
 
-### NP-03 — Parser-Aware Kotlin Chunking (Active)
+### NP-03 — Parser-Aware Kotlin Chunking (Complete)
 
-**Current progress:** Tree-sitter Kotlin dependency and initial ingestion
-routing are implemented. The remaining work is grammar-shape verification,
-focused unit tests, fallback validation, documentation, and indexing.
+**Completion record:** Tree-sitter parsing, fallback behavior, and focused unit
+validation completed 2026-08-21.
 
-**Execution note:** The planned tests are unit-only. Uvicorn is not required;
-any live API validation will be proposed before execution.
+### NP-05 — CI Test Lanes (Active)
+
+**Objective:** Keep unit/API verification required and isolated, while making
+live stack verification explicitly manual and environment-scoped.
+
+**Tracking:** See `docs/work_current_phase.md` for required steps and approval
+gates.
 
 ## Phase Intake Checklist
 

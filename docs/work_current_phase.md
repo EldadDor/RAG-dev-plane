@@ -1,74 +1,41 @@
-# Current Work Phase — Frontend Backend Contract
+# Current Work Phase — NP-05 CI Test Lanes
 
-**Status:** Complete
-**Last reviewed:** 2026-08-20
+**Status:** Active
+**Last reviewed:** 2026-08-22
 **Owner:** Project team
-**Phase goal:** Add the safe, optional Langfuse tracing foundation without
-exporting raw internal content by default.
 
-## Scope
+## Objective
 
-This phase covers only:
+Establish reproducible CI lanes that always run the isolated Python 3.14 unit
+suite and only run live integration checks through an explicitly approved,
+environment-provisioned workflow.
 
-- the request, ingestion, retrieval, memory, provider, and persistence flows;
-- workspace/source-lifecycle behavior;
-- current testing and validation boundaries;
-- explicitly identifying deferred work.
+## Scope and Guardrails
 
-It does not change runtime behavior, providers, database schema, API contracts,
-or test implementation.
+- CI-safe lane: `uv` + Python 3.14 + unit/API tests; no Uvicorn, models,
+  pgvector, Langfuse, or office credentials.
+- Live lane: manually dispatched only; never a default PR/push requirement.
+- Preserve the existing opt-in integration guard: `RUN_LIVE_INTEGRATION=1`.
+- Do not add deployment, frontend, gateway, or database migration work.
 
 ## Task Board
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| CW-01 | Add user-owned session persistence | Complete | PostgreSQL and local stores track owner/workspace/title/preview/archive state. |
-| CW-02 | Add history APIs | Complete | List, detail, rename, and archive routes enforce derived user ownership. |
-| CW-03 | Add supported SSE route | Complete | Active `/chat/stream` derives user identity and emits final source metadata. |
-| CW-04 | Define bounded retention | Complete | Summary plus last 10 turns; summary refresh purges older raw turns. |
-| CW-05 | Create frontend architecture handoff | Complete | `docs/frontend_architecture.md` records delivery, privacy, and unresolved office inputs. |
+| CW-01 | Inspect existing CI assets and test commands | Pending | Identify current workflows, Python setup, and repository constraints. |
+| CW-02 | Define required unit lane | Pending | Python 3.14, `uv sync`, and deterministic unit/API command. |
+| CW-03 | Define manual live-integration lane | Pending | Explicit dispatch inputs, required secrets, services, and no automatic trigger. |
+| CW-04 | Add CI workflow configuration | Pending | Separate safe and manual lanes with clear names/logs. |
+| CW-05 | Validate CI-safe lane locally | Pending | No Uvicorn or live dependency use. |
+| CW-06 | Document workflow and update phase records | Pending | Update testing/workflow docs; index after approval. |
+
+## Approval Gates
+
+- [ ] Review the proposed workflow triggers, permissions, and secret names before CI files are created.
+- [ ] Approve any live runner/service topology before the manual lane is implemented or run.
+- [ ] Approve phase close after the safe lane is validated.
 
 ## Execution Constraint
 
-Focused Kotlin parser tests are unit-only and do **not** require Uvicorn, model
-endpoints, or pgvector. Any proposed live integration/API test will be announced
-before it is run.
-
-## Validation Record
-
-| Check | Result | Notes |
-| --- | --- | --- |
-| Documentation inventory | Pass | Current code and committed behavior were reviewed before the architecture refresh. |
-| Runtime changes | Not applicable | This phase is documentation-only. |
-| Architecture indexing | Pass | Architecture and phase records were indexed after approval. |
-
-## Known Non-Blocking Item
-
-The architecture document describes implemented behavior, not an aspirational
-roadmap. Proposed future changes belong in `docs/next_phase.md` and need their
-own approval.
-
-## Current Working Tree Expected at Phase Close
-
-- Modified `docs/architecture.md` — current system architecture.
-- Modified `docs/work_current_phase.md` — active NP-01 task ledger.
-- Modified `docs/next_phase.md` — NP-01 marked active.
-- Modified `docs/complete_phases.md` — prior phase closed with its commit.
-
-## Approval Gate
-
-Approve all of the following before closing this phase:
-
-- [x] The architecture description matches the running service and current code.
-- [x] Provider separation and PostgreSQL-first behavior are accurately stated.
-- [x] Current deferrals are acceptable and no unapproved roadmap work was added.
-- [x] The updated architecture was indexed in the default workspace.
-- [x] The documentation-only changes were committed as `df37f9b`.
-
-## Close-Out Procedure
-
-1. Review the architecture and phase records.
-2. Index the approved architecture document.
-3. Commit only the current phase documentation changes.
-4. Update `docs/complete_phases.md` with the commit hash.
-5. Activate the next approved item from `docs/next_phase.md`.
+I will announce before any command that starts Uvicorn or contacts pgvector,
+model endpoints, Langfuse, or other live office services.

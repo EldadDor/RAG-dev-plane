@@ -1,30 +1,35 @@
-# RAG Dev Plane — Agent Instructions
+# RAG Dev Plane — Shared Codex Workflow
 
-## Local services
+## Project Areas
 
-This project depends on local development services that are manually managed by the developer:
+- `src/`, `tests/`, and Python configuration: backend.
+- `frontend/`: React/Vite frontend.
+- `docs/`: shared architecture, phase, and API-contract documentation.
 
-- Ollama, including the chat and embedding models
-- PostgreSQL with pgvector, running on the developer's laptop
-- The backend application, normally run and debugged from IntelliJ
+Work only in the area requested by the user. Do not change backend files while
+working on the frontend, or frontend files while working on the backend, unless
+the user explicitly approves a shared API-contract change.
 
-Do not start, stop, restart, configure, pull models for, or otherwise manage Ollama, PostgreSQL/pgvector, Docker Compose, or IntelliJ unless the developer explicitly asks.
+## Required Reading
 
-Do not assume these services are available.
+- Read root `AGENTS.md` for backend architecture rules.
+- Read `docs/frontend_architecture.md` before frontend/API integration work.
+- Read `docs/work_current_phase.md` and `docs/next_phase.md` before starting a
+phase; update them as work progresses when the user asks for workflow tracking.
 
-## Tests and validation
+## Local Services and Safety
 
-Do not run tests by default.
+Do not start, stop, or configure Uvicorn, Ollama, PostgreSQL/pgvector, Docker,
+or IntelliJ/PyCharm unless explicitly requested.
 
-Tests may require the developer's local Ollama instance and PostgreSQL/pgvector database and can consume local machine resources.
+Do not edit `.env`, credentials, secrets, or local service settings unless
+explicitly requested. Do not run tests that contact live services without prior
+approval.
 
-Only run tests, integration tests, Docker Compose, or commands that connect to local services when the developer explicitly requests it.
+## Validation and Handoff
 
-For code changes, perform static review and reason about correctness. State which tests or checks the developer should run manually.
+Run the smallest relevant static check or test only when permitted. State what
+was not run.
 
-## Safe default behavior
-
-- Do not modify `.env`, `.env.azure`, secrets, credentials, or local environment configuration unless explicitly requested.
-- Do not make network-dependent changes or download models/dependencies unless explicitly requested.
-- Keep changes small and focused.
-- Before completing a task, summarize changed files and list validation that was not run.
+Keep backend/frontend handoffs in `docs/frontend_architecture.md`; do not put
+credentials or provider/database secrets in browser code or frontend env files.
