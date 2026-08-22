@@ -1,41 +1,44 @@
-# Current Work Phase — NP-05 CI Test Lanes
+# Current Work Phase — NP-05 Workspace Discovery and Authorization
 
-**Status:** Active
-**Last reviewed:** 2026-08-22
+**Status:** Active  
+**Last reviewed:** 2026-08-23  
 **Owner:** Project team
 
 ## Objective
 
-Establish reproducible CI lanes that always run the isolated Python 3.14 unit
-suite and only run live integration checks through an explicitly approved,
-environment-provisioned workflow.
+Define the authorized `workspace_id` source and backend contract that allow the frontend to present only workspaces available to the authenticated user and safely scope chat/session history.
+
+## Current Blocker
+
+The frontend architecture requires workspace selection, but the backend has no approved workspace discovery or authorization source. The frontend must not invent workspace options or submit a user identity to obtain them.
 
 ## Scope and Guardrails
 
-- CI-safe lane: `uv` + Python 3.14 + unit/API tests; no Uvicorn, models,
-  pgvector, Langfuse, or office credentials.
-- Live lane: manually dispatched only; never a default PR/push requirement.
-- Preserve the existing opt-in integration guard: `RUN_LIVE_INTEGRATION=1`.
-- Do not add deployment, frontend, gateway, or database migration work.
+- Derive identity from the trusted gateway/server-side development configuration; never accept a browser-supplied user ID.
+- Define how an authenticated user receives their authorized workspaces.
+- Define a workspace discovery API and its response contract before frontend implementation resumes.
+- Apply the same authorization rule to chat, session, and recent-history operations.
+- Preserve the existing default local-development workspace behavior until an approved replacement exists.
+- Do not implement frontend UI, ingestion/admin features, or infrastructure deployment work in this phase.
+- Do not start Uvicorn, models, pgvector, Langfuse, or office services without announcing it first.
 
 ## Task Board
 
-| ID | Task | Status | Evidence / outcome |
-| --- | --- | --- | --- |
-| CW-01 | Inspect existing CI assets and test commands | Pending | Identify current workflows, Python setup, and repository constraints. |
-| CW-02 | Define required unit lane | Pending | Python 3.14, `uv sync`, and deterministic unit/API command. |
-| CW-03 | Define manual live-integration lane | Pending | Explicit dispatch inputs, required secrets, services, and no automatic trigger. |
-| CW-04 | Add CI workflow configuration | Pending | Separate safe and manual lanes with clear names/logs. |
-| CW-05 | Validate CI-safe lane locally | Pending | No Uvicorn or live dependency use. |
-| CW-06 | Document workflow and update phase records | Pending | Update testing/workflow docs; index after approval. |
+| ID | Task | Status |
+|---|---|---|
+| CW-01 | Inspect current `workspace_id` lifecycle and identity handling. | Pending |
+| CW-02 | Decide the authorization source: gateway claim/header, PostgreSQL membership records, or an approved local-development mapping. | Pending |
+| CW-03 | Design the workspace discovery endpoint and response schema. | Pending |
+| CW-04 | Define enforcement for workspace-scoped chat, session, and history operations. | Pending |
+| CW-05 | Add focused unit tests and update frontend/backend documentation after the contract is approved. | Pending |
+| CW-06 | Index the completed documentation and record the frontend handoff. | Pending |
 
 ## Approval Gates
 
-- [ ] Review the proposed workflow triggers, permissions, and secret names before CI files are created.
-- [ ] Approve any live runner/service topology before the manual lane is implemented or run.
-- [ ] Approve phase close after the safe lane is validated.
+- Approve the production authorization source and local-development fallback before adding an endpoint or persistence model.
+- Review the workspace API contract before the frontend consumes it.
+- Approve any database migration, gateway configuration, or live integration validation separately.
 
-## Execution Constraint
+## Handoff Constraint
 
-I will announce before any command that starts Uvicorn or contacts pgvector,
-model endpoints, Langfuse, or other live office services.
+The frontend workspace selector remains blocked until CW-02 and CW-03 provide an approved authorized workspace source and API contract.
