@@ -55,5 +55,13 @@ service-account.json
 # ---- Azure env (contains real secrets when filled in — do not commit) ----
 .env.azure.local
 
+
+# Node / React - dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 # ---- Logs ----
 *.log

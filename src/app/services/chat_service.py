@@ -70,18 +70,18 @@ class ChatService:
             owner_id: str = "local-dev",
     ) -> tuple[ChatResponse, str]:
         session_id = session_id or str(uuid4())
+        workspace_id = workspace_id or self._settings.default_workspace_id
+        await self._conversation_store.ensure_session(session_id, owner_id, workspace_id, question[:80])
         history = await self._conversation_store.get(session_id)
         summary = await self._conversation_store.get_summary(session_id)
         rewritten_question = await self._rewrite_question(question, history, summary)
 
-        workspace_id = workspace_id or self._settings.default_workspace_id
-        await self._conversation_store.ensure_session(session_id, owner_id, workspace_id, question[:80])
         retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k, workspace_id=workspace_id)
         if not retrieved:
             answer = "I don't know based on the indexed documents."
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
-            await self._conversation_store.update_session(session_id, answer)
+            await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
             try:
                 await self._refresh_summary_if_needed(session_id)
             except Exception:
@@ -114,7 +114,7 @@ class ChatService:
         else:
             await self._conversation_store.append(session_id, "user", question)
             await self._conversation_store.append(session_id, "assistant", answer)
-            await self._conversation_store.update_session(session_id, answer)
+            await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
             try:
                 await self._refresh_summary_if_needed(session_id)
             except Exception:

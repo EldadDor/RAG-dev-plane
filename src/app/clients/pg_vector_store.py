@@ -31,51 +31,6 @@ import asyncpg
 from app.domain.models import RetrievedChunk
 
 
-_CREATE_EXT = "CREATE EXTENSION IF NOT EXISTS vector;"
-
-_CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS {schema};"
-
-_CREATE_TABLE = """
-CREATE TABLE IF NOT EXISTS {schema}.{table} (
-    id          UUID PRIMARY KEY,
-    content     TEXT NOT NULL,
-    metadata    JSONB NOT NULL DEFAULT '{{}}'::jsonb,
-    embedding   vector({dim}) NOT NULL,
-    source      VARCHAR(1000),
-    page_number INTEGER,
-    chunk_index INTEGER,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-"""
-
-_CREATE_INDEX = """
-CREATE INDEX IF NOT EXISTS {index_name}
-    ON {schema}.{table}
-    USING hnsw (embedding vector_cosine_ops);
-"""
-
-_CREATE_TEXT_INDEX = """
-CREATE INDEX IF NOT EXISTS {index_name}
-    ON {schema}.{table}
-    USING gin (to_tsvector('simple', content));
-"""
-
-_CREATE_DOCUMENTS_TABLE = """
-CREATE TABLE IF NOT EXISTS {schema}.source_documents (
-    doc_id TEXT NOT NULL,
-    workspace_id TEXT NOT NULL,
-    root_path TEXT,
-    source_path TEXT NOT NULL,
-    source_type TEXT NOT NULL,
-    content_hash TEXT NOT NULL,
-    metadata JSONB NOT NULL DEFAULT '{{}}'::jsonb,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (workspace_id, doc_id)
-);
-CREATE INDEX IF NOT EXISTS idx_{schema}_source_documents_root
-    ON {schema}.source_documents (workspace_id, root_path);
-"""
-
 _UPSERT_SQL = """
 INSERT INTO {schema}.{table}
     (id, content, metadata, embedding, source, page_number, chunk_index)
@@ -120,15 +75,6 @@ def _chunk_id_to_uuid(chunk_id: str) -> uuid.UUID:
     return uuid.uuid5(uuid.NAMESPACE_URL, chunk_id)
 
 
-def _index_name(schema: str, table: str) -> str:
-    """Generate a Postgres-safe HNSW index name from schema and table."""
-    return f"idx_{schema}_{table}_embedding_hnsw"
-
-
-def _text_index_name(schema: str, table: str) -> str:
-    return f"idx_{schema}_{table}_content_fts"
-
-
 async def _init_connection(conn: asyncpg.Connection) -> None:
     """Register a codec so `jsonb` columns encode/decode as Python dicts.
 
@@ -159,7 +105,7 @@ class PgVectorStore:
         return self._pool
 
     # ------------------------------------------------------------------
-    # Factory — creates pool + runs one-time DDL at startup
+    # Factory — creates pool + validates externally managed SQL migrations
     # ------------------------------------------------------------------
 
     @classmethod
@@ -178,7 +124,7 @@ class PgVectorStore:
         min_size: int = 2,
         max_size: int = 10,
     ) -> "PgVectorStore":
-        """Create the connection pool, register the vector extension, and ensure the schema."""
+        """Create the connection pool and validate the externally migrated schema."""
         # ssl=True: require TLS (Azure Postgres enforces it).
         # max_inactive_connection_lifetime=3000s (50 min) forces pool to recycle
         # connections before Entra tokens expire (~60 min).
@@ -196,7 +142,11 @@ class PgVectorStore:
             init=_init_connection,
         )
         store = cls(pool=pool, schema=schema, table=table, vector_dim=vector_dim)
-        await store.ensure_collection(vector_dim)
+        try:
+            await store.ensure_collection(vector_dim)
+        except Exception:
+            await pool.close()
+            raise
         return store
 
     async def close(self) -> None:
@@ -207,7 +157,7 @@ class PgVectorStore:
     # ------------------------------------------------------------------
 
     async def ensure_collection(self, vector_size: int = 0) -> None:
-        """Create the schema, table and HNSW index if they do not exist.
+        """Validate the migrated schema and configured embedding dimension.
 
         Idempotent — subsequent calls are no-ops after the first success.
         If `vector_size` is provided and differs from the configured dimension,
@@ -222,24 +172,50 @@ class PgVectorStore:
                 "Update PG_VECTOR_DIM or re-create the table with the correct dimension."
             )
         async with self._pool.acquire() as conn:
-            await conn.execute(_CREATE_EXT)
-            await conn.execute(_CREATE_SCHEMA.format(schema=self._schema))
-            await conn.execute(_CREATE_DOCUMENTS_TABLE.format(schema=self._schema))
-            await conn.execute(_CREATE_TABLE.format(schema=self._schema, table=self._table, dim=self._vector_dim))
-            await conn.execute(
-                _CREATE_INDEX.format(
-                    schema=self._schema,
-                    table=self._table,
-                    index_name=_index_name(self._schema, self._table),
+            required = [
+                f"{self._schema}.{self._table}",
+                f"{self._schema}.schema_migrations",
+                f"{self._schema}.source_documents",
+                f"{self._schema}.chat_sessions",
+                f"{self._schema}.conversation_turns",
+                f"{self._schema}.conversation_summaries",
+                f"{self._schema}.workspaces",
+                f"{self._schema}.workspace_members",
+            ]
+            missing = [name for name in required if await conn.fetchval("SELECT to_regclass($1)", name) is None]
+            if missing:
+                raise RuntimeError(
+                    "PostgreSQL migrations are not applied; missing: "
+                    f"{', '.join(missing)}. See database/README.md."
                 )
+            applied_versions = await conn.fetch(
+                f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
+                ["001_baseline", "002_workspace_authorization"],
             )
-            await conn.execute(
-                _CREATE_TEXT_INDEX.format(
-                    schema=self._schema,
-                    table=self._table,
-                    index_name=_text_index_name(self._schema, self._table),
+            applied_version_names = {row["version"] for row in applied_versions}
+            required_versions = {"001_baseline", "002_workspace_authorization"}
+            if applied_version_names != required_versions:
+                missing_versions = sorted(required_versions - applied_version_names)
+                raise RuntimeError(
+                    f"PostgreSQL migrations are not applied: {', '.join(missing_versions)}. "
+                    "See database/README.md."
                 )
+            actual_type = await conn.fetchval(
+                """
+                SELECT format_type(attribute.atttypid, attribute.atttypmod)
+                FROM pg_attribute attribute
+                WHERE attribute.attrelid = to_regclass($1)
+                  AND attribute.attname = 'embedding'
+                  AND NOT attribute.attisdropped
+                """,
+                f"{self._schema}.{self._table}",
             )
+            expected_type = f"vector({self._vector_dim})"
+            if actual_type != expected_type:
+                raise RuntimeError(
+                    f"PostgreSQL embedding column is {actual_type!r}; expected {expected_type!r}. "
+                    "Apply the correct migration or update PG_VECTOR_DIM."
+                )
         self._ensured = True
 
     async def upsert(self, chunks: list[dict]) -> None:

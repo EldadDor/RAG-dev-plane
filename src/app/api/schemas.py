@@ -29,11 +29,26 @@ class ChatSessionSummary(BaseModel):
 
 class ChatSessionDetail(ChatSessionSummary):
     summary: str | None = None
-    turns: list[dict[str, str]] = []
+    turns: list[dict[str, str]] = Field(default_factory=list)
 
 
 class RenameChatSessionRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
+
+
+class PrincipalSummary(BaseModel):
+    display_name: str
+
+
+class WorkspaceSummary(BaseModel):
+    workspace_id: str
+    display_name: str
+    role: str
+
+
+class WorkspaceListResponse(BaseModel):
+    principal: PrincipalSummary
+    workspaces: list[WorkspaceSummary]
 
 
 class SourceReference(BaseModel):

@@ -30,12 +30,17 @@ flowchart LR
 
 | Endpoint | Responsibility |
 | --- | --- |
+| `GET /workspaces` | Returns only the PostgreSQL-authorized workspaces for the server-derived principal. |
 | `POST /ingest` | Loads one file or a directory, chunks supported content, embeds chunks, and synchronizes the selected workspace. |
 | `POST /chat` | Retrieves workspace-scoped evidence, generates a grounded answer, returns sources, and maintains session memory. |
 | `GET /health` | Returns process-level health and configured environment. |
 | `GET /readiness` | Checks vector-store reachability and reports configured provider/model details. |
 
-`workspace_id` is optional on ingestion and chat. When omitted, the configured `DEFAULT_WORKSPACE_ID` is used.
+`workspace_id` is optional on ingestion and chat. When omitted, the configured `DEFAULT_WORKSPACE_ID` is used. Chat and session operations treat it as a requested scope and revalidate it against `rag.workspace_members`; possession of an ID is not authorization.
+
+Office identity is derived from gateway-validated headers. Local identity is a
+fixed server-side principal. The browser never supplies a user ID, and
+two-user isolation tests replace the FastAPI principal dependency directly.
 
 ## Ingestion and Source Lifecycle
 
@@ -73,6 +78,8 @@ sequenceDiagram
     participant L as Chat client
 
     C->>A: question, workspace_id, session_id
+    A->>A: derive principal and authorize workspace membership
+    A->>M: verify session owner and workspace scope
     A->>M: load recent turns and summary
     A->>L: rewrite follow-up question when needed
     A->>R: retrieve rewritten question in workspace
@@ -117,6 +124,12 @@ The default pgvector store uses:
 - `rag.document_chunks` for chunk text, embeddings, provenance metadata, and lexical indexes;
 - `rag.source_documents` for workspace-scoped source lifecycle records;
 - `rag.conversation_turns` and `rag.conversation_summaries` for durable chat memory.
+- `rag.workspaces` and `rag.workspace_members` for workspace discovery and authorization.
+
+Database objects are created by versioned SQL under `database/migrations`, not
+by application startup. Startup validates the required tables, migration
+versions, and configured vector dimension and fails with migration guidance if
+the schema is incomplete.
 
 Embeddings use 768 dimensions by default for `nomic-embed-text`; the configured `PG_VECTOR_DIM` must match the active embedding model.
 

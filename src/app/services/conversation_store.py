@@ -20,6 +20,10 @@ class ChatTurn:
     content: str
 
 
+class SessionScopeError(ValueError):
+    """Raised when a session ID belongs to a different owner or workspace."""
+
+
 class ConversationStore(Protocol):
     async def get(self, session_id: str) -> list[ChatTurn]: ...
     async def append(self, session_id: str, role: str, content: str) -> None: ...
@@ -27,11 +31,11 @@ class ConversationStore(Protocol):
     async def get_unsummarized_turns(self, session_id: str) -> list[ChatTurn]: ...
     async def save_summary(self, session_id: str, summary: str) -> None: ...
     async def ensure_session(self, session_id: str, owner_id: str, workspace_id: str, title: str) -> None: ...
-    async def update_session(self, session_id: str, preview: str, summary: str | None = None) -> None: ...
+    async def update_session(self, session_id: str, owner_id: str, workspace_id: str, preview: str) -> None: ...
     async def list_sessions(self, owner_id: str, workspace_id: str) -> list[dict]: ...
-    async def get_session(self, session_id: str, owner_id: str) -> dict | None: ...
-    async def rename_session(self, session_id: str, owner_id: str, title: str) -> bool: ...
-    async def archive_session(self, session_id: str, owner_id: str) -> bool: ...
+    async def get_session(self, session_id: str, owner_id: str, workspace_id: str | None = None) -> dict | None: ...
+    async def rename_session(self, session_id: str, owner_id: str, workspace_id: str, title: str) -> bool: ...
+    async def archive_session(self, session_id: str, owner_id: str, workspace_id: str) -> bool: ...
 
 
 class InMemoryConversationStore:
@@ -69,22 +73,27 @@ class InMemoryConversationStore:
 
     async def ensure_session(self, session_id, owner_id, workspace_id, title):
         async with self._lock:
+            existing = self._session_meta.get(session_id)
+            if existing and (existing["owner_id"] != owner_id or existing["workspace_id"] != workspace_id):
+                raise SessionScopeError("Chat session belongs to a different owner or workspace")
             self._session_meta.setdefault(session_id, {"session_id": session_id, "owner_id": owner_id, "workspace_id": workspace_id, "title": title, "last_preview": None, "archived": False})
-    async def update_session(self, session_id, preview, summary=None):
+    async def update_session(self, session_id, owner_id, workspace_id, preview):
         async with self._lock:
-            if session_id in self._session_meta: self._session_meta[session_id]["last_preview"] = preview[:300]
+            existing = self._session_meta.get(session_id)
+            if existing and existing["owner_id"] == owner_id and existing["workspace_id"] == workspace_id:
+                existing["last_preview"] = preview[:300]
     async def list_sessions(self, owner_id, workspace_id):
         async with self._lock: return [v for v in self._session_meta.values() if v["owner_id"] == owner_id and v["workspace_id"] == workspace_id and not v["archived"]]
-    async def get_session(self, session_id, owner_id):
+    async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._lock:
             v = self._session_meta.get(session_id)
-            return v if v and v["owner_id"] == owner_id and not v["archived"] else None
-    async def rename_session(self, session_id, owner_id, title):
-        v = await self.get_session(session_id, owner_id)
+            return v if v and v["owner_id"] == owner_id and (workspace_id is None or v["workspace_id"] == workspace_id) and not v["archived"] else None
+    async def rename_session(self, session_id, owner_id, workspace_id, title):
+        v = await self.get_session(session_id, owner_id, workspace_id)
         if not v: return False
         v["title"] = title; return True
-    async def archive_session(self, session_id, owner_id):
-        v = await self.get_session(session_id, owner_id)
+    async def archive_session(self, session_id, owner_id, workspace_id):
+        v = await self.get_session(session_id, owner_id, workspace_id)
         if not v: return False
         v["archived"] = True; return True
 
@@ -103,36 +112,6 @@ class PostgresConversationStore:
         self._schema = schema
         self._max_turns = max_turns
         self._retention_days = retention_days
-
-    async def ensure_schema(self) -> None:
-        async with self._pool.acquire() as conn:
-            await conn.execute(f"CREATE SCHEMA IF NOT EXISTS {self._schema};")
-            await conn.execute(
-                f"""
-                CREATE TABLE IF NOT EXISTS {self._schema}.conversation_turns (
-                    id BIGSERIAL PRIMARY KEY,
-                    session_id TEXT NOT NULL,
-                    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-                    content TEXT NOT NULL,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-                );
-                CREATE INDEX IF NOT EXISTS idx_{self._schema}_conversation_turns_session_created
-                    ON {self._schema}.conversation_turns (session_id, created_at DESC, id DESC);
-                CREATE TABLE IF NOT EXISTS {self._schema}.conversation_summaries (
-                    session_id TEXT PRIMARY KEY,
-                    summary TEXT NOT NULL,
-                    last_turn_id BIGINT NOT NULL,
-                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-                );
-                CREATE TABLE IF NOT EXISTS {self._schema}.chat_sessions (
-                    session_id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
-                    title TEXT NOT NULL, last_preview TEXT, archived BOOLEAN NOT NULL DEFAULT FALSE,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-                );
-                CREATE INDEX IF NOT EXISTS idx_{self._schema}_chat_sessions_owner_workspace
-                    ON {self._schema}.chat_sessions (owner_id, workspace_id, updated_at DESC) WHERE NOT archived;
-                """
-            )
 
     async def get(self, session_id: str) -> list[ChatTurn]:
         async with self._pool.acquire() as conn:
@@ -219,18 +198,24 @@ class PostgresConversationStore:
     async def ensure_session(self, session_id, owner_id, workspace_id, title):
         async with self._pool.acquire() as conn:
             await conn.execute(f"INSERT INTO {self._schema}.chat_sessions (session_id, owner_id, workspace_id, title) VALUES ($1,$2,$3,$4) ON CONFLICT (session_id) DO NOTHING", session_id, owner_id, workspace_id, title[:200])
-    async def update_session(self, session_id, preview, summary=None):
+            matches_scope = await conn.fetchval(
+                f"SELECT EXISTS(SELECT 1 FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3)",
+                session_id, owner_id, workspace_id,
+            )
+            if not matches_scope:
+                raise SessionScopeError("Chat session belongs to a different owner or workspace")
+    async def update_session(self, session_id, owner_id, workspace_id, preview):
         async with self._pool.acquire() as conn:
-            await conn.execute(f"UPDATE {self._schema}.chat_sessions SET last_preview=$2, updated_at=now() WHERE session_id=$1", session_id, preview[:300])
+            await conn.execute(f"UPDATE {self._schema}.chat_sessions SET last_preview=$4, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3", session_id, owner_id, workspace_id, preview[:300])
     async def list_sessions(self, owner_id, workspace_id):
         async with self._pool.acquire() as conn:
             return [dict(r) for r in await conn.fetch(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC", owner_id, workspace_id)]
-    async def get_session(self, session_id, owner_id):
+    async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._pool.acquire() as conn:
-            row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id)
+            row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND ($3::text IS NULL OR workspace_id=$3) AND NOT archived", session_id, owner_id, workspace_id)
             if not row: return None
             result=dict(row); result["summary"] = await conn.fetchval(f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id=$1", session_id); result["turns"]=[dict(r) for r in await conn.fetch(f"SELECT role, content FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY id", session_id)]; return result
-    async def rename_session(self, session_id, owner_id, title):
-        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET title=$3, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id, title[:200]) == "UPDATE 1"
-    async def archive_session(self, session_id, owner_id):
-        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET archived=true, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND NOT archived", session_id, owner_id) == "UPDATE 1"
+    async def rename_session(self, session_id, owner_id, workspace_id, title):
+        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET title=$4, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3 AND NOT archived", session_id, owner_id, workspace_id, title[:200]) == "UPDATE 1"
+    async def archive_session(self, session_id, owner_id, workspace_id):
+        async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET archived=true, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3 AND NOT archived", session_id, owner_id, workspace_id) == "UPDATE 1"

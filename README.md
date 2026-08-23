@@ -16,8 +16,13 @@ Production-oriented RAG backend built with FastAPI, Pydantic v2, PostgreSQL + pg
 uv sync
 cp .env.example .env
 # edit .env with your CHAT_BASE_URL and other settings
+# apply database/migrations in order and database/seeds/local_workspace.sql
 uv run uvicorn app.main:app --reload --app-dir src
 ```
+
+PostgreSQL DDL is versioned under `database/migrations/`; the application does
+not create tables at startup. See `database/README.md` for migration and local
+workspace seed commands.
 
 ## Docker Compose
 ```bash

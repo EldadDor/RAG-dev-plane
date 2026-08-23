@@ -19,11 +19,12 @@ pytestmark = [
 ]
 
 
-def test_live_stack_ingests_retrieves_and_isolates_workspace(tmp_path):
-    """Exercise API ingestion, pgvector retrieval, embeddings, and chat grounding."""
+def test_live_stack_ingests_retrieves_and_enforces_workspace_access(tmp_path):
+    """Exercise discovery, ingestion, pgvector retrieval, grounding, and authorization."""
     api_base_url = os.getenv("RAG_API_BASE_URL", "http://127.0.0.1:8000")
-    workspace_id = f"integration-{uuid4().hex}"
-    isolated_workspace_id = f"integration-empty-{uuid4().hex}"
+    requested_workspace_id = os.getenv("RAG_TEST_WORKSPACE_ID")
+    workspace_id = requested_workspace_id or ""
+    unauthorized_workspace_id = f"integration-unauthorized-{uuid4().hex}"
     source_dir = tmp_path / "live-stack-fixture"
     source_dir.mkdir()
     source_file = source_dir / "release-note.md"
@@ -38,6 +39,13 @@ def test_live_stack_ingests_retrieves_and_isolates_workspace(tmp_path):
             assert readiness_data["status"] == "ok", readiness_data
             assert readiness_data["vector_store"] == "ok", readiness_data
             assert readiness_data["details"]["vector_store_type"] == "postgres", readiness_data
+
+            discovery = client.get("/workspaces")
+            assert discovery.status_code == 200, discovery.text
+            authorized = discovery.json()["workspaces"]
+            assert authorized, "The integration principal has no authorized workspaces"
+            workspace_id = requested_workspace_id or authorized[0]["workspace_id"]
+            assert workspace_id in {item["workspace_id"] for item in authorized}
 
             ingestion = client.post(
                 "/ingest",
@@ -64,26 +72,24 @@ def test_live_stack_ingests_retrieves_and_isolates_workspace(tmp_path):
             assert answer["sources"]
             assert any(item["source_path"] == str(source_file) for item in answer["sources"])
 
-            isolated_response = client.post(
+            unauthorized_response = client.post(
                 "/chat",
                 json={
                     "question": "What is the retrieval sentinel used by Project Aurora?",
-                    "workspace_id": isolated_workspace_id,
+                    "workspace_id": unauthorized_workspace_id,
                     "top_k": 3,
                 },
             )
-            assert isolated_response.status_code == 200, isolated_response.text
-            isolated_answer = isolated_response.json()
-            assert isolated_answer["grounded"] is False
-            assert isolated_answer["sources"] == []
+            assert unauthorized_response.status_code == 403, unauthorized_response.text
         finally:
             source_file.unlink(missing_ok=True)
-            cleanup = client.post(
-                "/ingest",
-                json={
-                    "source_path": str(source_dir),
-                    "recursive": True,
-                    "workspace_id": workspace_id,
-                },
-            )
-            assert cleanup.status_code == 200, cleanup.text
+            if workspace_id:
+                cleanup = client.post(
+                    "/ingest",
+                    json={
+                        "source_path": str(source_dir),
+                        "recursive": True,
+                        "workspace_id": workspace_id,
+                    },
+                )
+                assert cleanup.status_code == 200, cleanup.text

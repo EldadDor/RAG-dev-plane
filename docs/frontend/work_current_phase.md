@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-01 Chat Workspace Foundation
 
 **Status:** Active
-**Last reviewed:** 2026-08-22
+**Last reviewed:** 2026-08-24
 **Owner:** Frontend team
 
 ## Objective
@@ -29,7 +29,7 @@ chat UI defined in `../frontend_architecture.md`.
 | FP-01 | Inspect frontend baseline, scripts, and existing UX assets | Completed | 2026-08-22: `frontend/` contains only `AGENTS.md` plus empty `public/` and `src/` directories. No Vite project, package manifest, source, scripts, dependencies, or UX assets exist. |
 | FP-02 | Confirm API client types and proxy-only integration boundary | Completed | 2026-08-22: Client will use relative proxy routes only: `POST /chat`, `POST /chat/stream`, and session GET/PATCH/DELETE routes. SSE order is answer → `meta` → `done`; requests contain no user ID. Workspace discovery/authorization is not specified and blocks live workspace data integration. |
 | FP-03 | Establish app shell and responsive three-pane layout | Completed | 2026-08-22: Added Vite/React/TypeScript project files, proxy-only `/chat` development route, and responsive accessible shell with workspace selector, central composer, sources area, and recent-chat pane. Node/npm are unavailable locally, so install/type-check/build verification remains pending FP-07. |
-| FP-04 | Implement workspace selection and session list/load/new-chat flow | Blocked | 2026-08-22: The architecture specifies `workspace_id` filtering but no workspace discovery/authorization API or approved source of workspace options. No endpoint was invented. |
+| FP-04 | Implement workspace selection and session list/load/new-chat flow | Ready to resume | 2026-08-24: Backend contract approved and implemented as `GET /workspaces`; it returns only the server-derived principal's authorized text workspace IDs, display names, and roles. Live use requires the backend SQL migrations and local seed. |
 | FP-05 | Implement bounded history rendering and session actions | Pending | Clearly label compact summary versus latest raw turns; rename and archive use documented endpoints. |
 | FP-06 | Implement streaming answer, metadata, citations, and recovery states | Pending | SSE answer/meta/done sequencing, sources drawer, cancellation/error/reconnect handling, and grounded-state display work through the proxy. |
 | FP-07 | Add frontend tests, accessibility checks, and production-build verification | Pending | Type check, relevant tests, and static production build pass without live backend/model/database services. |
@@ -46,8 +46,8 @@ prior task's result and approval state are unrecorded.
 ## Approval Gates
 
 - [x] Approve FP-01 scope and implementation order before editing application code. Approved 2026-08-22.
-- [ ] Approve the workspace discovery/authorization approach before FP-04; the
-  architecture currently leaves this API unresolved.
+- [x] Approve the workspace discovery/authorization approach before FP-04.
+  Approved and implemented by backend NP-05 on 2026-08-24.
 - [ ] Approve user-facing archive wording before FP-05.
 - [ ] Review the planned streaming/reconnect interaction and error states before FP-06.
 - [x] Approve any new frontend dependency, proxy configuration change, or
@@ -65,9 +65,9 @@ prior task's result and approval state are unrecorded.
 - Surface backend-contract gaps in this file and hand them to the backend task;
   do not silently invent an API contract.
 
-## Active Blocker
+## Backend Handoff
 
-FP-04 requires an approved workspace discovery/authorization contract: endpoint
-and response shape (or an approved alternative source), authorization behavior,
-and empty/error states. Once supplied, return FP-04 to **In progress** and
-record the decision before implementation.
+Call `GET /workspaces` on application load. Render its `workspaces` entries and
+send the selected `workspace_id` with chat/session requests. Do not send a user
+ID or development identity header. Treat `403` as lost/invalid workspace access
+and refresh discovery. The backend revalidates membership on every operation.

@@ -30,6 +30,14 @@ service and HTTP clients are mocked at their adapters.
 | `test_java_code_chunker.py` | Covers Java type/member symbol extraction and fallback behavior for malformed Java. |
 | `test_loaders.py` | Covers text, Markdown, HTML, directory loading, unsupported/missing files, file-size limits, and Java discovery exclusions. |
 | `test_services.py` | Covers retrieval orchestration, chat grounding/abstention, provider separation, debug metadata, and hybrid reciprocal-rank fusion. |
+| `test_workspace_authorization.py` | Covers workspace discovery, authorization-before-chat, principal propagation, session-scope mismatch rejection, and two-user isolation through FastAPI dependency overrides. |
+
+On Windows, use a unique repository-local base temporary directory if the
+default `%TEMP%` pytest directory is not accessible:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\ --ignore=tests\integration -q -p no:cacheprovider --basetemp=.codex-test-tmp-local
+```
 
 ## Live integration test
 
@@ -37,15 +45,14 @@ service and HTTP clients are mocked at their adapters.
 It does not start the application. Instead, it calls the API you already run
 from IntelliJ at `RAG_API_BASE_URL` (default `http://127.0.0.1:8000`).
 
-The test creates a unique workspace and temporary Markdown fixture, then:
+The test discovers an authorized workspace and creates a temporary Markdown fixture, then:
 
 1. confirms API readiness and the PostgreSQL/pgvector configuration;
 2. ingests the fixture through `POST /ingest`, which calls the configured
    embedding endpoint and pgvector;
 3. asks a grounded question through `POST /chat` and verifies a source from
    that fixture is returned;
-4. repeats the question in a different, empty workspace and verifies that no
-   source leaks across workspaces;
+4. requests a non-member workspace and verifies that authorization rejects it;
 5. re-ingests the now-empty fixture directory to remove its indexed document.
 
 Run it only when the app, model endpoints, and PostgreSQL/pgvector are ready:

@@ -18,7 +18,13 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
+    auth_mode: str = Field(default="local", alias="AUTH_MODE")
     chat_identity_header: str = Field(default="X-Forwarded-User", alias="CHAT_IDENTITY_HEADER")
+    chat_identity_name_header: str = Field(default="X-Forwarded-Name", alias="CHAT_IDENTITY_NAME_HEADER")
+    chat_identity_email_header: str = Field(default="X-Forwarded-Email", alias="CHAT_IDENTITY_EMAIL_HEADER")
+    local_subject: str = Field(default="local-dev", alias="LOCAL_SUBJECT")
+    local_display_name: str = Field(default="Local Developer", alias="LOCAL_DISPLAY_NAME")
+    local_email: str | None = Field(default="dev@localhost", alias="LOCAL_EMAIL")
     chat_history_retention_days: int = Field(default=90, alias="CHAT_HISTORY_RETENTION_DAYS", ge=1)
 
     # ---- Observability (optional Langfuse) ----
@@ -88,6 +94,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_providers(self) -> Self:
+        if self.auth_mode not in {"local", "gateway"}:
+            raise ValueError("AUTH_MODE must be 'local' or 'gateway'")
+        if self.app_env != "local" and self.auth_mode != "gateway":
+            raise ValueError("AUTH_MODE=gateway is required outside APP_ENV=local")
         if self.langfuse_enabled and (not self.langfuse_public_key or not self.langfuse_secret_key):
             raise ValueError("LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required when LANGFUSE_ENABLED=true")
         if self.chat_provider == "openai_compatible" and not self.chat_base_url:

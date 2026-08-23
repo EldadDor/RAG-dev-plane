@@ -1,23 +1,34 @@
 # Current Work Phase — NP-05 Workspace Discovery and Authorization
 
-**Status:** Active  
-**Last reviewed:** 2026-08-23  
+**Status:** Implementation complete; awaiting review and database migration validation
+**Last reviewed:** 2026-08-24
 **Owner:** Project team
 
 ## Objective
 
 Define the authorized `workspace_id` source and backend contract that allow the frontend to present only workspaces available to the authenticated user and safely scope chat/session history.
 
-## Current Blocker
+## Approved Resolution
 
-The frontend architecture requires workspace selection, but the backend has no approved workspace discovery or authorization source. The frontend must not invent workspace options or submit a user identity to obtain them.
+Use the invariant `trusted identity -> PostgreSQL membership lookup -> authorized workspace IDs`.
+
+- PostgreSQL is the authorization source in local and office environments.
+- Office identity comes from a gateway-validated principal; local identity comes from fixed server-side configuration.
+- The frontend discovers workspaces through `GET /workspaces`; it never invents workspace options or supplies a user ID.
+- Every workspace-scoped operation revalidates membership through one reusable authorization dependency.
+- Two-user isolation is tested with FastAPI dependency overrides. No browser-selectable or local identity-header override will be added.
 
 ## Scope and Guardrails
 
-- Derive identity from the trusted gateway/server-side development configuration; never accept a browser-supplied user ID.
-- Define how an authenticated user receives their authorized workspaces.
-- Define a workspace discovery API and its response contract before frontend implementation resumes.
+- Represent the authenticated identity with one environment-neutral principal abstraction.
+- Derive office identity from trusted gateway headers and local identity from fixed server-side configuration; never accept a browser-supplied user ID.
+- Store workspace membership in PostgreSQL under the configured schema (`rag` by default).
+- Keep `workspace_id` as `TEXT` to preserve compatibility with ingestion, retrieval, pgvector metadata, tests, and `DEFAULT_WORKSPACE_ID=local`.
+- Extend the existing `chat_sessions`, `conversation_turns`, and `conversation_summaries` model; do not introduce parallel session/message tables.
+- Expose `GET /workspaces` using the existing application route style. An external Nginx `/api` prefix is a deployment concern.
 - Apply the same authorization rule to chat, session, and recent-history operations.
+- Constrain existing-session operations by session ID, workspace ID, and principal subject; reject ownership or workspace mismatches.
+- Begin with constrained `owner` and `member` workspace roles. NP-05 authorizes both roles to use the workspace.
 - Preserve the existing default local-development workspace behavior until an approved replacement exists.
 - Do not implement frontend UI, ingestion/admin features, or infrastructure deployment work in this phase.
 - Do not start Uvicorn, models, pgvector, Langfuse, or office services without announcing it first.
@@ -26,19 +37,28 @@ The frontend architecture requires workspace selection, but the backend has no a
 
 | ID | Task | Status |
 |---|---|---|
-| CW-01 | Inspect current `workspace_id` lifecycle and identity handling. | Pending |
-| CW-02 | Decide the authorization source: gateway claim/header, PostgreSQL membership records, or an approved local-development mapping. | Pending |
-| CW-03 | Design the workspace discovery endpoint and response schema. | Pending |
-| CW-04 | Define enforcement for workspace-scoped chat, session, and history operations. | Pending |
-| CW-05 | Add focused unit tests and update frontend/backend documentation after the contract is approved. | Pending |
-| CW-06 | Index the completed documentation and record the frontend handoff. | Pending |
+| CW-01 | Inspect current `workspace_id` lifecycle and identity handling. | Complete |
+| CW-02 | Approve PostgreSQL membership, gateway office identity, and fixed local identity. | Complete |
+| CW-03 | Approve `GET /workspaces`, text workspace IDs, and the principal response contract. | Complete |
+| CW-04 | Implement the principal abstraction, workspace membership persistence, and local seed behavior. | Complete |
+| CW-05 | Implement discovery and centralized enforcement across chat and session operations. | Complete |
+| CW-06 | Add focused unit tests, update documentation, index the result, and record the frontend handoff. | Documentation and tests complete; live migration validation and indexing pending. |
 
 ## Approval Gates
 
-- Approve the production authorization source and local-development fallback before adding an endpoint or persistence model.
-- Review the workspace API contract before the frontend consumes it.
+- Production authorization source, local identity behavior, and API contract were approved on 2026-08-24.
+- Review schema changes and enforcement tests before closing NP-05.
 - Approve any database migration, gateway configuration, or live integration validation separately.
 
 ## Handoff Constraint
 
-The frontend workspace selector remains blocked until CW-02 and CW-03 provide an approved authorized workspace source and API contract.
+The frontend design blocker is resolved. `GET /workspaces` and centralized
+authorization are implemented. The frontend can resume FP-04 after the SQL
+migrations and local seed are applied to the development database.
+
+## Validation Evidence
+
+- Python compilation completed successfully.
+- Isolated suite: `44 passed in 3.10s` on Python 3.14.
+- No Uvicorn, PostgreSQL, model, Langfuse, or live integration service was contacted.
+- Remaining validation: apply the SQL migrations/seed, start the normal local stack, exercise discovery and workspace-scoped chat, then index the updated documents.

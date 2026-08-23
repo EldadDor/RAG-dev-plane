@@ -1,4 +1,4 @@
-from fastapi import Depends, Header, HTTPException, Request
+from fastapi import Depends, Request
 
 from app.clients.chat_client import ChatClient, OpenAICompatibleChatClient
 from app.clients.embedding_client import EmbeddingClient, OllamaEmbeddingClient
@@ -9,6 +9,11 @@ from app.services.chat_service import ChatService
 from app.services.conversation_store import ConversationStore, InMemoryConversationStore
 from app.services.ingestion_service import IngestionService
 from app.services.retrieval_service import RetrievalService
+from app.services.workspace_store import (
+    AuthorizedWorkspace,
+    InMemoryWorkspaceStore,
+    WorkspaceStore,
+)
 
 
 def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
@@ -30,10 +35,17 @@ def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
         think=settings.chat_think,
     )
 
-def get_current_user(settings: Settings = Depends(get_settings), x_forwarded_user: str | None = Header(default=None)) -> str:
-    if x_forwarded_user: return x_forwarded_user
-    if settings.app_env == "local": return "local-dev"
-    raise HTTPException(status_code=401, detail="Trusted user identity header is required")
+def get_workspace_store(request: Request, settings: Settings = Depends(get_settings)) -> WorkspaceStore:
+    store = getattr(request.app.state, "workspace_store", None)
+    if store is not None:
+        return store
+    return InMemoryWorkspaceStore(
+        {
+            settings.local_subject: [
+                AuthorizedWorkspace(settings.default_workspace_id, "Local Workspace", "owner")
+            ]
+        }
+    )
 
 
 def get_embedding_client(settings: Settings = Depends(get_settings)) -> EmbeddingClient:

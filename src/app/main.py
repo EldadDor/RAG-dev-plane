@@ -7,10 +7,11 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import chat, health, ingest
+from app.api.routers import chat, health, ingest, workspaces
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
+from app.services.workspace_store import AuthorizedWorkspace, InMemoryWorkspaceStore, PostgresWorkspaceStore
 
 # Configure logging before anything else
 configure_logging()
@@ -45,6 +46,13 @@ async def _init_pg_vector_store(settings: Settings):
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     app.state.conversation_store = InMemoryConversationStore(settings.memory_max_turns)
+    app.state.workspace_store = InMemoryWorkspaceStore(
+        {
+            settings.local_subject: [
+                AuthorizedWorkspace(settings.default_workspace_id, "Local Workspace", "owner")
+            ]
+        }
+    )
 
     if settings.vector_store == "postgres":
         app.state.vector_store = await _init_pg_vector_store(settings)
@@ -54,7 +62,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             max_turns=settings.memory_max_turns,
             retention_days=settings.memory_retention_days,
         )
-        await app.state.conversation_store.ensure_schema()
+        app.state.workspace_store = PostgresWorkspaceStore(app.state.vector_store.pool, settings.pg_schema)
         logger.info(
             "📊 PostgreSQL vector store ready | table=%s.%s dim=%d",
             settings.pg_schema,
@@ -104,6 +112,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(chat.router)
+    app.include_router(workspaces.router)
     app.include_router(ingest.router)
 
     return app
