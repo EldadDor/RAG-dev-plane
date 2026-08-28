@@ -1,9 +1,19 @@
 # Next Frontend Phase — Approval Backlog
 
-**Status:** FP-01 is proposed; no frontend implementation task is active until
-its approval gates are satisfied.
-**Last reviewed:** 2026-08-22
+**Status:** FP-01 Chat Workspace Foundation is active. This file tracks work
+after FP-01; authoritative current-task status remains in
+`work_current_phase.md`.
+**Last reviewed:** 2026-08-29
 **Owner:** Frontend team
+
+## Current Phase Checkpoint
+
+- FP-04 workspace selection and session list/load/new-chat flow completed on
+  2026-08-29 against the approved API and error contracts.
+- FP-05 is the next current-phase task, but rename/archive work remains gated
+  on approved user-facing archive wording.
+- Backend live-stack workspace validation is still awaiting confirmation via
+  `../agent_handoff/backend_to_frontend.md`.
 
 This file is the frontend-only intake and ordering record. Before a candidate
 becomes active, move it into `work_current_phase.md`, define its task board,
@@ -13,36 +23,34 @@ and record the applicable approval decision.
 
 | Priority | ID | Candidate task | Why it matters | Approval required |
 | --- | --- | --- | --- | --- |
-| 1 | FP-01 | Chat workspace foundation | Delivers the architecture's workspace selector, streaming chat, sources, and per-user recent-session experience. | Scope and unresolved contract inputs. |
-| 2 | FP-02 | Frontend hardening and UX refinement | Strengthen accessibility, responsive behavior, error recovery, and focused test coverage after the foundation is accepted. | Acceptance criteria and test scope. |
-| 3 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
+| 1 | FP-02 | Frontend hardening and UX refinement | Strengthen accessibility, responsive behavior, error recovery, and focused test coverage after the foundation is accepted. | FP-01 acceptance, acceptance criteria, and test scope. |
+| 2 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
 
 ## Recommended Next Phase
 
-### FP-01 — Chat Workspace Foundation
+### FP-02 — Frontend Hardening and UX Refinement
 
-**Proposed objective:** Implement the React + TypeScript + Vite chat SPA in
-the documented frontend scope, using proxy-only API and SSE access.
+**Proposed objective:** Harden the accepted React chat experience with focused
+accessibility, responsive-layout, recovery-state, and regression-test work.
 
 **Acceptance checks:**
 
-- A user can select a workspace, start/load a chat, view bounded history, rename
-  or archive a session, and inspect sources.
-- Streaming follows answer, `meta`, then `done`, including clear error and
-  reconnect states.
-- The browser never sends a user ID or exposes confidential provider,
-  database, observability, or endpoint configuration.
-- Type checks, relevant frontend tests, and production build complete without
-  live services.
+- Keyboard and screen-reader behavior is verified for workspace, session,
+  composer, citation, rename, and archive interactions.
+- Narrow and wide layouts preserve readable chat, recent-session, and source
+  navigation.
+- Recoverable API/SSE failures have consistent retry and focus behavior.
+- Focused regression tests, type checks, and the production build pass without
+  live backend/model/database services.
 
-**Tracking:** See `work_current_phase.md` for the authoritative task-by-task
-status, evidence, and approval gates.
+**Activation:** Begin only after FP-01 acceptance and phase closure are
+recorded in `work_current_phase.md`.
 
 ## Phase Intake Checklist
 
-- [ ] Clear objective, bounded scope, and explicit exclusions.
+- [x] Clear objective, bounded scope, and explicit exclusions.
 - [ ] Affected frontend files, dependencies, proxy behavior, and tests identified.
-- [ ] Backend-contract dependencies checked against `../frontend_architecture.md`.
+- [x] Backend-contract dependencies checked against `../frontend_architecture.md`.
 - [ ] Local validation and any approved live validation defined.
 - [ ] Privacy, identity, and browser-secret exposure reviewed.
 - [ ] Required approvals and user/product decisions recorded.
@@ -50,7 +58,6 @@ status, evidence, and approval gates.
 
 ## Deferred Until Approved
 
-- Workspace discovery or authorization API design.
 - Gateway identity-header names and authentication implementation.
 - Nginx CI/CD, static asset path, backend upstream, TLS, and CORS changes.
 - Archive-versus-permanent-deletion wording.

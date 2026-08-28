@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getSession, getSessions, getWorkspaces, type ChatSession, type Workspace } from './api'
+import { ApiError, getSession, getSessions, getWorkspaces, type ChatSession, type ChatSessionDetail, type Workspace } from './api'
 
 type Pane = 'sources' | 'sessions'
 
@@ -9,7 +9,7 @@ export default function App() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [workspaceId, setWorkspaceId] = useState('')
   const [sessions, setSessions] = useState<ChatSession[]>([])
-  const [activeSession, setActiveSession] = useState<ChatSession | null>(null)
+  const [activeSession, setActiveSession] = useState<ChatSessionDetail | null>(null)
   const [workspaceStatus, setWorkspaceStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [sessionsStatus, setSessionsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -17,7 +17,7 @@ export default function App() {
   useEffect(() => {
     const controller = new AbortController()
     getWorkspaces(controller.signal)
-      .then((availableWorkspaces) => { setWorkspaces(availableWorkspaces); setWorkspaceStatus('ready') })
+      .then((discovery) => { setWorkspaces(discovery.workspaces); setWorkspaceStatus('ready') })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
         setWorkspaceStatus('error')
@@ -25,6 +25,22 @@ export default function App() {
       })
     return () => controller.abort()
   }, [])
+
+  async function recoverWorkspaceAccess() {
+    setWorkspaceId('')
+    setSessions([])
+    setActiveSession(null)
+    setWorkspaceStatus('loading')
+    try {
+      const discovery = await getWorkspaces()
+      setWorkspaces(discovery.workspaces)
+      setWorkspaceStatus('ready')
+      setErrorMessage('Your workspace access changed. Choose an available workspace to continue.')
+    } catch {
+      setWorkspaceStatus('error')
+      setErrorMessage('Your workspace access changed, and available workspaces could not be refreshed.')
+    }
+  }
 
   useEffect(() => {
     if (!workspaceId) { setSessions([]); setActiveSession(null); setSessionsStatus('idle'); return }
@@ -35,6 +51,10 @@ export default function App() {
       .then((availableSessions) => { setSessions(availableSessions); setActiveSession(null); setSessionsStatus('ready') })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
+        if (error instanceof ApiError && error.code === 'workspace_access_denied') {
+          void recoverWorkspaceAccess()
+          return
+        }
         setSessionsStatus('error')
         setErrorMessage('Unable to load recent chats for this workspace.')
       })
@@ -44,8 +64,21 @@ export default function App() {
   async function selectSession(session: ChatSession) {
     if (!workspaceId) return
     setErrorMessage('')
-    try { setActiveSession(await getSession(session.sessionId, workspaceId)) }
-    catch { setErrorMessage('Unable to load this chat. It may no longer be available.') }
+    try {
+      setActiveSession(await getSession(session.sessionId))
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.code === 'workspace_access_denied') {
+        await recoverWorkspaceAccess()
+        return
+      }
+      if (error instanceof ApiError && error.code === 'resource_not_found') {
+        setSessions((current) => current.filter((item) => item.sessionId !== session.sessionId))
+        setActiveSession(null)
+        setErrorMessage('This chat is no longer available.')
+        return
+      }
+      setErrorMessage('Unable to load this chat. Try again.')
+    }
   }
 
   function startNewChat() { setActiveSession(null); setDraft('') }

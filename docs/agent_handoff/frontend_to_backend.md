@@ -3,6 +3,26 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-08-29 — Frontend aligned; confirm live-stack workspace validation
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Validation
+- **Status:** Needs review
+- **Affected contract/files:** `GET /workspaces`; workspace-scoped session routes; `frontend/src/api.ts`; `frontend/src/App.tsx`
+- **Message:** FP-04 now parses the approved workspace envelope, bare
+  newest-first session array, canonical session fields, timestamped detail,
+  and safe error envelope. Session detail no longer sends `workspace_id`;
+  `403` refreshes workspace discovery and `404` removes an unavailable session.
+  The earlier backend handoff still lists SQL migration/local-seed live-stack
+  validation as pending. Frontend has not started Uvicorn or contacted live
+  backend/model/database services.
+- **Action requested:** Confirm in `backend_to_frontend.md` when migrations,
+  local seed, and normal-stack workspace/session validation are complete, or
+  report any frontend-observable defect through the handoff.
+- **Supersedes / follow-up:** Follows the 2026-08-27 backend validation entry
+  and acknowledges the 2026-08-29 implemented contract entry.
+
 ## 2026-08-28 — Specify workspace and session JSON contracts for FP-04
 
 - **From:** Frontend

@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-01 Chat Workspace Foundation
 
 **Status:** Active
-**Last reviewed:** 2026-08-24
+**Last reviewed:** 2026-08-29
 **Owner:** Frontend team
 
 ## Objective
@@ -29,7 +29,7 @@ chat UI defined in `../frontend_architecture.md`.
 | FP-01 | Inspect frontend baseline, scripts, and existing UX assets | Completed | 2026-08-22: `frontend/` contains only `AGENTS.md` plus empty `public/` and `src/` directories. No Vite project, package manifest, source, scripts, dependencies, or UX assets exist. |
 | FP-02 | Confirm API client types and proxy-only integration boundary | Completed | 2026-08-22: Client will use relative proxy routes only: `POST /chat`, `POST /chat/stream`, and session GET/PATCH/DELETE routes. SSE order is answer → `meta` → `done`; requests contain no user ID. Workspace discovery/authorization is not specified and blocks live workspace data integration. |
 | FP-03 | Establish app shell and responsive three-pane layout | Completed | 2026-08-22: Added Vite/React/TypeScript project files, proxy-only `/chat` development route, and responsive accessible shell with workspace selector, central composer, sources area, and recent-chat pane. Node/npm are unavailable locally, so install/type-check/build verification remains pending FP-07. |
-| FP-04 | Implement workspace selection and session list/load/new-chat flow | Ready to resume | 2026-08-24: Backend contract approved and implemented as `GET /workspaces`; it returns only the server-derived principal's authorized text workspace IDs, display names, and roles. Live use requires the backend SQL migrations and local seed. |
+| FP-04 | Implement workspace selection and session list/load/new-chat flow | Completed | 2026-08-29: Implemented proxy-only workspace discovery, workspace-filtered newest-first session listing, session detail loading without a workspace query, new-chat reset, canonical `last_preview`/timestamp mapping, and safe `403`/`404` recovery. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. Live-stack validation remains with the backend. |
 | FP-05 | Implement bounded history rendering and session actions | Pending | Clearly label compact summary versus latest raw turns; rename and archive use documented endpoints. |
 | FP-06 | Implement streaming answer, metadata, citations, and recovery states | Pending | SSE answer/meta/done sequencing, sources drawer, cancellation/error/reconnect handling, and grounded-state display work through the proxy. |
 | FP-07 | Add frontend tests, accessibility checks, and production-build verification | Pending | Type check, relevant tests, and static production build pass without live backend/model/database services. |
@@ -67,7 +67,9 @@ prior task's result and approval state are unrecorded.
 
 ## Backend Handoff
 
-Call `GET /workspaces` on application load. Render its `workspaces` entries and
-send the selected `workspace_id` with chat/session requests. Do not send a user
-ID or development identity header. Treat `403` as lost/invalid workspace access
-and refresh discovery. The backend revalidates membership on every operation.
+Call `GET /workspaces` on application load and render its `workspaces` entries.
+Send the selected `workspace_id` with chat and session-list requests; session
+detail uses only its session ID, whose stored workspace the backend revalidates.
+Do not send a user ID or development identity header. Treat `403` as
+lost/invalid workspace access and refresh discovery; treat `404` session detail
+as unavailable and remove it from the current UI state.
