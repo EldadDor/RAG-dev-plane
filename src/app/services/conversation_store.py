@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Protocol
 
 import asyncpg
@@ -18,6 +19,7 @@ import asyncpg
 class ChatTurn:
     role: str
     content: str
+    created_at: datetime
 
 
 class SessionScopeError(ValueError):
@@ -56,7 +58,7 @@ class InMemoryConversationStore:
     async def append(self, session_id: str, role: str, content: str) -> None:
         async with self._lock:
             turns = self._sessions[session_id]
-            turns.append(ChatTurn(role=role, content=content))
+            turns.append(ChatTurn(role=role, content=content, created_at=datetime.now(UTC)))
 
     async def get_summary(self, session_id: str) -> str | None:
         async with self._lock:
@@ -76,26 +78,37 @@ class InMemoryConversationStore:
             existing = self._session_meta.get(session_id)
             if existing and (existing["owner_id"] != owner_id or existing["workspace_id"] != workspace_id):
                 raise SessionScopeError("Chat session belongs to a different owner or workspace")
-            self._session_meta.setdefault(session_id, {"session_id": session_id, "owner_id": owner_id, "workspace_id": workspace_id, "title": title, "last_preview": None, "archived": False})
+            self._session_meta.setdefault(session_id, {"session_id": session_id, "owner_id": owner_id, "workspace_id": workspace_id, "title": title, "last_preview": None, "updated_at": datetime.now(UTC), "archived": False})
     async def update_session(self, session_id, owner_id, workspace_id, preview):
         async with self._lock:
             existing = self._session_meta.get(session_id)
             if existing and existing["owner_id"] == owner_id and existing["workspace_id"] == workspace_id:
                 existing["last_preview"] = preview[:300]
+                existing["updated_at"] = datetime.now(UTC)
     async def list_sessions(self, owner_id, workspace_id):
-        async with self._lock: return [v for v in self._session_meta.values() if v["owner_id"] == owner_id and v["workspace_id"] == workspace_id and not v["archived"]]
+        async with self._lock:
+            sessions = [v for v in self._session_meta.values() if v["owner_id"] == owner_id and v["workspace_id"] == workspace_id and not v["archived"]]
+            return sorted(sessions, key=lambda item: item["updated_at"], reverse=True)
     async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._lock:
             v = self._session_meta.get(session_id)
-            return v if v and v["owner_id"] == owner_id and (workspace_id is None or v["workspace_id"] == workspace_id) and not v["archived"] else None
+            if not v or v["owner_id"] != owner_id or (workspace_id is not None and v["workspace_id"] != workspace_id) or v["archived"]:
+                return None
+            result = dict(v)
+            result["summary"] = self._summaries.get(session_id)
+            result["turns"] = [
+                {"role": turn.role, "content": turn.content, "created_at": turn.created_at}
+                for turn in self._sessions.get(session_id, [])[-self._max_turns:]
+            ]
+            return result
     async def rename_session(self, session_id, owner_id, workspace_id, title):
         v = await self.get_session(session_id, owner_id, workspace_id)
         if not v: return False
-        v["title"] = title; return True
+        v["title"] = title; v["updated_at"] = datetime.now(UTC); return True
     async def archive_session(self, session_id, owner_id, workspace_id):
         v = await self.get_session(session_id, owner_id, workspace_id)
         if not v: return False
-        v["archived"] = True; return True
+        v["archived"] = True; v["updated_at"] = datetime.now(UTC); return True
 
 
 class PostgresConversationStore:
@@ -123,7 +136,7 @@ class PostgresConversationStore:
             )
             rows = await conn.fetch(
                 f"""
-                SELECT role, content
+                SELECT role, content, created_at
                 FROM (
                     SELECT role, content, created_at, id
                     FROM {self._schema}.conversation_turns
@@ -136,7 +149,7 @@ class PostgresConversationStore:
                 session_id,
                 self._max_turns,
             )
-        return [ChatTurn(role=row["role"], content=row["content"]) for row in rows]
+        return [ChatTurn(role=row["role"], content=row["content"], created_at=row["created_at"]) for row in rows]
 
     async def append(self, session_id: str, role: str, content: str) -> None:
         if role not in {"user", "assistant"}:
@@ -160,7 +173,7 @@ class PostgresConversationStore:
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(
                 f"""
-                SELECT role, content
+                SELECT role, content, created_at
                 FROM {self._schema}.conversation_turns
                 WHERE session_id = $1
                   AND id > COALESCE(
@@ -171,7 +184,7 @@ class PostgresConversationStore:
                 """,
                 session_id,
             )
-        return [ChatTurn(role=row["role"], content=row["content"]) for row in rows]
+        return [ChatTurn(role=row["role"], content=row["content"], created_at=row["created_at"]) for row in rows]
 
     async def save_summary(self, session_id: str, summary: str) -> None:
         async with self._pool.acquire() as conn:
@@ -214,7 +227,7 @@ class PostgresConversationStore:
         async with self._pool.acquire() as conn:
             row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND ($3::text IS NULL OR workspace_id=$3) AND NOT archived", session_id, owner_id, workspace_id)
             if not row: return None
-            result=dict(row); result["summary"] = await conn.fetchval(f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id=$1", session_id); result["turns"]=[dict(r) for r in await conn.fetch(f"SELECT role, content FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY id", session_id)]; return result
+            result=dict(row); result["summary"] = await conn.fetchval(f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id=$1", session_id); result["turns"]=[dict(r) for r in await conn.fetch(f"SELECT role, content, created_at FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY created_at, id", session_id)]; return result
     async def rename_session(self, session_id, owner_id, workspace_id, title):
         async with self._pool.acquire() as conn: return await conn.execute(f"UPDATE {self._schema}.chat_sessions SET title=$4, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3 AND NOT archived", session_id, owner_id, workspace_id, title[:200]) == "UPDATE 1"
     async def archive_session(self, session_id, owner_id, workspace_id):

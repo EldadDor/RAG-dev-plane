@@ -100,6 +100,10 @@ async def test_dependency_overridden_users_cannot_load_each_others_sessions():
             app.state.conversation_store = previous_store
 
     assert response.status_code == 404
+    assert response.json() == {
+        "code": "resource_not_found",
+        "message": "The requested resource was not found.",
+    }
 
 
 @pytest.mark.asyncio
@@ -111,3 +115,52 @@ async def test_session_id_cannot_move_between_owner_or_workspace():
         await store.ensure_session("shared-id", "bob", "alpha", "Bob chat")
     with pytest.raises(SessionScopeError):
         await store.ensure_session("shared-id", "alice", "beta", "Other workspace")
+
+
+@pytest.mark.asyncio
+async def test_session_list_and_detail_have_stable_timestamped_shapes():
+    conversation_store = InMemoryConversationStore()
+    await conversation_store.ensure_session("session-1", "alice", "alpha", "A chat")
+    await conversation_store.append("session-1", "user", "Hello")
+    await conversation_store.append("session-1", "assistant", "Hi")
+    await conversation_store.update_session("session-1", "alice", "alpha", "Hi")
+    previous_store = getattr(app.state, "conversation_store", None)
+    app.state.conversation_store = conversation_store
+    app.dependency_overrides[get_principal] = lambda: Principal("alice", "Alice")
+    app.dependency_overrides[get_workspace_store] = _workspace_store
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            list_response = await client.get("/chat/sessions", params={"workspace_id": "alpha"})
+            detail_response = await client.get("/chat/sessions/session-1")
+    finally:
+        if previous_store is None:
+            del app.state.conversation_store
+        else:
+            app.state.conversation_store = previous_store
+
+    assert list_response.status_code == 200
+    assert isinstance(list_response.json(), list)
+    assert list_response.json()[0]["updated_at"].endswith("Z")
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+    assert detail["summary"] is None
+    assert detail["turns"] == [
+        {"role": "user", "content": "Hello", "created_at": detail["turns"][0]["created_at"]},
+        {"role": "assistant", "content": "Hi", "created_at": detail["turns"][1]["created_at"]},
+    ]
+    assert all(turn["created_at"].endswith("Z") for turn in detail["turns"])
+
+
+@pytest.mark.asyncio
+async def test_workspace_denial_has_safe_error_envelope():
+    app.dependency_overrides[get_principal] = lambda: Principal("alice", "Alice")
+    app.dependency_overrides[get_workspace_store] = _workspace_store
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/chat/sessions", params={"workspace_id": "beta"})
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "workspace_access_denied",
+        "message": "You do not have access to this workspace.",
+    }

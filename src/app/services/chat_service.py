@@ -195,7 +195,7 @@ class ChatService:
             "sources": [source.model_dump() for source in response.sources],
             "debug": response.debug,
         }
-        yield f"event: meta\ndata: {json.dumps(meta, ensure_ascii=False)}\n\n"
         for token in response.answer.split():
             yield f"data: {token}\n\n"
+        yield f"event: meta\ndata: {json.dumps(meta, ensure_ascii=False)}\n\n"
         yield "event: done\ndata: [DONE]\n\n"

@@ -4,7 +4,9 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import chat, health, ingest, workspaces
@@ -16,6 +18,20 @@ from app.services.workspace_store import AuthorizedWorkspace, InMemoryWorkspaceS
 # Configure logging before anything else
 configure_logging()
 logger = logging.getLogger(__name__)
+
+_ERRORS = {
+    401: ("authentication_required", "Authentication is required."),
+    403: ("workspace_access_denied", "You do not have access to this workspace."),
+    404: ("resource_not_found", "The requested resource was not found."),
+    422: ("invalid_request", "The request is invalid."),
+    502: ("upstream_unavailable", "The answer service is temporarily unavailable."),
+    500: ("internal_error", "An unexpected server error occurred."),
+}
+
+
+def _error_response(status_code: int) -> JSONResponse:
+    code, message = _ERRORS.get(status_code, _ERRORS[500])
+    return JSONResponse(status_code=status_code, content={"code": code, "message": message})
 
 
 async def _init_pg_vector_store(settings: Settings):
@@ -101,6 +117,19 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
+        return _error_response(exc.status_code)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(_: Request, __: RequestValidationError) -> JSONResponse:
+        return _error_response(422)
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, _: Exception) -> JSONResponse:
+        logger.exception("Unhandled API error | path=%s", request.url.path)
+        return _error_response(500)
 
     app.add_middleware(
         CORSMiddleware,

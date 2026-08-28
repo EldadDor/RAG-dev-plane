@@ -1,7 +1,7 @@
 # Current Work Phase — NP-05 Workspace Discovery and Authorization
 
 **Status:** Implementation complete; awaiting review and database migration validation
-**Last reviewed:** 2026-08-24
+**Last reviewed:** 2026-08-29
 **Owner:** Project team
 
 ## Objective
@@ -42,7 +42,7 @@ Use the invariant `trusted identity -> PostgreSQL membership lookup -> authorize
 | CW-03 | Approve `GET /workspaces`, text workspace IDs, and the principal response contract. | Complete |
 | CW-04 | Implement the principal abstraction, workspace membership persistence, and local seed behavior. | Complete |
 | CW-05 | Implement discovery and centralized enforcement across chat and session operations. | Complete |
-| CW-06 | Add focused unit tests, update documentation, index the result, and record the frontend handoff. | Documentation and tests complete; live migration validation and indexing pending. |
+| CW-06 | Add focused unit tests, update documentation, index the result, and record the frontend handoff. | Canonical frontend JSON/error contract and focused tests added 2026-08-29; live migration validation and indexing pending. |
 
 ## Approval Gates
 

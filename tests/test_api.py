@@ -78,3 +78,27 @@ async def test_chat_validation_rejects_empty_question():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/chat", json={"question": ""})
     assert response.status_code == 422
+    assert response.json() == {
+        "code": "invalid_request",
+        "message": "The request is invalid.",
+    }
+
+
+@pytest.mark.asyncio
+async def test_chat_provider_failure_has_safe_error_envelope():
+    mock_service = AsyncMock()
+    mock_service.answer.side_effect = RuntimeError("provider token: secret")
+    from app.dependencies import get_chat_service
+
+    app.dependency_overrides[get_chat_service] = lambda: mock_service
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post("/chat", json={"question": "What changed?"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 502
+    assert response.json() == {
+        "code": "upstream_unavailable",
+        "message": "The answer service is temporarily unavailable.",
+    }

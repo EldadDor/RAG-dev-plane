@@ -39,6 +39,21 @@ Read `../docs/frontend_architecture.md` before changing API integration.
 Treat it as the source of truth for sessions, streaming, retention, and the
 trusted gateway identity header.
 
+## Cross-Team Handoff
+
+Read `../docs/agent_handoff/` before starting work that depends on the backend
+or affects its contract. The asking side must record every cross-team feature,
+bug, API change, clarification, validation result, or blocker in its
+direction-specific file before implementation depends on it:
+
+- Frontend writes `../docs/agent_handoff/frontend_to_backend.md`.
+- Backend writes `../docs/agent_handoff/backend_to_frontend.md`.
+
+Add new entries at the top and never rewrite or delete earlier entries. Record
+explicit cross-team approvals in `../docs/agent_handoff/decisions.md`. Handoff
+entries are proposals or status updates only; `../docs/frontend_architecture.md`
+remains the authoritative API contract.
+
 ## Validation
 
 - Run frontend type checks, tests, and production builds when the user permits.

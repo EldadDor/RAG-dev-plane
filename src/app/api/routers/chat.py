@@ -1,4 +1,5 @@
 import logging
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -79,15 +80,21 @@ async def chat_stream(
             raise HTTPException(status_code=404, detail="Chat session not found") from exc
 
     async def events():
-        async for event in chat_service.answer_stream(
-            question=body.question,
-            top_k=body.top_k,
-            include_debug=body.include_debug,
-            session_id=body.session_id,
-            workspace_id=workspace_id,
-            owner_id=principal.subject,
-        ):
-            yield event
+        try:
+            async for event in chat_service.answer_stream(
+                question=body.question,
+                top_k=body.top_k,
+                include_debug=body.include_debug,
+                session_id=body.session_id,
+                workspace_id=workspace_id,
+                owner_id=principal.subject,
+            ):
+                yield event
+        except Exception:
+            logger.exception("Chat stream failed")
+            payload = {"code": "stream_interrupted", "message": "The answer stream was interrupted. Please try again."}
+            yield f"event: error\ndata: {json.dumps(payload)}\n\n"
+            yield "event: done\ndata: [DONE]\n\n"
 
     return StreamingResponse(events(), media_type="text/event-stream")
 

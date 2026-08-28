@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -24,12 +27,18 @@ class ChatSessionSummary(BaseModel):
     workspace_id: str
     title: str
     last_preview: str | None = None
-    updated_at: str | None = None
+    updated_at: datetime
+
+
+class ChatTurnResponse(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime
 
 
 class ChatSessionDetail(ChatSessionSummary):
     summary: str | None = None
-    turns: list[dict[str, str]] = Field(default_factory=list)
+    turns: list[ChatTurnResponse] = Field(default_factory=list)
 
 
 class RenameChatSessionRequest(BaseModel):
@@ -49,6 +58,11 @@ class WorkspaceSummary(BaseModel):
 class WorkspaceListResponse(BaseModel):
     principal: PrincipalSummary
     workspaces: list[WorkspaceSummary]
+
+
+class ApiErrorResponse(BaseModel):
+    code: str
+    message: str
 
 
 class SourceReference(BaseModel):
