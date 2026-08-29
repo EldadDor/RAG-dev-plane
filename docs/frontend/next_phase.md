@@ -10,10 +10,12 @@ after FP-01; authoritative current-task status remains in
 
 - FP-04 workspace selection and session list/load/new-chat flow completed on
   2026-08-29 against the approved API and error contracts.
-- FP-05 is the next current-phase task, but rename/archive work remains gated
-  on approved user-facing archive wording.
-- Backend live-stack workspace validation is still awaiting confirmation via
-  `../agent_handoff/backend_to_frontend.md`.
+- FP-05 bounded history, rename, and approved archive behavior completed on
+  2026-08-29.
+- FP-06 streaming, citation, cancellation, and recovery work is next, pending
+  review of the planned interaction and error states.
+- Backend live-stack workspace/session validation and documentation indexing
+  are complete; NP-05 is closed.
 
 This file is the frontend-only intake and ordering record. Before a candidate
 becomes active, move it into `work_current_phase.md`, define its task board,

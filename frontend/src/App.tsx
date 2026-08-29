@@ -1,7 +1,13 @@
-import { useEffect, useState } from 'react'
-import { ApiError, getSession, getSessions, getWorkspaces, type ChatSession, type ChatSessionDetail, type Workspace } from './api'
+import { useEffect, useState, type FormEvent } from 'react'
+import { ApiError, archiveSession, getSession, getSessions, getWorkspaces, renameSession, type ChatSession, type ChatSessionDetail, type Workspace } from './api'
 
 type Pane = 'sources' | 'sessions'
+
+function formatTimestamp(timestamp: string | null) {
+  if (!timestamp) return null
+  const date = new Date(timestamp)
+  return Number.isNaN(date.valueOf()) ? null : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
 
 export default function App() {
   const [activePane, setActivePane] = useState<Pane>('sessions')
@@ -13,6 +19,8 @@ export default function App() {
   const [workspaceStatus, setWorkspaceStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [sessionsStatus, setSessionsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameTitle, setRenameTitle] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -65,7 +73,10 @@ export default function App() {
     if (!workspaceId) return
     setErrorMessage('')
     try {
-      setActiveSession(await getSession(session.sessionId))
+      const loadedSession = await getSession(session.sessionId)
+      setActiveSession(loadedSession)
+      setRenameTitle(loadedSession.title)
+      setIsRenaming(false)
     } catch (error: unknown) {
       if (error instanceof ApiError && error.code === 'workspace_access_denied') {
         await recoverWorkspaceAccess()
@@ -81,7 +92,58 @@ export default function App() {
     }
   }
 
-  function startNewChat() { setActiveSession(null); setDraft('') }
+  async function submitRename(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const title = renameTitle.trim()
+    if (!activeSession || !title) return
+    setErrorMessage('')
+    try {
+      await renameSession(activeSession.sessionId, title)
+      setActiveSession({ ...activeSession, title })
+      setSessions((current) => current.map((session) => session.sessionId === activeSession.sessionId ? { ...session, title } : session))
+      setIsRenaming(false)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.code === 'workspace_access_denied') {
+        await recoverWorkspaceAccess()
+        return
+      }
+      if (error instanceof ApiError && error.code === 'resource_not_found') {
+        setSessions((current) => current.filter((session) => session.sessionId !== activeSession.sessionId))
+        setActiveSession(null)
+        setIsRenaming(false)
+        setErrorMessage('This chat is no longer available.')
+        return
+      }
+      setErrorMessage('Unable to rename this chat. Try again.')
+    }
+  }
+
+  async function archiveActiveSession() {
+    if (!activeSession || !window.confirm('Archive this chat? It will be removed from your recent chats.')) return
+    const sessionId = activeSession.sessionId
+    setErrorMessage('')
+    try {
+      await archiveSession(sessionId)
+      setSessions((current) => current.filter((session) => session.sessionId !== sessionId))
+      setActiveSession(null)
+      setIsRenaming(false)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.code === 'workspace_access_denied') {
+        await recoverWorkspaceAccess()
+        return
+      }
+      if (error instanceof ApiError && error.code === 'resource_not_found') {
+        setSessions((current) => current.filter((session) => session.sessionId !== sessionId))
+        setActiveSession(null)
+        setIsRenaming(false)
+        setErrorMessage('This chat is no longer available.')
+        return
+      }
+      setErrorMessage('Unable to archive this chat. Try again.')
+    }
+  }
+
+  function startNewChat() { setActiveSession(null); setDraft(''); setIsRenaming(false) }
 
   const selectedWorkspace = workspaces.find((workspace) => workspace.workspaceId === workspaceId)
   const chatTitle = activeSession?.title || (selectedWorkspace ? 'New chat' : 'Ask a question')
@@ -97,12 +159,16 @@ export default function App() {
     <section className="workspace" aria-label="Chat workspace">
       <aside className="sources-pane" aria-label="Sources"><h2>Sources</h2><p className="muted">Sources appear here when an answer includes grounded citations.</p></aside>
       <section className="chat-pane" aria-label="Chat">
-        <div className="chat-heading"><div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div><button className="secondary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button></div>
-        <div className="empty-state" aria-live="polite">
+        <div className="chat-heading"><div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div><div className="heading-actions">{activeSession && <><button className="secondary" type="button" onClick={() => { setRenameTitle(activeSession.title); setIsRenaming(true) }}>Rename</button><button className="destructive" type="button" onClick={() => void archiveActiveSession()}>Archive chat</button></>}<button className="secondary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button></div></div>
+        {isRenaming && activeSession && <form className="rename-form" onSubmit={(event) => void submitRename(event)}><label htmlFor="session-title">Chat title</label><div><input id="session-title" value={renameTitle} onChange={(event) => setRenameTitle(event.target.value)} maxLength={200} autoFocus /><button type="submit" disabled={!renameTitle.trim()}>Save</button><button className="secondary" type="button" onClick={() => setIsRenaming(false)}>Cancel</button></div></form>}
+        <div className={activeSession ? 'conversation-view' : 'empty-state'} aria-live="polite">
           {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
           {!workspaceId && <><h2>Choose a workspace to begin</h2><p>Answers will stream here with their supporting sources.</p></>}
           {workspaceId && !activeSession && <><h2>Start a new chat</h2><p>Recent chats are available in the panel to the right.</p></>}
-          {activeSession && <><h2>{activeSession.title}</h2><p>Chat history will appear here in the next phase.</p></>}
+          {activeSession && <>
+            <section className="history-summary" aria-labelledby="history-summary-heading"><h2 id="history-summary-heading">Earlier conversation summary</h2><p>{activeSession.summary ?? 'No earlier summary is available.'}</p></section>
+            <section className="recent-turns" aria-labelledby="recent-turns-heading"><h2 id="recent-turns-heading">Recent conversation</h2>{activeSession.turns.length === 0 ? <p className="muted">No recent messages are available.</p> : <ol>{activeSession.turns.map((turn, index) => <li className={`turn turn-${turn.role}`} key={`${turn.createdAt}-${index}`}><div><strong>{turn.role === 'user' ? 'You' : 'Assistant'}</strong>{formatTimestamp(turn.createdAt) && <time dateTime={turn.createdAt}>{formatTimestamp(turn.createdAt)}</time>}</div><p>{turn.content}</p></li>)}</ol>}</section>
+          </>}
         </div>
         <form className="composer" onSubmit={(event) => event.preventDefault()}><label className="sr-only" htmlFor="question">Your question</label><textarea id="question" value={draft} onChange={(event) => setDraft(event.target.value)} disabled={!workspaceId} placeholder="Ask about your developer documentation…" rows={3} /><button type="submit" disabled={!workspaceId || !draft.trim()}>Send</button></form>
       </section>

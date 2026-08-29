@@ -36,8 +36,8 @@ export class ApiError extends Error {
   }
 }
 
-async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(path, { signal })
+async function request(path: string, init?: RequestInit): Promise<Response> {
+  const response = await fetch(path, init)
   if (!response.ok) {
     let body: ApiErrorBody = {}
     try { body = await response.json() as ApiErrorBody } catch { /* Use the status fallback. */ }
@@ -47,10 +47,15 @@ async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
       typeof body.message === 'string' ? body.message : undefined,
     )
   }
+  return response
+}
+
+async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await request(path, init)
   return response.json() as Promise<T>
 }
 export async function getWorkspaces(signal?: AbortSignal): Promise<WorkspaceDiscovery> {
-  const response = await requestJson<ApiWorkspaceDiscovery>('/workspaces', signal)
+  const response = await requestJson<ApiWorkspaceDiscovery>('/workspaces', { signal })
   return {
     principalDisplayName: response.principal.display_name,
     workspaces: response.workspaces.map((workspace) => ({ workspaceId: workspace.workspace_id, displayName: workspace.display_name, role: workspace.role })),
@@ -66,14 +71,26 @@ function toSession(session: ApiSession): ChatSession {
   }
 }
 export async function getSessions(workspaceId: string, signal?: AbortSignal): Promise<ChatSession[]> {
-  const response = await requestJson<ApiSession[]>(`/chat/sessions?${new URLSearchParams({ workspace_id: workspaceId })}`, signal)
+  const response = await requestJson<ApiSession[]>(`/chat/sessions?${new URLSearchParams({ workspace_id: workspaceId })}`, { signal })
   return response.map(toSession)
 }
 export async function getSession(sessionId: string, signal?: AbortSignal): Promise<ChatSessionDetail> {
-  const response = await requestJson<ApiSessionDetail>(`/chat/sessions/${encodeURIComponent(sessionId)}`, signal)
+  const response = await requestJson<ApiSessionDetail>(`/chat/sessions/${encodeURIComponent(sessionId)}`, { signal })
   return {
     ...toSession(response),
     summary: response.summary,
     turns: response.turns.map((turn) => ({ role: turn.role, content: turn.content, createdAt: turn.created_at })),
   }
+}
+
+export async function renameSession(sessionId: string, title: string): Promise<void> {
+  await requestJson<{ ok: true }>(`/chat/sessions/${encodeURIComponent(sessionId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+  })
+}
+
+export async function archiveSession(sessionId: string): Promise<void> {
+  await request(`/chat/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' })
 }

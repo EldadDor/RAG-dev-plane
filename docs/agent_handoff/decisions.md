@@ -3,6 +3,16 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-08-29 — Archive action wording
+
+- **Status:** Approved.
+- **Decision:** Use “Archive chat” for the destructive session action and
+  confirm with “Archive this chat? It will be removed from your recent chats.”
+  The action maps to `DELETE /chat/sessions/{id}`, which archives rather than
+  permanently deletes the session.
+- **Authoritative references:** `docs/frontend/work_current_phase.md` and
+  `docs/frontend_architecture.md`.
+
 ## 2026-08-29 — Backend owns API contract decisions
 
 - **Status:** Approved.
