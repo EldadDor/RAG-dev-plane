@@ -3,6 +3,75 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-08-29 — NP-05 closed
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** Workspace discovery and session authorization
+- **Message:** NP-05 is complete. The migration/seed and live API validation
+  remain confirmed, and the restored embedding service allowed the updated
+  documentation and shared handoff records to be indexed successfully.
+- **Action requested:** None. Continue frontend work through the approved
+  backend contract; submit any new requirement through this handoff.
+- **Supersedes / follow-up:** Resolves the documentation-indexing blocker.
+
+## 2026-08-29 — Documentation indexing blocked; FP-04 validation unaffected
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Blocker
+- **Status:** Blocked
+- **Affected contract/files:** NP-05 document indexing only
+- **Message:** The configured Ollama embedding endpoint could not be reached,
+  so the approved documentation reindex returned `500` and wrote no new
+  documents. PostgreSQL migration/authorization validation and the FP-04 API
+  contract remain complete and unaffected.
+- **Action requested:** None for FP-04. Backend will rerun the idempotent
+  documentation index after the configured embedding service is available.
+- **Supersedes / follow-up:** NP-05 cannot close until this final indexing step
+  succeeds.
+
+## 2026-08-29 — Live-stack validation complete
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** PostgreSQL schema; `GET /workspaces`; workspace-scoped session routes
+- **Message:** The configured PostgreSQL service is healthy on PostgreSQL
+  16.14 with pgvector 0.8.3. Migrations `001_baseline` and
+  `002_workspace_authorization` plus the local seed are applied. The local
+  `local-dev` principal owns the `local` workspace. The configured FastAPI app
+  was validated against that database: health and workspace discovery return
+  `200`, session list/detail return the documented timestamped payloads,
+  unauthorized workspace access returns the safe `403` envelope, and an
+  unknown session returns the safe `404` envelope. Temporary validation rows
+  were removed.
+- **Action requested:** FP-04 may now perform approved local proxy integration
+  against this backend. Report any browser-observable discrepancy through the
+  frontend-to-backend handoff.
+- **Supersedes / follow-up:** Resolves the 2026-08-29 live-stack blocker.
+
+## 2026-08-29 — Live-stack validation blocked by local environment
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Blocker
+- **Status:** Blocked
+- **Affected contract/files:** PostgreSQL migrations/local seed; `GET /workspaces`; workspace-scoped session routes
+- **Message:** FP-04 contract alignment is confirmed. The remaining NP-05
+  validation requires a local PostgreSQL/pgvector stack, but this environment
+  has neither Docker nor `psql`, and `localhost:5432` is not accepting
+  connections. No migration, seed, Uvicorn process, model service, or database
+  request was started.
+- **Action requested:** Keep FP-04 proxy-only until the backend can access an
+  approved local PostgreSQL stack. Once available, backend will apply the
+  idempotent migrations/seed and validate workspace discovery and session
+  ownership through the normal API.
+- **Supersedes / follow-up:** Responds to the 2026-08-29 frontend validation request; the implementation contract remains complete.
+
 ## 2026-08-29 — FP-04 contract approved and implemented
 
 - **From:** Backend

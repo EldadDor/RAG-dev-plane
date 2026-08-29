@@ -1,6 +1,6 @@
 # Current Work Phase — NP-05 Workspace Discovery and Authorization
 
-**Status:** Implementation complete; awaiting review and database migration validation
+**Status:** Complete
 **Last reviewed:** 2026-08-29
 **Owner:** Project team
 
@@ -42,7 +42,7 @@ Use the invariant `trusted identity -> PostgreSQL membership lookup -> authorize
 | CW-03 | Approve `GET /workspaces`, text workspace IDs, and the principal response contract. | Complete |
 | CW-04 | Implement the principal abstraction, workspace membership persistence, and local seed behavior. | Complete |
 | CW-05 | Implement discovery and centralized enforcement across chat and session operations. | Complete |
-| CW-06 | Add focused unit tests, update documentation, index the result, and record the frontend handoff. | Canonical frontend JSON/error contract and focused tests added 2026-08-29; live migration validation and indexing pending. |
+| CW-06 | Add focused unit tests, update documentation, index the result, and record the frontend handoff. | Complete 2026-08-29: canonical frontend JSON/error contract, focused tests, migrations/local seed, live PostgreSQL API validation, shared handoff, and documentation indexing completed. |
 
 ## Approval Gates
 
@@ -53,12 +53,27 @@ Use the invariant `trusted identity -> PostgreSQL membership lookup -> authorize
 ## Handoff Constraint
 
 The frontend design blocker is resolved. `GET /workspaces` and centralized
-authorization are implemented. The frontend can resume FP-04 after the SQL
-migrations and local seed are applied to the development database.
+authorization are implemented and live-validated after applying the SQL
+migrations and local seed. The frontend can run its approved local proxy
+integration.
 
 ## Validation Evidence
 
 - Python compilation completed successfully.
-- Isolated suite: `44 passed in 3.10s` on Python 3.14.
-- No Uvicorn, PostgreSQL, model, Langfuse, or live integration service was contacted.
-- Remaining validation: apply the SQL migrations/seed, start the normal local stack, exercise discovery and workspace-scoped chat, then index the updated documents.
+- Isolated suite: `47 passed, 1 skipped in 2.21s` on Python 3.14.
+- Live validation completed against the configured PostgreSQL host: PostgreSQL
+  16.14, pgvector 0.8.3, and migrations `001_baseline` and
+  `002_workspace_authorization` are present.
+- The configured FastAPI application successfully served health, workspace
+  discovery, session list/detail, unauthorized-workspace, and unknown-session
+  checks against PostgreSQL. No chat model, embedding model, or Langfuse
+  service was contacted.
+- After the embedding endpoint was restored, the idempotent documentation scan
+  completed successfully. The `local` workspace contains 55 source-document
+  records and 417 document chunks, including the shared agent-handoff records.
+
+## Completion Record
+
+NP-05 completed 2026-08-29. The frontend contract, authorization enforcement,
+versioned migrations, local seed, live PostgreSQL validation, and indexed
+documentation are complete. NP-06 remains the next queued phase.

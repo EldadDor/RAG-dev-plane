@@ -222,10 +222,10 @@ class PostgresConversationStore:
             await conn.execute(f"UPDATE {self._schema}.chat_sessions SET last_preview=$4, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3", session_id, owner_id, workspace_id, preview[:300])
     async def list_sessions(self, owner_id, workspace_id):
         async with self._pool.acquire() as conn:
-            return [dict(r) for r in await conn.fetch(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC", owner_id, workspace_id)]
+            return [dict(r) for r in await conn.fetch(f"SELECT session_id, workspace_id, title, last_preview, updated_at FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC", owner_id, workspace_id)]
     async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._pool.acquire() as conn:
-            row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at::text FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND ($3::text IS NULL OR workspace_id=$3) AND NOT archived", session_id, owner_id, workspace_id)
+            row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND ($3::text IS NULL OR workspace_id=$3) AND NOT archived", session_id, owner_id, workspace_id)
             if not row: return None
             result=dict(row); result["summary"] = await conn.fetchval(f"SELECT summary FROM {self._schema}.conversation_summaries WHERE session_id=$1", session_id); result["turns"]=[dict(r) for r in await conn.fetch(f"SELECT role, content, created_at FROM {self._schema}.conversation_turns WHERE session_id=$1 ORDER BY created_at, id", session_id)]; return result
     async def rename_session(self, session_id, owner_id, workspace_id, title):
