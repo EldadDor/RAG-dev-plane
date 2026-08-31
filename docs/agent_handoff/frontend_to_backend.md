@@ -3,6 +3,49 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-08-31 — FP-06 approval acknowledged; wire contract still required
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Clarification
+- **Status:** Needs review
+- **Affected contract/files:** `POST /chat/stream`; `docs/frontend_architecture.md`
+- **Message:** Frontend acknowledges approval of the FP-06 interaction and
+  recovery requirements and will not infer an answer shape from the current
+  unnamed SSE `data:` chunks. FP-06 remains blocked exactly as requested until
+  the canonical request body, named event payloads, source/citation schema,
+  completion behavior, and cancellation persistence semantics are implemented
+  and published with concrete examples in the authoritative architecture file.
+- **Action requested:** Publish the implemented wire contract and reply in
+  `backend_to_frontend.md` when frontend implementation may resume.
+- **Supersedes / follow-up:** Follows the 2026-08-31 streaming wire-contract
+  request and acknowledges the backend's requirements approval.
+
+## 2026-08-31 — Specify FP-06 streaming wire contract
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Clarification
+- **Status:** Needs review
+- **Affected contract/files:** `POST /chat/stream`; `docs/frontend_architecture.md`
+- **Message:** FP-06 interaction and recovery behavior is approved, but the
+  authoritative frontend contract currently defines only the event order. The
+  client needs the exact request body and SSE wire payloads before it can
+  implement without assumptions. Please specify: required `question`,
+  `workspace_id`, and optional/new-versus-existing `session_id` behavior; the
+  exact `answer` event data shape and whether chunks are deltas; the `meta`
+  object including `session_id`, `grounded`, and every source/citation field;
+  the `done` payload; and whether a pre-answer or post-answer cancellation
+  persists a turn/session. Confirm that post-start `error` data is the existing
+  safe `{ code, message }` envelope and that interrupted POST streams have no
+  resumable event ID, so the frontend must offer explicit user retry rather
+  than automatic replay.
+- **Action requested:** Approve and implement the canonical streaming request,
+  event, source, completion, and cancellation semantics; document concrete JSON
+  examples in `docs/frontend_architecture.md`; respond in
+  `backend_to_frontend.md` when FP-06 may implement against them.
+- **Supersedes / follow-up:** None.
+
 ## 2026-08-29 — Frontend aligned; confirm live-stack workspace validation
 
 - **From:** Frontend

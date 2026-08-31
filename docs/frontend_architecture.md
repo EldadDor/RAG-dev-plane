@@ -19,7 +19,7 @@ React + TypeScript + Vite SPA: top workspace selector, central streaming chat an
 
   `role` is either `owner` or `member`. Workspaces are ordered by `display_name`, then `workspace_id`.
 - `POST /chat` returns a completed grounded response.
-- `POST /chat/stream` is SSE; it emits answer data, then `meta` with session ID, sources, and grounded state, then `done`. If a failure occurs after the stream starts, it emits `error` with the safe error envelope below, then `done`.
+- `POST /chat/stream` is SSE. Its complete wire contract, including the named JSON events and cancellation semantics, is below.
 - `GET /chat/sessions?workspace_id=<non-empty text>` lists the current user's active sessions. It returns a bare JSON array, newest `updated_at` first:
 
   ```json
@@ -74,6 +74,97 @@ All non-streaming API failures use this safe JSON envelope; clients must not ren
 | 500 | `internal_error` | An unexpected backend failure occurred; offer retry. |
 
 The envelope is also the `data` payload of a post-start SSE `error` event. A failure that is detected before SSE headers are sent uses the ordinary HTTP status/envelope instead.
+
+## Streaming Wire Contract
+
+Use `fetch`, not `EventSource`: the endpoint is a `POST` with a JSON body.
+Send `Accept: text/event-stream` and `Content-Type: application/json`. The API
+returns `200`, `Content-Type: text/event-stream; charset=utf-8`,
+`Cache-Control: no-cache`, and `X-Accel-Buffering: no` once streaming has
+started. Treat an HTTP response that is not `2xx` as the normal JSON error
+contract; do not attempt to parse it as SSE.
+
+### Request
+
+```http
+POST /chat/stream HTTP/1.1
+Accept: text/event-stream
+Content-Type: application/json
+
+{
+  "question": "How do I roll back a release?",
+  "workspace_id": "platform",
+  "session_id": "9b1de4f0-0d4e-4b92-a3d7-0a72ea62b7d4",
+  "top_k": 5,
+  "include_debug": false
+}
+```
+
+`question` is required and non-empty. `workspace_id` is optional only when the
+server has a configured default workspace. Omit `session_id` to create a new
+chat; pass the `session_id` received in `meta` for the next turn. `top_k` is
+optional (`1`–`20`) and `include_debug` defaults to `false`; production UI
+should leave it false.
+
+### Events
+
+Every `data:` field is exactly one JSON value. Parse it with `JSON.parse` only
+after combining all physical SSE `data:` lines for that event. Events arrive
+in this order: zero or more `answer`, exactly one terminal `meta` or `error`,
+then exactly one `done`. Unknown event names must be ignored for forward
+compatibility.
+
+```text
+event: answer
+data: {"delta":"To roll back "}
+
+event: answer
+data: {"delta":"a release, run `deploy rollback`."}
+
+event: meta
+data: {"session_id":"9b1de4f0-0d4e-4b92-a3d7-0a72ea62b7d4","grounded":true,"sources":[{"doc_id":"release-guide","chunk_id":"release-guide:14","source_path":"docs/releases.md","title":"Release guide","page":null,"section":"Rollback","score":0.92,"snippet":"Run deploy rollback to restore the prior release."}],"debug":null}
+
+event: done
+data: {"reason":"completed"}
+
+```
+
+- `answer` has `{ "delta": string }`. Append `delta` verbatim; it may contain
+  spaces, newlines, or an empty string. It contains answer text only, never
+  citations or final state.
+- `meta` has `{ "session_id": string, "grounded": boolean, "sources":
+  SourceReference[], "debug": object | null }`. It is the authoritative
+  completion payload: save `session_id`, replace the source drawer with
+  `sources`, and use `grounded` rather than inferring grounding from sources.
+  `debug` is `null` unless the request opted in.
+- `done` is always `{ "reason": "completed" }` after `meta`, or
+  `{ "reason": "error" }` after `error`. Do not treat transport EOF without
+  `done` as success.
+- `error` has the ordinary safe `{ "code": string, "message": string }`
+  envelope, for example:
+
+  ```text
+  event: error
+  data: {"code":"stream_interrupted","message":"The answer stream was interrupted. Please try again."}
+
+  event: done
+  data: {"reason":"error"}
+
+  ```
+
+  Preserve any partial answer as visibly incomplete, show generic retry UI
+  based on `code`, and do not render the server `message` as application copy.
+
+### Cancellation and retry
+
+Cancel an in-flight request with the `AbortController` passed to `fetch` when
+the user presses Stop, changes workspace/chat, or leaves the view. An abort is
+client-initiated: do not show an error, do not reconnect automatically, and do
+not assume the server discarded an already-completed turn. A user may send the
+question again explicitly; this is the only retry behavior. Because a cancelled
+request can finish server-side while its response is no longer visible, refresh
+the selected session before rendering a later turn if a session ID had already
+been received.
 
 ## Retention and Privacy
 

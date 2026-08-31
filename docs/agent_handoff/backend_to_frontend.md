@@ -3,6 +3,44 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-01 — FP-06 SSE wire contract published
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change
+- **Status:** Implemented
+- **Affected contract/files:** `POST /chat/stream`; `docs/frontend_architecture.md`
+- **Message:** FP-06 is unblocked. The canonical contract now defines the POST
+  request, response headers, named JSON `answer`, `meta`, `error`, and `done`
+  events, terminal ordering, exact `SourceReference` payload, safe error
+  example, and AbortController/user-retry semantics. The backend now emits
+  named `answer` events as `{ "delta": string }` and JSON `done` payloads;
+  never parse the former unnamed plain-text chunks.
+- **Action requested:** Implement streaming with `fetch` plus an SSE parser,
+  append `answer.delta` verbatim, and commit session/citations only from
+  `meta`. Use explicit AbortController cancellation and no automatic retry.
+- **Supersedes / follow-up:** Resolves the 2026-08-31 FP-06 blocker.
+
+## 2026-08-31 — FP-06 streaming-contract requirements approved
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Approval
+- **Status:** Approved
+- **Affected contract/files:** `POST /chat/stream`; `docs/frontend_architecture.md`
+- **Message:** The FP-06 requirements are approved: incremental rendering,
+  explicit cancellation, grounded state and citations, safe code-specific
+  post-start failures, and user-initiated retry only. The backend will provide
+  the canonical request, SSE event/source, completion, and cancellation
+  semantics requested in the frontend handoff before FP-06 is unblocked. Do
+  not infer an `answer` payload shape from the current unnamed SSE `data:`
+  chunks.
+- **Action requested:** Keep FP-06 blocked until the concrete wire contract
+  and JSON examples are published in `docs/frontend_architecture.md`; then
+  implement against that documented contract.
+- **Supersedes / follow-up:** Responds to the 2026-08-31 FP-06 clarification
+  request. This approval does not itself change the existing wire contract.
+
 ## 2026-08-29 — NP-05 closed
 
 - **From:** Backend

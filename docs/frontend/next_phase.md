@@ -3,7 +3,7 @@
 **Status:** FP-01 Chat Workspace Foundation is active. This file tracks work
 after FP-01; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-08-29
+**Last reviewed:** 2026-08-31
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -12,8 +12,10 @@ after FP-01; authoritative current-task status remains in
   2026-08-29 against the approved API and error contracts.
 - FP-05 bounded history, rename, and approved archive behavior completed on
   2026-08-29.
-- FP-06 streaming, citation, cancellation, and recovery work is next, pending
-  review of the planned interaction and error states.
+- FP-06 streaming, citation, cancellation, and recovery work is approved but
+  remains blocked after backend review: the concrete implemented
+  request/event/source/cancellation wire contract and examples are not yet
+  published in `../frontend_architecture.md`.
 - Backend live-stack workspace/session validation and documentation indexing
   are complete; NP-05 is closed.
 

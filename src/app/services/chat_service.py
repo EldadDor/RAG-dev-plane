@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from uuid import uuid4
 import json
+import re
 
 from app.api.schemas import ChatResponse, SourceReference
 from app.clients.chat_client import ChatClient
@@ -195,7 +196,10 @@ class ChatService:
             "sources": [source.model_dump() for source in response.sources],
             "debug": response.debug,
         }
-        for token in response.answer.split():
-            yield f"data: {token}\n\n"
+        # Preserve every character in the completed answer.  The event name and
+        # JSON envelope are the browser-facing contract; clients append
+        # ``delta`` verbatim rather than trying to reconstruct whitespace.
+        for token in re.findall(r"\S+\s*|\s+", response.answer):
+            yield f"event: answer\ndata: {json.dumps({'delta': token}, ensure_ascii=False)}\n\n"
         yield f"event: meta\ndata: {json.dumps(meta, ensure_ascii=False)}\n\n"
-        yield "event: done\ndata: [DONE]\n\n"
+        yield 'event: done\ndata: {"reason":"completed"}\n\n'

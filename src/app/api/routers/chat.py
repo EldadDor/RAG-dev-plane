@@ -94,9 +94,13 @@ async def chat_stream(
             logger.exception("Chat stream failed")
             payload = {"code": "stream_interrupted", "message": "The answer stream was interrupted. Please try again."}
             yield f"event: error\ndata: {json.dumps(payload)}\n\n"
-            yield "event: done\ndata: [DONE]\n\n"
+            yield 'event: done\ndata: {"reason":"error"}\n\n'
 
-    return StreamingResponse(events(), media_type="text/event-stream")
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.get("/sessions", response_model=list[ChatSessionSummary])

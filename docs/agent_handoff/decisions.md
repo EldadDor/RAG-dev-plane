@@ -3,6 +3,16 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-08-31 — FP-06 streaming interaction and recovery
+
+- **Status:** Approved.
+- **Decision:** The frontend may implement incremental answer rendering,
+  explicit cancellation, grounded-state and citation presentation, safe
+  code-specific failures, and user-initiated retry. It must not automatically
+  replay a streaming POST after interruption.
+- **Authoritative references:** `docs/frontend/work_current_phase.md` and the
+  backend-approved wire contract in `docs/frontend_architecture.md`.
+
 ## 2026-08-29 — Archive action wording
 
 - **Status:** Approved.
