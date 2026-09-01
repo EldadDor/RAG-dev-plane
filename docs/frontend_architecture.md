@@ -166,6 +166,23 @@ request can finish server-side while its response is no longer visible, refresh
 the selected session before rendering a later turn if a session ID had already
 been received.
 
+### Frontend implementation conformance
+
+The current frontend implementation uses only relative proxy routes and sends
+no identity headers or user ID. It uses `fetch` with a `ReadableStream` SSE
+parser (not `EventSource`), combines physical `data:` lines before JSON
+parsing, ignores unknown event names, and requires the documented terminal
+sequence. It appends `answer.delta` verbatim, treats `meta` as the only source
+of session/citation/grounded completion state, and treats an EOF without the
+appropriate `done` event as incomplete. Stop, workspace/chat changes, and
+view disposal abort the browser request; an abort does not display an error or
+trigger a retry. A later turn refreshes its selected session through the normal
+session route when the session ID has been received.
+
+The UI must be validated with the live backend using
+`docs/frontend/integration_test_plan.md`. This is manual integration
+validation, not a frontend command that starts services or calls models.
+
 ## Retention and Privacy
 
 Sessions retain title, workspace, preview, compact summary, and the latest 10 raw turns. Older raw turns are removed after a successful summary refresh; metadata/summaries retain for 90 days by default. Langfuse is optional and raw content capture remains disabled by default.

@@ -9,6 +9,10 @@ export type ChatSession = {
 }
 export type ChatTurn = { role: 'user' | 'assistant'; content: string; createdAt: string }
 export type ChatSessionDetail = ChatSession & { summary: string | null; turns: ChatTurn[] }
+export type SourceReference = { docId: string; chunkId: string; sourcePath: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null }
+export type StreamMeta = { sessionId: string; grounded: boolean; sources: SourceReference[] }
+export type StreamRequest = { question: string; workspaceId?: string; sessionId?: string }
+export type StreamHandlers = { onAnswer: (delta: string) => void; onMeta: (meta: StreamMeta) => void }
 
 type ApiWorkspace = { workspace_id: string; display_name: string; role: 'owner' | 'member' }
 type ApiWorkspaceDiscovery = { principal: { display_name: string }; workspaces: ApiWorkspace[] }
@@ -24,6 +28,8 @@ type ApiSessionDetail = ApiSession & {
   turns: Array<{ role: 'user' | 'assistant'; content: string; created_at: string }>
 }
 type ApiErrorBody = { code?: unknown; message?: unknown }
+type ApiSourceReference = { doc_id: string; chunk_id: string; source_path: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null }
+type ApiStreamMeta = { session_id: string; grounded: boolean; sources: ApiSourceReference[]; debug: object | null }
 
 export class ApiError extends Error {
   constructor(
@@ -93,4 +99,73 @@ export async function renameSession(sessionId: string, title: string): Promise<v
 
 export async function archiveSession(sessionId: string): Promise<void> {
   await request(`/chat/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' })
+}
+
+function toSourceReference(source: ApiSourceReference): SourceReference {
+  return { docId: source.doc_id, chunkId: source.chunk_id, sourcePath: source.source_path, title: source.title, page: source.page, section: source.section, score: source.score, snippet: source.snippet }
+}
+
+function parseEvent(block: string): { name: string; data: string } | null {
+  let name = 'message'
+  const data: string[] = []
+  for (const line of block.split(/\r?\n/)) {
+    if (!line || line.startsWith(':')) continue
+    const separator = line.indexOf(':')
+    const field = separator === -1 ? line : line.slice(0, separator)
+    const value = separator === -1 ? '' : line.slice(separator + 1).replace(/^ /, '')
+    if (field === 'event') name = value
+    if (field === 'data') data.push(value)
+  }
+  return data.length ? { name, data: data.join('\n') } : null
+}
+
+export async function streamChat(requestBody: StreamRequest, handlers: StreamHandlers, signal: AbortSignal): Promise<void> {
+  const response = await request('/chat/stream', {
+    method: 'POST', headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: requestBody.question, ...(requestBody.workspaceId ? { workspace_id: requestBody.workspaceId } : {}), ...(requestBody.sessionId ? { session_id: requestBody.sessionId } : {}), include_debug: false }), signal,
+  })
+  if (!response.body) throw new ApiError(500, 'stream_unavailable')
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let terminal: 'meta' | 'error' | null = null
+  let completed = false
+  let postStartError: ApiError | null = null
+  const processBlock = (block: string) => {
+    const event = parseEvent(block)
+    if (!event || !['answer', 'meta', 'error', 'done'].includes(event.name)) return
+    let payload: unknown
+    try { payload = JSON.parse(event.data) } catch { throw new ApiError(500, 'stream_protocol_error') }
+    if (event.name === 'answer') {
+      if (terminal) throw new ApiError(500, 'stream_protocol_error')
+      if (!payload || typeof payload !== 'object' || typeof (payload as { delta?: unknown }).delta !== 'string') throw new ApiError(500, 'stream_protocol_error')
+      handlers.onAnswer((payload as { delta: string }).delta)
+    } else if (event.name === 'meta') {
+      if (terminal) throw new ApiError(500, 'stream_protocol_error')
+      const meta = payload as Partial<ApiStreamMeta>
+      if (!meta || typeof meta.session_id !== 'string' || typeof meta.grounded !== 'boolean' || !Array.isArray(meta.sources)) throw new ApiError(500, 'stream_protocol_error')
+      terminal = 'meta'
+      handlers.onMeta({ sessionId: meta.session_id, grounded: meta.grounded, sources: meta.sources.map(toSourceReference) })
+    } else if (event.name === 'error') {
+      if (terminal) throw new ApiError(500, 'stream_protocol_error')
+      const error = payload as ApiErrorBody
+      terminal = 'error'
+      postStartError = new ApiError(200, typeof error.code === 'string' ? error.code : 'stream_interrupted', typeof error.message === 'string' ? error.message : undefined)
+    } else {
+      if (completed) throw new ApiError(500, 'stream_protocol_error')
+      const reason = (payload as { reason?: unknown })?.reason
+      if ((terminal === 'meta' && reason === 'completed') || (terminal === 'error' && reason === 'error')) completed = true
+      else throw new ApiError(500, 'stream_protocol_error')
+    }
+  }
+  while (true) {
+    const { done, value } = await reader.read()
+    buffer += decoder.decode(value, { stream: !done })
+    const blocks = buffer.split(/\r?\n\r?\n/)
+    buffer = blocks.pop() ?? ''
+    for (const block of blocks) processBlock(block)
+    if (done) break
+  }
+  if (!completed) throw new ApiError(500, 'stream_incomplete')
+  if (postStartError) throw postStartError
 }

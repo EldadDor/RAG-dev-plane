@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-01 Chat Workspace Foundation
 
 **Status:** Active
-**Last reviewed:** 2026-08-31
+**Last reviewed:** 2026-09-01
 **Owner:** Frontend team
 
 ## Objective
@@ -31,9 +31,9 @@ chat UI defined in `../frontend_architecture.md`.
 | FP-03 | Establish app shell and responsive three-pane layout | Completed | 2026-08-22: Added Vite/React/TypeScript project files, proxy-only `/chat` development route, and responsive accessible shell with workspace selector, central composer, sources area, and recent-chat pane. Node/npm are unavailable locally, so install/type-check/build verification remains pending FP-07. |
 | FP-04 | Implement workspace selection and session list/load/new-chat flow | Completed | 2026-08-29: Implemented proxy-only workspace discovery, workspace-filtered newest-first session listing, session detail loading without a workspace query, new-chat reset, canonical `last_preview`/timestamp mapping, and safe `403`/`404` recovery. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. Live-stack validation remains with the backend. |
 | FP-05 | Implement bounded history rendering and session actions | Completed | 2026-08-29: Implemented labeled compact summary and chronological recent turns with timestamps, inline rename, and approved “Archive chat” confirmation/action through the documented PATCH/DELETE endpoints. Session actions apply safe `403` workspace recovery and `404` removal. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. |
-| FP-06 | Implement streaming answer, metadata, citations, and recovery states | Blocked | 2026-08-31: Backend approved the interaction/recovery requirements but explicitly deferred the concrete wire contract. Await the implemented POST body, named answer/meta/error/done payloads, source schema, and cancellation semantics in `docs/frontend_architecture.md`; frontend acknowledged the response and added no streaming assumptions. |
+| FP-06 | Implement streaming answer, metadata, citations, and recovery states | Completed | 2026-09-01: Implemented fetch-based POST SSE parsing for named JSON answer, meta, error, and done events. Answer deltas render incrementally; session ID, grounded state, and sources commit only from meta; Stop uses AbortController; interruption preserves visibly incomplete text; no automatic retry/reconnect occurs. `git diff --check` passes. Browser/backend integration validation is intentionally not run until the operator starts the LLM and pgvector stack. |
 | FP-07 | Add frontend tests, accessibility checks, and production-build verification | Pending | Type check, relevant tests, and static production build pass without live backend/model/database services. |
-| FP-08 | Update this phase record and frontend backlog; prepare handoff | Pending | Record evidence, unresolved contract inputs, approval decisions, and completion boundary. |
+| FP-08 | Update this phase record and frontend backlog; prepare handoff | Completed | 2026-09-01: Recorded the completed FP-06 implementation, backend validation checklist, and follow-up handoff. Phase closure remains blocked on operator-run integration validation and pending FP-07 type-check/build tooling. |
 
 ## Required Update Protocol
 

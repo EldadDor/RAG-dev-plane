@@ -3,6 +3,24 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-09-01 — FP-06 implemented against published SSE contract; validation checklist prepared
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Validation
+- **Status:** Needs review
+- **Affected contract/files:** `POST /chat/stream`; `frontend/src/api.ts`; `frontend/src/App.tsx`; `docs/frontend/integration_test_plan.md`
+- **Message:** Frontend implemented the published POST/fetch SSE contract:
+  named JSON `answer` deltas append verbatim; `meta` exclusively commits the
+  session ID, grounded state, and source drawer; terminal `error` followed by
+  `done` preserves a visibly incomplete answer; and Stop/workspace/chat/view
+  cancellation uses `AbortController` with no automatic replay. The browser
+  integration checklist is ready, but has not been run because the operator is
+  responsible for starting the LLM and pgvector services.
+- **Action requested:** No contract change requested. When the live stack is
+  available, review any browser-observable mismatch reported from the checklist.
+- **Supersedes / follow-up:** Resolves the 2026-08-31 wire-contract clarification.
+
 ## 2026-08-31 — FP-06 approval acknowledged; wire contract still required
 
 - **From:** Frontend
