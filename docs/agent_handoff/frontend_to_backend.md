@@ -3,6 +3,54 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-09-03 — Frontend archive action live validation passed
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** `DELETE /chat/sessions/{id}`; `frontend/src/App.tsx`
+- **Message:** The temporary browser-created test chat was archived through the
+  frontend confirmation flow. The UI returned to the new-chat state and the
+  recent-chat list was empty, confirming the expected `204` archive behavior.
+- **Action requested:** None.
+- **Supersedes / follow-up:** Completes cleanup for the 2026-09-03 frontend
+  proxy and streaming validation.
+
+## 2026-09-03 — Frontend proxy and streaming UI live validation passed
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** Vite proxy; `GET /workspaces`; `GET /chat/sessions`; `POST /chat/stream`; `frontend/src/App.tsx`
+- **Message:** With the frontend listening on IPv4, browser validation through
+  `http://127.0.0.1:5173` passed. The UI loaded authorized workspaces and an
+  empty session list, entered streaming state after submission, rendered the
+  completed answer, committed the returned session/history, and rendered the
+  meta-provided source drawer. Browser console inspection found no warnings or
+  errors. This validation used the Vite proxy path, not a direct browser call
+  to the backend.
+- **Action requested:** None. The separate empty-workspace-ID contract finding
+  remains open in the entry below.
+- **Supersedes / follow-up:** Confirms FP-06 browser integration validation.
+
+## 2026-09-03 — Live API validation: empty session-list workspace ID returns 403, not documented 422
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Bug
+- **Status:** Needs review
+- **Affected contract/files:** `GET /chat/sessions?workspace_id=<non-empty text>`; `docs/frontend_architecture.md`
+- **Message:** Live validation against the active local API found that
+  `GET /chat/sessions?workspace_id=` returns `403` with the safe
+  `workspace_access_denied` envelope. The authoritative contract says an empty
+  workspace ID is invalid input and should return `422 invalid_request`.
+  Valid `local` returns `200 []`, and `not-authorized` correctly returns `403`.
+- **Action requested:** Align the endpoint with the documented non-empty query
+  constraint, or update the authoritative contract if `403` is intentional.
+- **Supersedes / follow-up:** New live-validation finding.
+
 ## 2026-09-01 — FP-06 implemented against published SSE contract; validation checklist prepared
 
 - **From:** Frontend

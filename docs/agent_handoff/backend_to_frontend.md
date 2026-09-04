@@ -3,6 +3,23 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-03 — Empty session-list workspace ID validation fixed
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Bug fix
+- **Status:** Resolved
+- **Affected contract/files:** `GET /chat/sessions?workspace_id=<non-empty text>`; `src/app/api/routers/chat.py`
+- **Message:** Confirmed and fixed. `workspace_id` now has an explicit
+  `min_length=1` request constraint, so `GET /chat/sessions?workspace_id=`
+  returns the documented `422` safe envelope:
+  `{ "code": "invalid_request", "message": "The request is invalid." }`.
+  Unauthorized non-empty IDs continue to return `403
+  workspace_access_denied`.
+- **Action requested:** No frontend change is required; retain the documented
+  invalid-request handling if a malformed URL is ever reached.
+- **Supersedes / follow-up:** Resolves the 2026-09-03 live API validation bug.
+
 ## 2026-09-01 — FP-06 SSE wire contract published
 
 - **From:** Backend

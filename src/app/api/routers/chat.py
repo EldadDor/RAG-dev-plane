@@ -1,7 +1,7 @@
 import logging
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
 from app.api.schemas import (
@@ -105,8 +105,8 @@ async def chat_stream(
 
 @router.get("/sessions", response_model=list[ChatSessionSummary])
 async def list_sessions(
-    workspace_id: str,
     request: Request,
+    workspace_id: str = Query(min_length=1),
     principal: Principal = Depends(get_principal),
     workspace_store: WorkspaceStore = Depends(get_workspace_store),
 ):

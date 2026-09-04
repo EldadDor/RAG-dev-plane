@@ -1,61 +1,30 @@
 # Frontend Agent Instructions
 
+The root `AGENTS.md` applies here in full — including the phase-record rule,
+intake rule, safety rules, precedence, and the closing `Phase records: …` line.
+This file only pins the frontend paths and its definition of done.
+
+## Phase records
+For this area the files are `../docs/work_current_phase.md`? No —
+`../docs/frontend/work_current_phase.md` and `../docs/frontend/next_phase.md`.
+Update them before and after every task, whether or not the prompt mentions them,
+unless the user explicitly says not to. Never start an item that has no row in
+`../docs/frontend/work_current_phase.md`; move it from `next_phase.md` first.
+
+The "Required Update Protocol" kept in the phase file now mirrors this section;
+if they diverge, this file wins (per root precedence).
+
 ## Scope
-
-Work only inside `frontend/**` unless the user explicitly asks to change a
-backend API contract or shared documentation.
-
-Do not edit:
-- `src/**`
-- `tests/**`
-- Python dependencies or `uv.lock`
-- backend `.env` files
-- Docker, PostgreSQL, Ollama, or FastAPI configuration
-
-Backend contract changes must be proposed in `docs/frontend_architecture.md`
-and handed back to the backend task before implementation.
-
-## Stack
-
-- React
-- TypeScript
-- Vite
-- Static production build served by Nginx
-- API and SSE accessed only through the configured Vite/Nginx proxy
-
-## Product Requirements
-
-- AI-chat layout: top workspace selector, central streaming chat, right-side
-  per-user recent-chat pane, citation/source drawer.
-- No ingestion or admin UI.
-- Never place API keys, database credentials, model endpoints, or Langfuse
-  credentials in browser code or frontend environment files.
-- Use the backend-derived user identity contract; never send a user ID in an
-  API request body.
-
-## Backend Contract
-
-Read `../docs/frontend_architecture.md` before changing API integration.
-Treat it as the source of truth for sessions, streaming, retention, and the
-trusted gateway identity header.
-
-## Cross-Team Handoff
-
-Read `../docs/agent_handoff/` before starting work that depends on the backend
-or affects its contract. The asking side must record every cross-team feature,
-bug, API change, clarification, validation result, or blocker in its
-direction-specific file before implementation depends on it:
-
-- Frontend writes `../docs/agent_handoff/frontend_to_backend.md`.
-- Backend writes `../docs/agent_handoff/backend_to_frontend.md`.
-
-Add new entries at the top and never rewrite or delete earlier entries. Record
-explicit cross-team approvals in `../docs/agent_handoff/decisions.md`. Handoff
-entries are proposals or status updates only; `../docs/frontend_architecture.md`
-remains the authoritative API contract.
+Work only inside `frontend/**` unless the user explicitly asks to change a shared
+file. Shared docs and the API contract (`../docs/frontend_architecture.md`) are
+read-first: the frontend proposes and requests contract changes; the backend owns
+the decision. Record cross-boundary items via `../docs/agent_handoff/`.
 
 ## Validation
-
 - Run frontend type checks, tests, and production builds when the user permits.
 - Do not start Uvicorn or use live model/database services unless explicitly
   approved.
+- State what you did **not** run.
+- A task is not complete until its row in
+  `../docs/frontend/work_current_phase.md` records the result and evidence
+  (commands, files, commit hash prefixed with the task ID, e.g. `FP-07: …`).

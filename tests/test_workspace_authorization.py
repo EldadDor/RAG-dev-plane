@@ -164,3 +164,18 @@ async def test_workspace_denial_has_safe_error_envelope():
         "code": "workspace_access_denied",
         "message": "You do not have access to this workspace.",
     }
+
+
+@pytest.mark.asyncio
+async def test_session_list_rejects_an_empty_workspace_id_as_invalid_request():
+    app.dependency_overrides[get_principal] = lambda: Principal("alice", "Alice")
+    app.dependency_overrides[get_workspace_store] = _workspace_store
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/chat/sessions?workspace_id=")
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "code": "invalid_request",
+        "message": "The request is invalid.",
+    }
