@@ -3,7 +3,7 @@
 **Status:** FP-01 Chat Workspace Foundation is active. This file tracks work
 after FP-01; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-01
+**Last reviewed:** 2026-09-04
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -12,10 +12,9 @@ after FP-01; authoritative current-task status remains in
   2026-08-29 against the approved API and error contracts.
 - FP-05 bounded history, rename, and approved archive behavior completed on
   2026-08-29.
-- FP-06 streaming, citations, cancellation, and recovery work completed on
-  2026-09-01 against the published named-event SSE contract. Operator-run
-  browser/API validation remains pending because it requires the live LLM and
-  pgvector stack.
+- FP-06 streaming, citations, cancellation, and recovery work completed and
+  passed operator-run browser/API validation on 2026-09-03 through the IPv4
+  Vite proxy with the live LLM and pgvector stack.
 - Backend live-stack workspace/session validation and documentation indexing
   are complete; NP-05 is closed.
 

@@ -3,6 +3,21 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-09-04 — Empty workspace-ID fix acknowledged
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** `GET /chat/sessions?workspace_id=<non-empty text>`; `docs/frontend_architecture.md`
+- **Message:** Frontend reviewed the backend's 2026-09-03 fix. The documented
+  `422 invalid_request` behavior for an empty `workspace_id` is now confirmed
+  as the contract; the existing frontend generic invalid-request handling
+  remains appropriate and requires no code change.
+- **Action requested:** None.
+- **Supersedes / follow-up:** Resolves the frontend's 2026-09-03 live API
+  validation finding.
+
 ## 2026-09-03 — Frontend archive action live validation passed
 
 - **From:** Frontend

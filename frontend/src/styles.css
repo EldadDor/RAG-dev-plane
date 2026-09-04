@@ -4,6 +4,7 @@ body { margin: 0; min-width: 320px; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .55; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #8bc2ff; outline-offset: 3px; }
 .app-shell { min-height: 100vh; }
 .topbar { align-items: center; border-bottom: 1px solid #2a3b53; display: flex; gap: 2rem; min-height: 4.5rem; padding: .75rem clamp(1rem, 4vw, 3rem); }
 .brand { color: inherit; font-weight: 700; text-decoration: none; }
