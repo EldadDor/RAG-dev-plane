@@ -8,7 +8,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .app-shell { min-height: 100vh; }
 .topbar { align-items: center; border-bottom: 1px solid #2a3b53; display: flex; gap: 2rem; min-height: 4.5rem; padding: .75rem clamp(1rem, 4vw, 3rem); }
 .brand { color: inherit; font-weight: 700; text-decoration: none; }
-.workspace-picker { align-items: center; display: flex; gap: .6rem; margin-left: auto; }
+.workspace-picker { align-items: center; display: flex; gap: .6rem; margin-left: auto; min-width: 0; }
+.workspace-picker select { max-width: 100%; }
 .workspace-picker span, .eyebrow { color: #9fb1c9; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
 input, select, textarea { background: #142237; border: 1px solid #38516f; border-radius: .5rem; color: inherit; padding: .65rem .8rem; }
 .workspace { display: grid; grid-template-columns: minmax(14rem, .7fr) minmax(0, 2fr) minmax(16rem, .8fr); min-height: calc(100vh - 4.5rem); }
@@ -20,7 +21,7 @@ h1 { margin-bottom: .25rem; }
 h2 { font-size: 1rem; }
 .muted { color: #9fb1c9; line-height: 1.55; }
 .chat-pane { display: flex; flex-direction: column; min-height: 0; padding: clamp(1.25rem, 4vw, 3rem); }
-.chat-heading { align-items: start; display: flex; justify-content: space-between; }
+.chat-heading { align-items: start; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
 .heading-actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; }
 .secondary { background: transparent; border: 1px solid #5e88ba; border-radius: .5rem; color: #dceaff; padding: .5rem .8rem; }
 .destructive { background: transparent; border: 1px solid #d66b70; border-radius: .5rem; color: #ffb4ab; padding: .5rem .8rem; }
@@ -44,7 +45,7 @@ h2 { font-size: 1rem; }
 .source-list span { color: #9fb1c9; font-size: .85rem; }
 .source-list p { color: #c6d4e7; font-size: .9rem; line-height: 1.45; margin: .2rem 0 0; }
 .rename-form { background: #101c2e; border: 1px solid #2a3b53; border-radius: .65rem; display: grid; gap: .5rem; margin-top: 1rem; padding: 1rem; }
-.rename-form > div { display: flex; gap: .5rem; }
+.rename-form > div { display: flex; flex-wrap: wrap; gap: .5rem; }
 .rename-form input { flex: 1; min-width: 0; }
 .rename-form button[type="submit"] { background: #62a0ea; border: 0; border-radius: .5rem; color: #07111e; font-weight: 700; padding: .5rem .8rem; }
 .composer { display: grid; gap: .7rem; }
@@ -60,4 +61,4 @@ textarea { resize: vertical; width: 100%; }
 .error-message { color: #ffb4ab; }
 .sr-only { clip: rect(0, 0, 0, 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
 @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } .sources-pane { display: none; } .sessions-pane { border-left: 0; border-top: 1px solid #2a3b53; } .chat-pane { min-height: 65vh; } }
-@media (max-width: 560px) { .topbar { align-items: flex-start; flex-direction: column; gap: .75rem; } .workspace-picker { margin-left: 0; } }
+@media (max-width: 560px) { .topbar { align-items: flex-start; flex-direction: column; gap: .75rem; } .workspace-picker { justify-content: space-between; margin-left: 0; width: 100%; } .chat-pane { padding: 1.25rem 1rem; } .chat-heading { align-items: stretch; flex-direction: column; } .heading-actions { justify-content: flex-start; } .turn, .streaming-turns .turn-assistant { max-width: 100%; } aside { padding: 1rem; } .pane-tabs { margin-left: -1rem; margin-right: -1rem; padding-left: 1rem; padding-right: 1rem; } }

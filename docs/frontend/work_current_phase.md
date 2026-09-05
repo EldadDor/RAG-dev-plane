@@ -1,4 +1,4 @@
-# Current Frontend Work Phase — FP-01 Chat Workspace Foundation
+# Current Frontend Work Phase — FP-02 Frontend Hardening and UX Refinement
 
 **Status:** Completed
 **Last reviewed:** 2026-09-05
@@ -6,75 +6,64 @@
 
 ## Objective
 
-Create the React, TypeScript, and Vite foundation for the internal developer
-documentation chat experience, then deliver the workspace-filtered streaming
-chat UI defined in `../frontend_architecture.md`.
+Harden the accepted React chat experience with focused accessibility,
+responsive-layout, recovery-state, and regression-test work. The phase is
+limited to the existing frontend and proxy-only API contract.
 
 ## Scope and Guardrails
 
-- Work only in `frontend/**`; backend contracts and shared backend documents are
-  read-only unless separately approved.
-- Use only the configured Vite/Nginx proxy for HTTP and SSE. Do not embed API
-  keys, provider endpoints, database credentials, or Langfuse settings in the
-  browser bundle or frontend environment files.
-- Do not send a user ID in any request. The trusted gateway derives identity.
-- Include chat, workspace filtering, sources, and per-user session controls;
-  exclude ingestion and administrative screens.
-- Treat archive wording as provisional until the product decision is supplied.
+- Work only in `frontend/**`; the API contract is read-only unless separately
+  approved by the backend owner.
+- Keep the existing relative Vite/Nginx proxy integration. Do not add browser
+  secrets, identity headers, direct backend URLs, or live-service traffic.
+- Keep automated coverage unit-focused. Browser automation, end-to-end tests,
+  visual regression tooling, and new dependencies require separate approval.
+- Do not change archive wording, office deployment, ingestion, or
+  administrative features.
 
 ## Task Board
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| FP-01 | Inspect frontend baseline, scripts, and existing UX assets | Completed | 2026-08-22: `frontend/` contains only `AGENTS.md` plus empty `public/` and `src/` directories. No Vite project, package manifest, source, scripts, dependencies, or UX assets exist. |
-| FP-02 | Confirm API client types and proxy-only integration boundary | Completed | 2026-08-22: Client will use relative proxy routes only: `POST /chat`, `POST /chat/stream`, and session GET/PATCH/DELETE routes. SSE order is answer → `meta` → `done`; requests contain no user ID. Workspace discovery/authorization is not specified and blocks live workspace data integration. |
-| FP-03 | Establish app shell and responsive three-pane layout | Completed | 2026-08-22: Added Vite/React/TypeScript project files, proxy-only `/chat` development route, and responsive accessible shell with workspace selector, central composer, sources area, and recent-chat pane. Node/npm are unavailable locally, so install/type-check/build verification remains pending FP-07. |
-| FP-04 | Implement workspace selection and session list/load/new-chat flow | Completed | 2026-08-29: Implemented proxy-only workspace discovery, workspace-filtered newest-first session listing, session detail loading without a workspace query, new-chat reset, canonical `last_preview`/timestamp mapping, and safe `403`/`404` recovery. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. Live-stack validation remains with the backend. |
-| FP-05 | Implement bounded history rendering and session actions | Completed | 2026-08-29: Implemented labeled compact summary and chronological recent turns with timestamps, inline rename, and approved “Archive chat” confirmation/action through the documented PATCH/DELETE endpoints. Session actions apply safe `403` workspace recovery and `404` removal. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. |
-| FP-06 | Implement streaming answer, metadata, citations, and recovery states | Completed | 2026-09-04: Implemented fetch-based POST SSE parsing for named JSON answer, meta, error, and done events. Answer deltas render incrementally; session ID, grounded state, and sources commit only from meta; Stop uses AbortController; interruption preserves visibly incomplete text; no automatic retry/reconnect occurs. Live browser validation through the IPv4 Vite proxy passed workspace loading, streaming, history/session commit, sources, and archive cleanup; browser console was clean. |
-| FP-07 | Add frontend tests, accessibility checks, and production-build verification | Completed | 2026-09-05: User approved Vitest for a minimal unit-only baseline. Added `vitest` and `npm test` (`vitest run`) plus `src/api.test.ts`, covering proxy-contract mapping, safe error-envelope handling, and split SSE answer/meta/done parsing. Passed: `node node_modules/vitest/vitest.mjs run` (3 tests), `node node_modules/typescript/bin/tsc -b`, `node node_modules/vite/bin/vite.js build`, and `git diff --check`. No live services or browser/UI end-to-end suite ran. Changes are uncommitted; no commit was requested. |
-| FP-08 | Update this phase record and frontend backlog; prepare handoff | Completed | 2026-09-05: Reconciled the phase records after local test-baseline completion. The backend fixed the empty `workspace_id` contract discrepancy (`422 invalid_request`); no frontend change is required. User formally reviewed and approved FP-01 closure on 2026-09-05. |
+| FP2-01 | Audit and harden keyboard, screen-reader, and recoverable-error behavior | Completed | 2026-09-05: Added in-place workspace/session retry controls, `aria-busy` chat state, alert/status semantics for recoverable stream states, a labelled rename form, source updates, and `aria-current` on the active session. Added an SSE-incomplete unit regression. Passed Vitest (4 tests), `tsc -b`, and Vite production build; no live services or browser automation ran. |
+| FP2-02 | Refine narrow and wide responsive layout behavior | Completed | 2026-09-05: Preserved the existing desktop grid and added narrow-layout safeguards for the workspace picker, chat heading/actions, rename controls, pane padding/tabs, and conversation bubble width. Passed Vitest (4 tests), `tsc -b`, and Vite production build; no browser automation or live services ran. |
+| FP2-03 | Extend focused unit regression coverage | Completed | 2026-09-05: Added Node-environment coverage for session-detail mapping, encoded rename/archive requests, incomplete SSE streams, and safe terminal SSE errors. Vitest now passes 6 tests; `tsc -b` and the production build pass. No new dependencies, browser automation, or live services were used. |
+| FP2-04 | Run local validation and prepare phase handoff | Completed | 2026-09-05: Passed Vitest (6 tests), `tsc -b`, Vite production build, and `git diff --check`. The audit found no API-contract discrepancy, so no backend handoff was required. Browser automation and live-stack validation did not run because they are outside the approved scope. Changes are ready for review and commit. |
 
-## Required Update Protocol
+## Acceptance Checks
 
-Before starting any task, update its row to **In progress** with the intended
-scope and any approval dependency. Immediately after the task, update its row
-to **Completed**, **Blocked**, or **Deferred** with concrete evidence. Update
-**Last reviewed** on every such change. Do not begin the next task while the
-prior task's result and approval state are unrecorded.
+- Keyboard and screen-reader behavior is verified for workspace, session,
+  composer, citation, rename, and archive interactions.
+- Narrow and wide layouts preserve readable chat, recent-session, and source
+  navigation.
+- Recoverable API/SSE failures have consistent retry and focus behavior.
+- Focused regression tests, type checks, and the production build pass without
+  live backend/model/database services.
+- Approved live-stack validation, if requested, passes the existing operator
+  checklist for streaming completion and cancellation.
 
 ## Approval Gates
 
-- [x] Approve FP-01 scope and implementation order before editing application code. Approved 2026-08-22.
-- [x] Approve the workspace discovery/authorization approach before FP-04.
-  Approved and implemented by backend NP-05 on 2026-08-24.
-- [x] Approve user-facing archive wording before implementing the archive
-  portion of FP-05. Approved 2026-08-29: “Archive chat” with confirmation
-  “Archive this chat? It will be removed from your recent chats.”
-- [x] Review the planned streaming/reconnect interaction and error states before
-  FP-06. Approved 2026-08-31; use incremental answer rendering, explicit
-  cancellation, safe code-specific failures, and user-initiated retry rather
-  than automatic replay of a POST request.
-- [x] Approve any new frontend dependency, proxy configuration change, or
-  authentication/header behavior before it is added. Approved for the FP-03
-  baseline dependencies on 2026-08-22; no proxy/authentication behavior will
-  be invented beyond the documented contract.
-- [x] Approve phase closure after local type checks, tests, and production build
-  have passed. Approved 2026-09-05.
+- [x] Approve FP-01 acceptance and FP-02 activation, acceptance criteria, and
+  unit-test scope. Approved 2026-09-05.
+- [ ] Approve any additional dependency, proxy/authentication change, browser
+  automation, visual-regression tooling, or live-service validation before use.
+- [x] Approve FP-02 phase closure after its accepted local-scope checks pass.
+  Approved 2026-09-05.
 
 ## Execution Constraints
 
-- Announce before requesting any approval-dependent action.
-- Do not start Uvicorn, contact live model/database services, or send browser
-  traffic directly to a backend endpoint without explicit approval.
-- Surface backend-contract gaps in this file and hand them to the backend task;
-  do not silently invent an API contract.
+- Update the task board and **Last reviewed** before and after every task.
+- Do not start a planned task until its prior task is recorded as completed,
+  blocked, or deferred.
+- Do not start Uvicorn or contact model/database services without explicit
+  approval. Record backend gaps in the frontend-to-backend handoff instead of
+  changing backend code.
 
-## Backend Handoff
+## Phase Handoff
 
-Call `GET /workspaces` on application load and render its `workspaces` entries.
-Send the selected `workspace_id` with chat and session-list requests; session
-detail uses only its session ID, whose stored workspace the backend revalidates.
-Do not send a user ID or development identity header. Treat `403` as
-lost/invalid workspace access and refresh discovery; treat `404` session detail
-as unavailable and remove it from the current UI state.
+Keep existing proxy-only API behavior: no browser user ID or identity headers;
+refresh workspace discovery for `403`; and remove unavailable sessions for
+`404`. Raise any contract gap through the frontend-to-backend handoff. FP-02
+was formally closed with the approved unit-focused validation scope on
+2026-09-05.

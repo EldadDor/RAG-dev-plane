@@ -19,6 +19,8 @@ export default function App() {
   const [activeSession, setActiveSession] = useState<ChatSessionDetail | null>(null)
   const [workspaceStatus, setWorkspaceStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [sessionsStatus, setSessionsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [workspaceReloadKey, setWorkspaceReloadKey] = useState(0)
+  const [sessionsReloadKey, setSessionsReloadKey] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameTitle, setRenameTitle] = useState('')
@@ -46,7 +48,13 @@ export default function App() {
         setErrorMessage('Unable to load your workspaces. Try refreshing the page.')
       })
     return () => controller.abort()
-  }, [])
+  }, [workspaceReloadKey])
+
+  function retryWorkspaceDiscovery() {
+    setErrorMessage('')
+    setWorkspaceStatus('loading')
+    setWorkspaceReloadKey((current) => current + 1)
+  }
 
   async function recoverWorkspaceAccess() {
     setWorkspaceId('')
@@ -81,7 +89,14 @@ export default function App() {
         setErrorMessage('Unable to load recent chats for this workspace.')
       })
     return () => controller.abort()
-  }, [workspaceId])
+  }, [workspaceId, sessionsReloadKey])
+
+  function retrySessions() {
+    if (!workspaceId) return
+    setErrorMessage('')
+    setSessionsStatus('loading')
+    setSessionsReloadKey((current) => current + 1)
+  }
 
   async function selectSession(session: ChatSession) {
     if (!workspaceId) return
@@ -225,28 +240,30 @@ export default function App() {
     </header>
     <section className="workspace" aria-label="Chat workspace">
       <aside className="sources-pane" aria-label="Sources"><h2>Sources</h2><p className="muted">Sources appear here when an answer includes grounded citations.</p></aside>
-      <section className="chat-pane" aria-label="Chat">
+      <section className="chat-pane" aria-label="Chat" aria-busy={Boolean(streamController.current)}>
         <div className="chat-heading"><div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div><div className="heading-actions">{activeSession && <><button className="secondary" type="button" onClick={() => { setRenameTitle(activeSession.title); setIsRenaming(true) }}>Rename</button><button className="destructive" type="button" onClick={() => void archiveActiveSession()}>Archive chat</button></>}<button className="secondary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button></div></div>
-        {isRenaming && activeSession && <form className="rename-form" onSubmit={(event) => void submitRename(event)}><label htmlFor="session-title">Chat title</label><div><input id="session-title" value={renameTitle} onChange={(event) => setRenameTitle(event.target.value)} maxLength={200} autoFocus /><button type="submit" disabled={!renameTitle.trim()}>Save</button><button className="secondary" type="button" onClick={() => setIsRenaming(false)}>Cancel</button></div></form>}
+        {isRenaming && activeSession && <form className="rename-form" aria-label="Rename chat" onSubmit={(event) => void submitRename(event)}><label htmlFor="session-title">Chat title</label><div><input id="session-title" value={renameTitle} onChange={(event) => setRenameTitle(event.target.value)} maxLength={200} autoFocus /><button type="submit" disabled={!renameTitle.trim()}>Save</button><button className="secondary" type="button" onClick={() => setIsRenaming(false)}>Cancel</button></div></form>}
         <div className={activeSession ? 'conversation-view' : 'empty-state'} aria-live="polite">
-          {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
+          {errorMessage ? <p className="error-message" role="alert">{errorMessage}</p> : null}
+          {workspaceStatus === 'error' && <button className="secondary" type="button" onClick={retryWorkspaceDiscovery}>Retry workspaces</button>}
           {!workspaceId && <><h2>Choose a workspace to begin</h2><p>Answers will stream here with their supporting sources.</p></>}
           {workspaceId && !activeSession && <><h2>Start a new chat</h2><p>Recent chats are available in the panel to the right.</p></>}
           {activeSession && <>
             <section className="history-summary" aria-labelledby="history-summary-heading"><h2 id="history-summary-heading">Earlier conversation summary</h2><p>{activeSession.summary ?? 'No earlier summary is available.'}</p></section>
             <section className="recent-turns" aria-labelledby="recent-turns-heading"><h2 id="recent-turns-heading">Recent conversation</h2>{activeSession.turns.length === 0 ? <p className="muted">No recent messages are available.</p> : <ol>{activeSession.turns.map((turn, index) => <li className={`turn turn-${turn.role}`} key={`${turn.createdAt}-${index}`}><div><strong>{turn.role === 'user' ? 'You' : 'Assistant'}</strong>{formatTimestamp(turn.createdAt) && <time dateTime={turn.createdAt}>{formatTimestamp(turn.createdAt)}</time>}</div><p>{turn.content}</p></li>)}</ol>}</section>
           </>}
-          {streamingTurn && <section className="streaming-turns" aria-live="polite"><div className="turn turn-user"><strong>You</strong><p>{streamingTurn.question}</p></div><div className="turn turn-assistant"><strong>Assistant</strong><p>{streamingTurn.answer || 'Thinking…'}</p>{streamingTurn.status === 'streaming' && <p className="muted">Streaming answer…</p>}{streamingTurn.status === 'cancelled' && <p className="muted">Answer stopped before completion.</p>}{streamingTurn.status === 'error' && <p className="error-message">Answer incomplete.</p>}</div></section>}
+          {streamingTurn && <section className="streaming-turns" aria-live="polite"><div className="turn turn-user"><strong>You</strong><p>{streamingTurn.question}</p></div><div className="turn turn-assistant"><strong>Assistant</strong><p>{streamingTurn.answer || 'Thinking…'}</p>{streamingTurn.status === 'streaming' && <p className="muted" role="status">Streaming answer…</p>}{streamingTurn.status === 'cancelled' && <p className="muted" role="status">Answer stopped before completion.</p>}{streamingTurn.status === 'error' && <p className="error-message" role="alert">Answer incomplete.</p>}</div></section>}
         </div>
         <form className="composer" onSubmit={(event) => void submitQuestion(event)}><label className="sr-only" htmlFor="question">Your question</label><textarea id="question" value={draft} onChange={(event) => setDraft(event.target.value)} disabled={!workspaceId || Boolean(streamController.current)} placeholder="Ask about your developer documentation…" rows={3} />{streamController.current ? <button className="secondary" type="button" onClick={() => cancelStream(true)}>Stop</button> : <button type="submit" disabled={!workspaceId || !draft.trim()}>Send</button>}</form>
       </section>
       <aside className="sessions-pane" aria-label="Recent chats">
         <div className="pane-tabs" aria-label="Workspace panels"><button className={activePane === 'sessions' ? 'active' : ''} type="button" aria-pressed={activePane === 'sessions'} onClick={() => setActivePane('sessions')}>Recent chats</button><button className={activePane === 'sources' ? 'active' : ''} type="button" aria-pressed={activePane === 'sources'} onClick={() => setActivePane('sources')}>Sources</button></div>
-        {activePane === 'sources' && <>{grounded === false && <p className="muted">This answer was not grounded in retrieved sources.</p>}{sources.length === 0 && grounded !== false && <p className="muted">No sources are available yet.</p>}{sources.length > 0 && <ol className="source-list">{sources.map((source) => <li key={source.chunkId}><strong>{source.title ?? source.sourcePath}</strong><span>{source.sourcePath}{source.section ? ` · ${source.section}` : ''}{source.page !== null ? ` · Page ${source.page}` : ''}</span>{source.snippet && <p>{source.snippet}</p>}</li>)}</ol>}</>}
+        {activePane === 'sources' && <div aria-live="polite">{grounded === false && <p className="muted">This answer was not grounded in retrieved sources.</p>}{sources.length === 0 && grounded !== false && <p className="muted">No sources are available yet.</p>}{sources.length > 0 && <ol className="source-list">{sources.map((source) => <li key={source.chunkId}><strong>{source.title ?? source.sourcePath}</strong><span>{source.sourcePath}{source.section ? ` · ${source.section}` : ''}{source.page !== null ? ` · Page ${source.page}` : ''}</span>{source.snippet && <p>{source.snippet}</p>}</li>)}</ol>}</div>}
         {activePane === 'sessions' && !workspaceId && <p className="muted">Select a workspace to view recent chats.</p>}
         {activePane === 'sessions' && workspaceId && sessionsStatus === 'loading' && <p className="muted">Loading recent chats…</p>}
+        {activePane === 'sessions' && workspaceId && sessionsStatus === 'error' && <button className="secondary" type="button" onClick={retrySessions}>Retry recent chats</button>}
         {activePane === 'sessions' && workspaceId && sessionsStatus === 'ready' && sessions.length === 0 && <p className="muted">No recent chats in this workspace.</p>}
-        {activePane === 'sessions' && sessions.length > 0 && <ul className="session-list">{sessions.map((session) => <li key={session.sessionId}><button className={activeSession?.sessionId === session.sessionId ? 'session active-session' : 'session'} type="button" onClick={() => void selectSession(session)}><span>{session.title}</span>{session.preview && <small>{session.preview}</small>}</button></li>)}</ul>}
+        {activePane === 'sessions' && sessions.length > 0 && <ul className="session-list">{sessions.map((session) => <li key={session.sessionId}><button className={activeSession?.sessionId === session.sessionId ? 'session active-session' : 'session'} type="button" aria-current={activeSession?.sessionId === session.sessionId ? 'page' : undefined} onClick={() => void selectSession(session)}><span>{session.title}</span>{session.preview && <small>{session.preview}</small>}</button></li>)}</ul>}
       </aside>
     </section>
   </main>
