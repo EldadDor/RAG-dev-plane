@@ -11,8 +11,8 @@ class QdrantVectorStore:
         self._client = AsyncQdrantClient(url=url, api_key=api_key, check_compatibility=check_compatibility)
         self._collection_name = collection_name
         self._ensured = False
-        self._document_hashes: dict[tuple[str, str], str] = {}
-        self._documents: dict[tuple[str, str], dict] = {}
+        self._document_hashes: dict[tuple[str, str, str], str] = {}
+        self._documents: dict[tuple[str, str, str], dict] = {}
 
     async def ensure_collection(self, vector_size: int) -> None:
         """Create the collection if it does not already exist. Idempotent after first success."""
@@ -49,14 +49,17 @@ class QdrantVectorStore:
         ]
         await self._client.upsert(collection_name=self._collection_name, points=points)
 
-    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
+    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
         """Return the top-k most similar chunks for a query embedding."""
         response = await self._client.query_points(
             collection_name=self._collection_name,
             query=query_vector,
             limit=limit,
             with_payload=True,
-            query_filter=qdrant_models.Filter(must=[qdrant_models.FieldCondition(key="workspace_id", match=qdrant_models.MatchValue(value=workspace_id or "local"))]),
+            query_filter=qdrant_models.Filter(must=[
+                qdrant_models.FieldCondition(key="workspace_id", match=qdrant_models.MatchValue(value=workspace_id or "local")),
+                qdrant_models.FieldCondition(key="chunking_profile", match=qdrant_models.MatchValue(value=chunking_profile or "default")),
+            ]),
         )
         chunks = []
         for hit in response.points:
@@ -83,8 +86,8 @@ class QdrantVectorStore:
         except Exception:
             return False
 
-    async def get_document_hash(self, doc_id: str, workspace_id: str) -> str | None:
-        return self._document_hashes.get((workspace_id, doc_id))
+    async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:
+        return self._document_hashes.get((workspace_id, chunking_profile, doc_id))
 
     async def replace_document(self, document: dict, chunks: list[dict]) -> None:
         await self._client.delete(
@@ -93,22 +96,27 @@ class QdrantVectorStore:
                 must=[
                     qdrant_models.FieldCondition(key="doc_id", match=qdrant_models.MatchValue(value=document["doc_id"])),
                     qdrant_models.FieldCondition(key="workspace_id", match=qdrant_models.MatchValue(value=document["workspace_id"])),
+                    qdrant_models.FieldCondition(key="chunking_profile", match=qdrant_models.MatchValue(value=document["chunking_profile"])),
                 ]
             ),
         )
         await self.upsert(chunks)
-        key = (document["workspace_id"], document["doc_id"])
+        key = (document["workspace_id"], document["chunking_profile"], document["doc_id"])
         self._document_hashes[key] = document["content_hash"]
         self._documents[key] = document
 
-    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str]) -> int:
-        stale = [key for key, document in self._documents.items() if document.get("root_path") == root_path and key[0] == workspace_id and key[1] not in present_doc_ids]
+    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
+        stale = [key for key, document in self._documents.items() if document.get("root_path") == root_path and key[0] == workspace_id and key[1] == chunking_profile and key[2] not in present_doc_ids]
         for key in stale:
             document = self._documents.pop(key)
             await self._client.delete(
                 collection_name=self._collection_name,
                 points_selector=qdrant_models.Filter(
-                    must=[qdrant_models.FieldCondition(key="doc_id", match=qdrant_models.MatchValue(value=document["doc_id"]))],
+                    must=[
+                        qdrant_models.FieldCondition(key="doc_id", match=qdrant_models.MatchValue(value=document["doc_id"])),
+                        qdrant_models.FieldCondition(key="workspace_id", match=qdrant_models.MatchValue(value=workspace_id)),
+                        qdrant_models.FieldCondition(key="chunking_profile", match=qdrant_models.MatchValue(value=chunking_profile)),
+                    ],
                 ),
             )
             self._document_hashes.pop(key, None)

@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
     include_debug: bool = False
     session_id: str | None = None
     workspace_id: str | None = Field(default=None, min_length=1)
+    chunking_profile: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
 
 class ChatResponse(BaseModel):
@@ -80,6 +81,8 @@ class IngestRequest(BaseModel):
     source_path: str = Field(min_length=1)
     recursive: bool = False
     workspace_id: str | None = Field(default=None, min_length=1)
+    chunking_profile: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+    dry_run: bool = False
 
 
 class IngestResult(BaseModel):
@@ -92,6 +95,8 @@ class IngestResult(BaseModel):
 
 class IngestResponse(BaseModel):
     indexed: int
+    chunking_profile: str
+    dry_run: bool
     documents: list[IngestResult]
 
 

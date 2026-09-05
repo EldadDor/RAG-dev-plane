@@ -45,13 +45,13 @@ profile rather than replacing the default rows during experimentation.
 
 | ID | Task | Status |
 | --- | --- | --- |
-| CW-01 | Map current source/chunk persistence, IDs, replacement lifecycle, and retrieval filters; record the migration and rollback design. | Pending |
-| CW-02 | Define the profile model, default-profile name, request/response schema changes, and profile-selection authorization boundaries. | Pending |
-| CW-03 | Implement and validate migration `003_chunking_profiles.sql`, including preservation of existing rows. | Pending |
-| CW-04 | Implement profile-aware ingestion, source lifecycle, and `dry_run` statistics with no writes. | Pending |
-| CW-05 | Register recursive-character profiles and any approved optional semantic strategy behind the chunker boundary. | Pending |
-| CW-06 | Add profile filters to retrieval and chat without changing unspecified-request behavior. | Pending |
-| CW-07 | Add focused unit/API tests, run the approved validation lanes, update contracts and handoff records, then prepare closure. | Pending |
+| CW-01 | Map current source/chunk persistence, IDs, replacement lifecycle, and retrieval filters; record the migration and rollback design. | Complete 2026-09-05: profile is now part of source identity and chunk metadata; default retains legacy IDs. |
+| CW-02 | Define the profile model, default-profile name, request/response schema changes, and profile-selection authorization boundaries. | Complete 2026-09-05: configured named profiles, `default` fallback, and validated optional request fields. |
+| CW-03 | Implement and validate migration `003_chunking_profiles.sql`, including preservation of existing rows. | Implemented; local PostgreSQL validation pending migration application. |
+| CW-04 | Implement profile-aware ingestion, source lifecycle, and `dry_run` statistics with no writes. | Complete 2026-09-05: dry runs skip hash checks, embeddings, replacement, and stale-row deletion. |
+| CW-05 | Register recursive-character profiles and any approved optional semantic strategy behind the chunker boundary. | Complete 2026-09-05: profiles use the existing recursive-character and optional semantic adapters. |
+| CW-06 | Add profile filters to retrieval and chat without changing unspecified-request behavior. | Complete 2026-09-05: semantic and lexical paths both filter by resolved profile. |
+| CW-07 | Add focused unit/API tests, run the approved validation lanes, update contracts and handoff records, then prepare closure. | In progress: isolated suite passes; live PostgreSQL validation remains. |
 
 ## Acceptance Checks
 

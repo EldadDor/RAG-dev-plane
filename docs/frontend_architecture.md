@@ -104,6 +104,8 @@ Content-Type: application/json
 server has a configured default workspace. Omit `session_id` to create a new
 chat; pass the `session_id` received in `meta` for the next turn. `top_k` is
 optional (`1`–`20`) and `include_debug` defaults to `false`; production UI
+may optionally send a configured `chunking_profile` to query an isolated
+chunking experiment. Omitting it retains the existing default-profile behavior.
 should leave it false.
 
 ### Events

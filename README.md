@@ -56,6 +56,25 @@ source document's content hash; unchanged files are skipped, changed files
 replace their old chunks atomically, and files missing from a re-scanned
 directory have their stale chunks removed.
 
+## Chunking profiles
+
+Chunking experiments are isolated with a named `chunking_profile`. The built-in
+`default` profile inherits `CHUNK_SIZE`, `CHUNK_OVERLAP`, and the legacy
+chunker settings, so existing requests and indexed rows keep their current
+behavior. Define alternatives with `CHUNKING_PROFILES` JSON, then first inspect
+their chunk statistics without calling an embedding model or writing data:
+
+```bash
+curl -X POST http://localhost:8000/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"source_path":"docs/","recursive":true,"chunking_profile":"experiment-small","dry_run":true}'
+```
+
+Run the same request with `dry_run:false` to index the experiment alongside the
+default profile. Send `chunking_profile` with `/chat` or `/chat/stream` to
+query that profile in isolation. Apply migration `003_chunking_profiles.sql`
+before using this feature against PostgreSQL.
+
 PostgreSQL retrieval uses hybrid search by default: pgvector semantic search
 plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error

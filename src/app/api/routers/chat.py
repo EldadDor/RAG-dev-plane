@@ -43,6 +43,10 @@ async def chat(
 ) -> ChatResponse:
     workspace_id = await _authorized_workspace(body.workspace_id, principal, workspace_store, settings)
     try:
+        settings.chunking_profile(body.chunking_profile)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    try:
         with Observability(settings).request(
             "chat.request", {"workspace_id": workspace_id, "session_id": body.session_id}
         ):
@@ -52,6 +56,7 @@ async def chat(
                 include_debug=body.include_debug,
                 session_id=body.session_id,
                 workspace_id=workspace_id,
+                chunking_profile=body.chunking_profile,
                 owner_id=principal.subject,
             )
     except SessionScopeError as exc:
@@ -71,6 +76,10 @@ async def chat_stream(
     settings: Settings = Depends(get_settings),
 ):
     workspace_id = await _authorized_workspace(body.workspace_id, principal, workspace_store, settings)
+    try:
+        settings.chunking_profile(body.chunking_profile)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     if body.session_id:
         try:
             await request.app.state.conversation_store.ensure_session(
@@ -87,6 +96,7 @@ async def chat_stream(
                 include_debug=body.include_debug,
                 session_id=body.session_id,
                 workspace_id=workspace_id,
+                chunking_profile=body.chunking_profile,
                 owner_id=principal.subject,
             ):
                 yield event

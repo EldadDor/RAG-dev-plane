@@ -3,6 +3,25 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-05 — Optional chunking-profile query contract published
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change
+- **Status:** Implemented
+- **Affected contract/files:** `POST /chat`, `POST /chat/stream`,
+  `docs/frontend_architecture.md`
+- **Message:** Chat requests may include optional `chunking_profile` (a
+  configured name using letters, numbers, `_`, or `-`) to retrieve only from a
+  non-default chunking experiment. Omission is fully backward compatible and
+  selects `default`, preserving the current UI behavior. Unknown profiles are
+  rejected as invalid requests. Ingestion also supports `chunking_profile` and
+  `dry_run`; those are backend/operator controls and require no UI work.
+- **Action requested:** None. Keep omitting `chunking_profile` until an
+  experiment-selection UI is separately approved.
+- **Supersedes / follow-up:** Introduced by NP-08; local PostgreSQL migration
+  validation remains before phase closure.
+
 ## 2026-09-03 — Empty session-list workspace ID validation fixed
 
 - **From:** Backend

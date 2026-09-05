@@ -50,6 +50,7 @@ SELECT id, content, metadata, source, page_number, chunk_index,
        (1.0 - (embedding <=> $1::vector)) AS score
 FROM {schema}.{table}
 WHERE metadata->>'workspace_id' = $3
+  AND COALESCE(metadata->>'chunking_profile', 'default') = $4
 ORDER BY embedding <=> $1::vector
 LIMIT $2;
 """
@@ -60,6 +61,7 @@ SELECT id, content, metadata, source, page_number, chunk_index,
 FROM {schema}.{table}
 WHERE to_tsvector('simple', content) @@ websearch_to_tsquery('simple', $1)
   AND metadata->>'workspace_id' = $3
+  AND COALESCE(metadata->>'chunking_profile', 'default') = $4
 ORDER BY score DESC, id
 LIMIT $2;
 """
@@ -190,10 +192,10 @@ class PgVectorStore:
                 )
             applied_versions = await conn.fetch(
                 f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
-                ["001_baseline", "002_workspace_authorization"],
+                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles"],
             )
             applied_version_names = {row["version"] for row in applied_versions}
-            required_versions = {"001_baseline", "002_workspace_authorization"}
+            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles"}
             if applied_version_names != required_versions:
                 missing_versions = sorted(required_versions - applied_version_names)
                 raise RuntimeError(
@@ -249,31 +251,31 @@ class PgVectorStore:
         if records:
             await conn.executemany(sql, records)
 
-    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
+    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, _vec_str(query_vector), limit, workspace_id or "local")
+            rows = await conn.fetch(sql, _vec_str(query_vector), limit, workspace_id or "local", chunking_profile or "default")
 
         return [_row_to_retrieved_chunk(row) for row in rows]
 
-    async def search_text(self, query: str, limit: int = 5, workspace_id: str | None = None) -> list[RetrievedChunk]:
+    async def search_text(self, query: str, limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
         """Return exact-term matches, optimized for symbols, paths and error text."""
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _TEXT_SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, limit, workspace_id or "local")
+            rows = await conn.fetch(sql, query, limit, workspace_id or "local", chunking_profile or "default")
         return [_row_to_retrieved_chunk(row) for row in rows]
 
-    async def get_document_hash(self, doc_id: str, workspace_id: str) -> str | None:
+    async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:
         async with self._pool.acquire() as conn:
             return await conn.fetchval(
-                f"SELECT content_hash FROM {self._schema}.source_documents WHERE doc_id = $1 AND workspace_id = $2",
-                doc_id, workspace_id,
+                f"SELECT content_hash FROM {self._schema}.source_documents WHERE doc_id = $1 AND workspace_id = $2 AND chunking_profile = $3",
+                doc_id, workspace_id, chunking_profile,
             )
 
     async def replace_document(self, document: dict, chunks: list[dict]) -> None:
@@ -283,33 +285,34 @@ class PgVectorStore:
                 await conn.execute(
                     f"""DELETE FROM {self._schema}.{self._table}
                     WHERE metadata->>'doc_id' = $1
-                      AND (metadata->>'workspace_id' = $2 OR NOT (metadata ? 'workspace_id'))""",
-                    document["doc_id"], document["workspace_id"],
+                      AND metadata->>'workspace_id' = $2
+                      AND COALESCE(metadata->>'chunking_profile', 'default') = $3""",
+                    document["doc_id"], document["workspace_id"], document["chunking_profile"],
                 )
                 await conn.execute(
                     f"""INSERT INTO {self._schema}.source_documents
-                    (doc_id, workspace_id, root_path, source_path, source_type, content_hash, metadata)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
-                    ON CONFLICT (workspace_id, doc_id) DO UPDATE SET
+                    (doc_id, workspace_id, chunking_profile, root_path, source_path, source_type, content_hash, metadata)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    ON CONFLICT (workspace_id, chunking_profile, doc_id) DO UPDATE SET
                       root_path=EXCLUDED.root_path, source_path=EXCLUDED.source_path, source_type=EXCLUDED.source_type,
                       content_hash=EXCLUDED.content_hash, metadata=EXCLUDED.metadata, updated_at=now()""",
-                    document["doc_id"], document["workspace_id"], document.get("root_path"), document["source_path"],
+                    document["doc_id"], document["workspace_id"], document["chunking_profile"], document.get("root_path"), document["source_path"],
                     document["source_type"], document["content_hash"], document.get("metadata", {}),
                 )
                 await self._upsert_on_connection(conn, chunks)
 
-    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str]) -> int:
+    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
         async with self._pool.acquire() as conn:
             async with conn.transaction():
                 rows = await conn.fetch(
-                    f"SELECT doc_id FROM {self._schema}.source_documents WHERE root_path=$1 AND workspace_id=$2 AND NOT (doc_id = ANY($3::text[]))",
-                    root_path, workspace_id, present_doc_ids,
+                    f"SELECT doc_id FROM {self._schema}.source_documents WHERE root_path=$1 AND workspace_id=$2 AND chunking_profile=$3 AND NOT (doc_id = ANY($4::text[]))",
+                    root_path, workspace_id, chunking_profile, present_doc_ids,
                 )
                 doc_ids = [row["doc_id"] for row in rows]
                 if not doc_ids:
                     return 0
-                await conn.execute(f"DELETE FROM {self._schema}.{self._table} WHERE metadata->>'doc_id' = ANY($1::text[]) AND metadata->>'workspace_id' = $2", doc_ids, workspace_id)
-                await conn.execute(f"DELETE FROM {self._schema}.source_documents WHERE doc_id = ANY($1::text[]) AND workspace_id = $2", doc_ids, workspace_id)
+                await conn.execute(f"DELETE FROM {self._schema}.{self._table} WHERE metadata->>'doc_id' = ANY($1::text[]) AND metadata->>'workspace_id' = $2 AND COALESCE(metadata->>'chunking_profile', 'default') = $3", doc_ids, workspace_id, chunking_profile)
+                await conn.execute(f"DELETE FROM {self._schema}.source_documents WHERE doc_id = ANY($1::text[]) AND workspace_id = $2 AND chunking_profile = $3", doc_ids, workspace_id, chunking_profile)
                 return len(doc_ids)
 
     async def health_check(self) -> bool:

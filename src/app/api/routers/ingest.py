@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.schemas import IngestRequest, IngestResponse, IngestResult
+from app.config import Settings, get_settings
 from app.dependencies import get_ingestion_service
 from app.services.ingestion_service import IngestionService
 
@@ -15,6 +16,7 @@ router = APIRouter(prefix="/ingest", tags=["ingestion"])
 async def ingest(
         request: IngestRequest,
         ingestion_service: IngestionService = Depends(get_ingestion_service),
+        settings: Settings = Depends(get_settings),
 ) -> IngestResponse:
     logger.info("📥 Ingest request received: source_path=%s recursive=%s", request.source_path, request.recursive)
 
@@ -22,6 +24,10 @@ async def ingest(
     if not path.exists():
         logger.error("❌ Path not found: %s", request.source_path)
         raise HTTPException(status_code=404, detail=f"Path not found: {request.source_path}")
+    try:
+        settings.chunking_profile(request.chunking_profile)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     try:
         if path.is_dir():
@@ -33,9 +39,13 @@ async def ingest(
             request.source_path,
             recursive=request.recursive,
             workspace_id=request.workspace_id,
+            chunking_profile=request.chunking_profile,
+            dry_run=request.dry_run,
         )
         response = IngestResponse(
             indexed=result.chunks_indexed,
+            chunking_profile=result.chunking_profile,
+            dry_run=result.dry_run,
             documents=[
                 IngestResult(
                     doc_id=item.doc_id,
