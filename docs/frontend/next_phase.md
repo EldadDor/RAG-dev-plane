@@ -1,6 +1,6 @@
 # Next Frontend Phase — Approval Backlog
 
-**Status:** FP-01 Chat Workspace Foundation is active. This file tracks work
+**Status:** FP-01 Chat Workspace Foundation is complete. This file tracks work
 after FP-01; authoritative current-task status remains in
 `work_current_phase.md`.
 **Last reviewed:** 2026-09-04
@@ -8,6 +8,8 @@ after FP-01; authoritative current-task status remains in
 
 ## Current Phase Checkpoint
 
+- FP-01 received formal closure approval on 2026-09-05 after unit tests, type
+  checks, and the production build passed.
 - FP-04 workspace selection and session list/load/new-chat flow completed on
   2026-08-29 against the approved API and error contracts.
 - FP-05 bounded history, rename, and approved archive behavior completed on

@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-01 Chat Workspace Foundation
 
-**Status:** Active
-**Last reviewed:** 2026-09-04
+**Status:** Completed
+**Last reviewed:** 2026-09-05
 **Owner:** Frontend team
 
 ## Objective
@@ -32,8 +32,8 @@ chat UI defined in `../frontend_architecture.md`.
 | FP-04 | Implement workspace selection and session list/load/new-chat flow | Completed | 2026-08-29: Implemented proxy-only workspace discovery, workspace-filtered newest-first session listing, session detail loading without a workspace query, new-chat reset, canonical `last_preview`/timestamp mapping, and safe `403`/`404` recovery. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. Live-stack validation remains with the backend. |
 | FP-05 | Implement bounded history rendering and session actions | Completed | 2026-08-29: Implemented labeled compact summary and chronological recent turns with timestamps, inline rename, and approved “Archive chat” confirmation/action through the documented PATCH/DELETE endpoints. Session actions apply safe `403` workspace recovery and `404` removal. `git diff --check` passes; type-check/build remain pending FP-07 because Node/npm are unavailable. |
 | FP-06 | Implement streaming answer, metadata, citations, and recovery states | Completed | 2026-09-04: Implemented fetch-based POST SSE parsing for named JSON answer, meta, error, and done events. Answer deltas render incrementally; session ID, grounded state, and sources commit only from meta; Stop uses AbortController; interruption preserves visibly incomplete text; no automatic retry/reconnect occurs. Live browser validation through the IPv4 Vite proxy passed workspace loading, streaming, history/session commit, sources, and archive cleanup; browser console was clean. |
-| FP-07 | Add frontend tests, accessibility checks, and production-build verification | Blocked | 2026-09-04: Bundled Node 24.19.0 ran `tsc -b` successfully and Vite 6.4.3 production build successfully (30 modules; `dist/` generated); `git diff --check` passes. Static accessibility review corrected pane-toggle semantics to pressed buttons and added visible keyboard focus. No live services ran. Automated tests remain blocked: `package.json` has no test script/framework or test files, and adding a frontend dependency requires explicit approval. FP-07 changes are intentionally uncommitted because the worktree also contains unrelated handoff/backlog edits. |
-| FP-08 | Update this phase record and frontend backlog; prepare handoff | Completed | 2026-09-04: Reconciled the phase records after live validation. The backend fixed the empty `workspace_id` contract discrepancy (`422 invalid_request`); no frontend change is required. Phase closure remains blocked on FP-07 and approval. |
+| FP-07 | Add frontend tests, accessibility checks, and production-build verification | Completed | 2026-09-05: User approved Vitest for a minimal unit-only baseline. Added `vitest` and `npm test` (`vitest run`) plus `src/api.test.ts`, covering proxy-contract mapping, safe error-envelope handling, and split SSE answer/meta/done parsing. Passed: `node node_modules/vitest/vitest.mjs run` (3 tests), `node node_modules/typescript/bin/tsc -b`, `node node_modules/vite/bin/vite.js build`, and `git diff --check`. No live services or browser/UI end-to-end suite ran. Changes are uncommitted; no commit was requested. |
+| FP-08 | Update this phase record and frontend backlog; prepare handoff | Completed | 2026-09-05: Reconciled the phase records after local test-baseline completion. The backend fixed the empty `workspace_id` contract discrepancy (`422 invalid_request`); no frontend change is required. User formally reviewed and approved FP-01 closure on 2026-09-05. |
 
 ## Required Update Protocol
 
@@ -59,8 +59,8 @@ prior task's result and approval state are unrecorded.
   authentication/header behavior before it is added. Approved for the FP-03
   baseline dependencies on 2026-08-22; no proxy/authentication behavior will
   be invented beyond the documented contract.
-- [ ] Approve phase closure after local type checks, tests, and production build
-  have passed.
+- [x] Approve phase closure after local type checks, tests, and production build
+  have passed. Approved 2026-09-05.
 
 ## Execution Constraints
 
