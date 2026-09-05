@@ -16,14 +16,23 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 4 | NP-04 | Add operational observability | Foundation complete: optional safe root tracing. Nested RAG spans are deferred. | Completed 2026-08-21 |
 | 5 | NP-05 | Workspace discovery and authorization | PostgreSQL-backed authorization, canonical frontend contract, migrations/local seed, live API validation, and documentation indexing complete. | Completed 2026-08-29 |
 | 6 | NP-06 | Define CI test lanes | Moved from NP-05. Separate required unit/API CI from a manual environment-specific live lane. | Queued after NP-05 |
-| 7 | NP-07 | Answer conciseness and groundedness tuning | Answer verbosity is driven by context volume and precision before prompt wording; tune retrieval-side context assembly first. | Queued after NP-08 |
+| 7 | NP-07 | Answer conciseness and groundedness tuning | Answer verbosity is driven by context volume and precision before prompt wording; tune retrieval-side context assembly first. | Queued after NP-08 and NP-09 |
 | 8 | NP-08 | Non-destructive chunking experimentation lab | Chunking is a single global setting and re-ingestion replaces existing chunks; versioned profiles make experiments safe and preserve indexed data. | **Active.** Approved 2026-09-04 |
 | 9 | NP-09 | Golden evaluation set and regression harness | Retrieval and answer quality must be measurable and comparable across chunking and retrieval changes. | Queued |
 | 10 | NP-10 | Activate retrieval reranking | Reranking is configuration-visible but not an active stage; precision gains tighten answers. | Queued after NP-09 |
 | 11 | NP-11 | Frontend live validation and phase closure | Run the operator integration checklist and close FP-01 after the FP-07 completion. | Queued |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
 
-## Recommended Next Phase
+## Current Active Phase
+
+### NP-08 — Non-Destructive Chunking Experimentation Lab (Active)
+
+The implementation record, task board, approval gates, and validation plan are
+authoritative in [`work_current_phase.md`](work_current_phase.md). The broader
+sequence, dependencies, and later-phase acceptance criteria are authoritative
+in [`extended_plan.md`](extended_plan.md).
+
+## Completed-Phase Reference
 
 ### NP-01 — Refresh Architecture Documentation (Complete)
 
@@ -67,37 +76,6 @@ and documentation indexing completed 2026-08-29.
 
 **Objective:** Keep unit/API verification required and isolated, while making
 live stack verification explicitly manual and environment-scoped.
-
-### NP-08 — Non-Destructive Chunking Experimentation Lab (Active)
-
-**Objective:** Allow chunking strategies to be changed, ingested, and tested
-side by side without overwriting the existing indexed chunks in pgvector.
-
-**Scope:**
-
-- Add a `chunking_profile` dimension to chunk and source-document records
-  through a versioned migration (`003_chunking_profiles.sql`); the default
-  profile preserves current behavior and existing rows.
-- Extend `POST /ingest` with `chunking_profile` and a `dry_run` mode that
-  reports chunk statistics without replacing indexed data.
-- Register alternative chunking strategies behind the existing chunker boundary
-  (recursive-character with profile-defined size/overlap, and an optional
-  semantic splitter for comparison).
-- Allow retrieval and chat to filter by `chunking_profile` so an experiment can
-  be queried in isolation.
-
-**Acceptance checks:**
-
-- Re-ingesting the same sources under an experiment profile leaves the default
-  profile's rows unchanged.
-- A workspace-scoped query filtered to an experiment profile returns only that
-  profile's chunks.
-- Ingestion, retrieval, and chat behavior are unchanged when no profile is
-  specified.
-
-**Tracking:** [`extended_plan.md`](extended_plan.md); rotate
-[`work_current_phase.md`](work_current_phase.md) to NP-08 when implementation
-starts.
 
 ## Phase Intake Checklist
 

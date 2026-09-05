@@ -2,11 +2,31 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Self
 
-from pydantic import Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Resolve .env relative to this file's location, walking up to the project root
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent/ ".env"
+
+
+DEFAULT_CHUNKING_PROFILE = "default"
+
+
+class ChunkingProfile(BaseModel):
+    """A named, reproducible configuration for one indexed chunk variant."""
+
+    provider: str = "default"
+    chunk_size: int = Field(default=800, ge=1)
+    chunk_overlap: int = Field(default=120, ge=0)
+    semantic_threshold: float = Field(default=0.5, ge=0, le=1)
+    recipe: str | None = None
+    embedding_model: str | None = None
+
+    @model_validator(mode="after")
+    def validate_overlap(self) -> Self:
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk_overlap must be smaller than chunk_size")
+        return self
 
 
 class Settings(BaseSettings):
@@ -81,6 +101,12 @@ class Settings(BaseSettings):
     top_k: int = Field(default=5, alias="TOP_K")
     chunk_size: int = Field(default=800, alias="CHUNK_SIZE")
     chunk_overlap: int = Field(default=120, alias="CHUNK_OVERLAP")
+    chunker_provider: str = Field(default="default", alias="CHUNKER_PROVIDER")
+    chunker_semantic_threshold: float = Field(default=0.5, alias="CHUNKER_SEMANTIC_THRESHOLD")
+    chunker_recipe: str | None = Field(default=None, alias="CHUNKER_RECIPE")
+    chunker_embedding_model: str | None = Field(default=None, alias="CHUNKER_EMBEDDING_MODEL")
+    chunking_profiles: dict[str, ChunkingProfile] = Field(default_factory=dict, alias="CHUNKING_PROFILES")
+    default_chunking_profile: str = Field(default=DEFAULT_CHUNKING_PROFILE, alias="DEFAULT_CHUNKING_PROFILE")
     rerank_enabled: bool = Field(default=False, alias="RERANK_ENABLED")
     min_retrieval_score: float = Field(default=0.35, alias="MIN_RETRIEVAL_SCORE")
     hybrid_search_enabled: bool = Field(default=True, alias="HYBRID_SEARCH_ENABLED")
@@ -108,7 +134,32 @@ class Settings(BaseSettings):
             raise ValueError("AZURE_OPENAI_ENDPOINT is required when EMBEDDING_PROVIDER=azure_openai")
         if self.vector_store == "postgres" and not self.pg_host:
             raise ValueError("PG_HOST is required when VECTOR_STORE=postgres")
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
+        profiles = dict(self.chunking_profiles)
+        profiles.setdefault(
+            DEFAULT_CHUNKING_PROFILE,
+            ChunkingProfile(
+                provider=self.chunker_provider,
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+                semantic_threshold=self.chunker_semantic_threshold,
+                recipe=self.chunker_recipe,
+                embedding_model=self.chunker_embedding_model,
+            ),
+        )
+        if self.default_chunking_profile not in profiles:
+            raise ValueError("DEFAULT_CHUNKING_PROFILE must name a configured CHUNKING_PROFILES entry")
+        self.chunking_profiles = profiles
         return self
+
+    def chunking_profile(self, name: str | None = None) -> tuple[str, ChunkingProfile]:
+        """Resolve an optional request profile to the configured persisted name."""
+        resolved_name = name or self.default_chunking_profile
+        try:
+            return resolved_name, self.chunking_profiles[resolved_name]
+        except KeyError as exc:
+            raise ValueError(f"Unknown chunking profile: {resolved_name}") from exc
 
 
 @lru_cache

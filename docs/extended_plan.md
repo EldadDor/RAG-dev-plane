@@ -54,7 +54,7 @@ the volume and precision of retrieved context, and only then by prompt wording.
 
 ## New Phases
 
-### NP-07 — Answer Conciseness and Groundedness Tuning (Queued after NP-08)
+### NP-07 — Answer Conciseness and Groundedness Tuning (Queued after NP-08 and NP-09)
 
 **Objective:** Shorter, tighter answers without losing grounding or the
 abstention behavior.

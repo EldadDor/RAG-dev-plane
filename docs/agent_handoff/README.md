@@ -36,10 +36,12 @@ inside either implementation directory, so each side can read and write it.
 
 ## Current cross-team state
 
-- Backend NP-05 has implemented workspace discovery and authorization; SQL
-  migrations/local seed and live-stack validation remain before frontend live
-  use.
-- Frontend FP-04 is ready to resume after that validation. Its client contract
-  is `GET /workspaces` plus the existing workspace-scoped chat/session routes.
-- Archive wording and the streaming/reconnect interaction still require product
-  approval before their respective frontend tasks.
+- Backend NP-05 workspace discovery and authorization are complete and
+  live-validated. The frontend's FP-01 work is implemented through FP-07;
+  operator-run live integration validation and formal phase closure remain.
+- Backend NP-08 is active. It may add optional profile-selection fields to
+  ingestion, retrieval, and chat, but existing frontend requests must retain
+  their current behavior when no profile is supplied.
+- No frontend implementation is requested until NP-08 publishes an approved
+  API contract change in `docs/frontend_architecture.md` and
+  `backend_to_frontend.md`.
