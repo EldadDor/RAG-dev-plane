@@ -19,8 +19,8 @@ the frontend reads it and records responses in `frontend_to_backend.md`.
   `dry_run`; those are backend/operator controls and require no UI work.
 - **Action requested:** None. Keep omitting `chunking_profile` until an
   experiment-selection UI is separately approved.
-- **Supersedes / follow-up:** Introduced by NP-08; local PostgreSQL migration
-  validation remains before phase closure.
+- **Supersedes / follow-up:** Introduced by NP-08. PostgreSQL migration and
+  default-profile backfill validation completed 2026-09-05.
 
 ## 2026-09-03 — Empty session-list workspace ID validation fixed
 
