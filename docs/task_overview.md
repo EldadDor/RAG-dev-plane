@@ -1,12 +1,8 @@
 # Working on
 
-- Backend NP-08: run one live chunking experiment with a named profile.
-- Backend NP-08: configure a recursive-character experiment profile and run `dry_run` on representative documents.
-- Backend NP-08: ingest that profile, query chat/retrieval with it, and verify it returns only experiment chunks.
-- Backend NP-08: verify the `default` profile's 55 sources and 433 chunks remain unchanged after the experiment.
-- Backend NP-08: record the live evidence, close the phase, and add its completion record.
+- Backend: no active implementation phase; NP-08 is complete.
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
-- Planning: reconcile NP-11 in the backend roadmap with the frontend record that FP-01 is already closed and live streaming validation was completed.
+- Planning: activate the recommended next backend phase, NP-09.
 
 # Approved For future
 
@@ -23,5 +19,4 @@
 - Which named chunking profiles and size/overlap settings should be compared first.
 - Whether the optional semantic splitter is worth enabling for comparison.
 - Whether to expose chunking-profile selection in the frontend; the current UI correctly continues to use `default`.
-- Whether NP-11 should be closed as satisfied or retained for a separate full operator checklist review.
 - Final Azure model/provider choice, gateway identity details, and deployment configuration.

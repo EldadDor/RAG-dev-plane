@@ -1,6 +1,6 @@
 # Extended Application Plan — Frontend and Backend
 
-**Status:** Approved roadmap. NP-08 is the active phase.
+**Status:** Approved roadmap. NP-08 is complete; the next backend phase requires activation.
 **Prepared:** 2026-09-04
 **Basis:** All documentation under `docs/` (excluding `phase_qa/`), the phase
 history through NP-05, the FP-01 frontend phase records, and the current
@@ -12,6 +12,10 @@ backend phases. Each phase still requires its own activation review through
 `next_phase.md` before implementation, except NP-08, which is approved active.
 
 ## Current State
+
+**Update 2026-09-07:** NP-08 is complete and live-validated. Frontend FP-01
+and FP-02 are complete; the legacy snapshot below is retained as roadmap
+context and is superseded by the current phase records.
 
 ### Backend — NP-01 through NP-05 complete
 
@@ -73,7 +77,7 @@ abstention behavior.
 **Acceptance:** On the NP-09 golden set, mean answer length decreases with
 equal-or-better faithfulness and no regression in grounded-answer rate.
 
-### NP-08 — Non-Destructive Chunking Experimentation Lab (Active)
+### NP-08 — Non-Destructive Chunking Experimentation Lab (Complete)
 
 **Objective:** Change, ingest, and test chunking strategies side by side
 without overwriting the existing indexed chunks in pgvector.
@@ -140,11 +144,12 @@ set at equal or better recall; answer length drops as a side effect.
 
 ### NP-11 — Frontend Live Validation and Phase Closure (Queued)
 
-**Objective:** Finish the FP-01 frontend phase.
+**Status:** Complete 2026-09-05. FP-01 closure and live streaming validation
+are recorded by the frontend phase records; FP-02 subsequently completed its
+approved hardening scope.
 
-**Scope:** Run the operator checklist in `frontend/integration_test_plan.md`
-against the live stack (LLM, pgvector, embedding service), record evidence and
-any contract discrepancies in the agent handoff, then close FP-01.
+**Completion evidence:** The frontend records successful operator-run live
+streaming validation, no API-contract discrepancy, and formal FP-01 closure.
 
 ### NP-12 — Azure / Office Deployment (Queued after NP-08 and NP-09)
 

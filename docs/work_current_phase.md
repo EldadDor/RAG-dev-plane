@@ -1,8 +1,8 @@
 # Current Work Phase — NP-08 Non-Destructive Chunking Experimentation Lab
 
-**Status:** Active
+**Status:** Complete
 **Activated:** 2026-09-04
-**Last reviewed:** 2026-09-05
+**Last reviewed:** 2026-09-07
 **Owner:** Project team
 **Roadmap:** [`extended_plan.md`](extended_plan.md)
 
@@ -51,7 +51,7 @@ profile rather than replacing the default rows during experimentation.
 | CW-04 | Implement profile-aware ingestion, source lifecycle, and `dry_run` statistics with no writes. | Complete 2026-09-05: dry runs skip hash checks, embeddings, replacement, and stale-row deletion. |
 | CW-05 | Register recursive-character profiles and any approved optional semantic strategy behind the chunker boundary. | Complete 2026-09-05: profiles use the existing recursive-character and optional semantic adapters. |
 | CW-06 | Add profile filters to retrieval and chat without changing unspecified-request behavior. | Complete 2026-09-05: semantic and lexical paths both filter by resolved profile. |
-| CW-07 | Add focused unit/API tests, run the approved validation lanes, update contracts and handoff records, then prepare closure. | In progress: isolated suite passes and PostgreSQL migration/backfill validation is complete; a live experiment ingestion/query remains. |
+| CW-07 | Add focused unit/API tests, run the approved validation lanes, update contracts and handoff records, then prepare closure. | Complete 2026-09-07: 53 isolated tests passed (1 skipped); live PowerShell queries returned profile-isolated source IDs. PostgreSQL contains 56 default sources/465 chunks and 1 `experiment-small` source/48 chunks. |
 
 ## Acceptance Checks
 
@@ -96,6 +96,9 @@ work unchanged when no profile is sent.
 
 ## Completion Record
 
-Pending. On completion, add a validated, committed NP-08 entry to
-[`complete_phases.md`](complete_phases.md), update the backlog, and publish
-any contract changes through the shared handoff.
+NP-08 completed 2026-09-07. The profile-aware implementation is in `d1182fb`;
+the migration validation record is `6ac9570`. The user performed live
+PowerShell retrieval against the default and `experiment-small` profiles: the
+default source IDs retained their legacy form, while experiment source IDs
+included `:experiment-small:`. PostgreSQL confirmed the profiles are stored
+separately. NP-09 or NP-06 requires a new activation decision.

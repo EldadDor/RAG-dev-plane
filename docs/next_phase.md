@@ -1,7 +1,7 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-08 is active; NP-06 remains queued; all other future work requires explicit approval.
-**Last reviewed:** 2026-09-04
+**Status:** NP-08 is complete; no backend phase is active. NP-06 and NP-09 are the next candidates and require activation approval.
+**Last reviewed:** 2026-09-07
 
 This is the ordered backlog for the next approved phase. Each item must have a
 defined scope, acceptance checks, and an approval decision before implementation.
@@ -17,20 +17,19 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 5 | NP-05 | Workspace discovery and authorization | PostgreSQL-backed authorization, canonical frontend contract, migrations/local seed, live API validation, and documentation indexing complete. | Completed 2026-08-29 |
 | 6 | NP-06 | Define CI test lanes | Moved from NP-05. Separate required unit/API CI from a manual environment-specific live lane. | Queued after NP-05 |
 | 7 | NP-07 | Answer conciseness and groundedness tuning | Answer verbosity is driven by context volume and precision before prompt wording; tune retrieval-side context assembly first. | Queued after NP-08 and NP-09 |
-| 8 | NP-08 | Non-destructive chunking experimentation lab | Chunking is a single global setting and re-ingestion replaces existing chunks; versioned profiles make experiments safe and preserve indexed data. | **Active.** Approved 2026-09-04 |
+| 8 | NP-08 | Non-destructive chunking experimentation lab | Profile-scoped indexing, dry runs, and isolated retrieval are implemented and live-validated. | Completed 2026-09-07 |
 | 9 | NP-09 | Golden evaluation set and regression harness | Retrieval and answer quality must be measurable and comparable across chunking and retrieval changes. | Queued |
 | 10 | NP-10 | Activate retrieval reranking | Reranking is configuration-visible but not an active stage; precision gains tighten answers. | Queued after NP-09 |
-| 11 | NP-11 | Frontend live validation and phase closure | Run the operator integration checklist and close FP-01 after the FP-07 completion. | Queued |
+| 11 | NP-11 | Frontend live validation and phase closure | FP-01 closure and live streaming validation are recorded by the frontend phase records. | Completed 2026-09-05 |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
 
-## Current Active Phase
+## Current Phase State
 
-### NP-08 — Non-Destructive Chunking Experimentation Lab (Active)
+### No Active Backend Phase
 
-The implementation record, task board, approval gates, and validation plan are
-authoritative in [`work_current_phase.md`](work_current_phase.md). The broader
-sequence, dependencies, and later-phase acceptance criteria are authoritative
-in [`extended_plan.md`](extended_plan.md).
+NP-08 completed 2026-09-07. Its implementation and live validation are
+recorded in [`complete_phases.md`](complete_phases.md). Activate NP-06 or
+NP-09 through the phase intake process before beginning implementation.
 
 ## Completed-Phase Reference
 

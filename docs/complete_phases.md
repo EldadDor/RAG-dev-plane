@@ -87,6 +87,28 @@ architecture plus phase records.
 - Removed the obsolete architecture gap list; approved future work remains in
   `docs/next_phase.md`.
 
+## Phase: NP-08 Non-Destructive Chunking Experimentation Lab
+
+**Status:** Complete
+**Completed:** 2026-09-07
+**Commit(s):** `d1182fb`, `6ac9570`
+**Validation:** `53 passed, 1 skipped` in the isolated suite; migration
+`003_chunking_profiles` applied to PostgreSQL; live PowerShell default and
+experiment-profile chat queries returned isolated source IDs.
+
+**Delivered:**
+
+- Profile-scoped source-document identity, chunk metadata, ingestion lifecycle,
+  semantic retrieval, lexical retrieval, and chat filtering.
+- `dry_run` chunk-statistics mode that does not embed or persist data.
+- Migration backfill that preserves existing rows as `default`.
+- Live experiment evidence: 56 default sources / 465 chunks and one
+  `experiment-small` source / 48 chunks, stored separately.
+
+**Deferred:**
+
+- NP-09 evaluates which profile improves retrieval and answer quality.
+
 ## Record Template
 
 Use this structure for future completed phases:
