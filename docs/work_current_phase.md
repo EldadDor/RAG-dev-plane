@@ -1,104 +1,50 @@
-# Current Work Phase — NP-08 Non-Destructive Chunking Experimentation Lab
+# Current Work Phase — NP-09 Golden Evaluation Set and Regression Harness
 
-**Status:** Complete
-**Activated:** 2026-09-04
+**Status:** Active
+**Activated:** 2026-09-07
 **Last reviewed:** 2026-09-07
 **Owner:** Project team
 **Roadmap:** [`extended_plan.md`](extended_plan.md)
 
 ## Objective
 
-Make chunking strategies safe to change, ingest, and compare side by side
-without overwriting the existing pgvector index. The default profile must
-continue to behave exactly as it does today unless a caller explicitly selects
-another profile.
-
-## Approved Resolution
-
-Treat `chunking_profile` as an index-data dimension, not merely a runtime
-setting. Sources and chunks belonging to an experiment are isolated from the
-default profile, and a future promotion changes the workspace's selected
-profile rather than replacing the default rows during experimentation.
+Make retrieval and answer-quality changes measurable, repeatable, and
+comparable across chunking profiles, retrieval settings, and models.
 
 ## Scope and Guardrails
 
-- Add `chunking_profile` to persisted source-document and chunk records with
-  versioned migration `003_chunking_profiles.sql`.
-- Backfill or default existing records to the profile that preserves current
-  chunk-size and overlap behavior.
-- Extend `POST /ingest` with optional `chunking_profile` and `dry_run` inputs.
-  A dry run reports chunk statistics and must not write or replace index data.
-- Register profile-defined recursive-character chunking behind the current
-  chunker boundary. A semantic splitter may be added only as an optional
-  comparison strategy.
-- Allow retrieval and chat to select a profile, while omission selects the
-  existing default behavior.
-- Preserve workspace authorization, provider boundaries, conversation memory,
-  and the current default ingestion/retrieval/chat contracts.
-- Do not delete, rebuild, or mutate default-profile rows as part of an
-  experiment. Do not deploy infrastructure, change embedding models, activate
-  reranking, or apply NP-07 prompt/context changes in this phase.
-- Do not run Uvicorn, models, pgvector, Langfuse, or office services without
-  announcing it first.
+- Store human-verified golden cases as JSONL with a question, expected facts,
+  and optional source hints.
+- Provide pytest-compatible offline smoke tests and a richer local benchmark
+  runner with result artifacts.
+- Record run configuration, latency, metrics, and failure stage.
+- Verify retrieval determinism before comparing metrics.
+- Keep the benchmark read-only with respect to the document index and do not
+  make live model/database checks mandatory in CI.
+- Do not change retrieval, prompt, provider, or chunking behavior in this
+  phase; NP-07 and NP-10 own those changes.
 
 ## Task Board
 
 | ID | Task | Status |
 | --- | --- | --- |
-| CW-01 | Map current source/chunk persistence, IDs, replacement lifecycle, and retrieval filters; record the migration and rollback design. | Complete 2026-09-05: profile is now part of source identity and chunk metadata; default retains legacy IDs. |
-| CW-02 | Define the profile model, default-profile name, request/response schema changes, and profile-selection authorization boundaries. | Complete 2026-09-05: configured named profiles, `default` fallback, and validated optional request fields. |
-| CW-03 | Implement and validate migration `003_chunking_profiles.sql`, including preservation of existing rows. | Complete 2026-09-05: applied to PostgreSQL; 55 source documents and 433 chunks preserved as `default`. |
-| CW-04 | Implement profile-aware ingestion, source lifecycle, and `dry_run` statistics with no writes. | Complete 2026-09-05: dry runs skip hash checks, embeddings, replacement, and stale-row deletion. |
-| CW-05 | Register recursive-character profiles and any approved optional semantic strategy behind the chunker boundary. | Complete 2026-09-05: profiles use the existing recursive-character and optional semantic adapters. |
-| CW-06 | Add profile filters to retrieval and chat without changing unspecified-request behavior. | Complete 2026-09-05: semantic and lexical paths both filter by resolved profile. |
-| CW-07 | Add focused unit/API tests, run the approved validation lanes, update contracts and handoff records, then prepare closure. | Complete 2026-09-07: 53 isolated tests passed (1 skipped); live PowerShell queries returned profile-isolated source IDs. PostgreSQL contains 56 default sources/465 chunks and 1 `experiment-small` source/48 chunks. |
+| CW-01 | Define the versioned golden-case JSONL schema, loader, and validation tests. | Complete 2026-09-07: strict JSONL loader and documented case template added. |
+| CW-02 | Implement offline retrieval and answer metric helpers with explicit failure-stage reporting. | Complete 2026-09-07: deterministic source-hint, fact-coverage, and faithfulness-proxy metrics added. |
+| CW-03 | Implement retrieval determinism checks and configuration/result artifacts. | Complete 2026-09-07: runner compares repeated retrieval IDs and writes portable JSON artifacts. |
+| CW-04 | Add a local benchmark runner behind the existing adapter boundaries. | Complete 2026-09-07: provider-agnostic runner supports mocked offline evaluation. |
+| CW-05 | Add human-verified cases from representative developer documents. | Blocked on verified expected facts and source hints. |
+| CW-06 | Run offline smoke validation, then an approved local live benchmark and record the baseline. | In progress: offline suite passed 2026-09-07 (`56 passed, 1 skipped`); live baseline awaits golden cases. |
 
 ## Acceptance Checks
 
-- Re-ingesting the same sources under an experiment profile leaves default
-  profile source and chunk rows unchanged.
-- A workspace-scoped retrieval or chat request filtered to an experiment
-  profile returns only that profile's chunks.
-- `dry_run` returns deterministic useful statistics and makes no persistent
-  changes.
-- Ingestion, retrieval, and chat behavior remain unchanged when no profile is
-  specified.
-- The migration has a documented rollback path that does not discard indexed
-  data.
-
-## Approval Gates
-
-- NP-08 is approved active as recorded in [`extended_plan.md`](extended_plan.md).
-- Review the data model, default-profile naming, API shapes, and migration
-  rollback before implementation of CW-03.
-- Obtain explicit approval before adding a semantic-splitter dependency or
-  making live model/database validation mandatory.
-- Record externally visible API contract changes in
-  [`frontend_architecture.md`](frontend_architecture.md) and the backend-to-
-  frontend handoff before implementation is presented for frontend use.
-
-## Validation Plan
-
-- Unit-test profile selection, chunk generation, dry-run non-mutation, and
-  preservation of the default profile.
-- API-test request validation and profile-filtered ingestion, retrieval, and
-  chat with mocked dependencies.
-- Run a local PostgreSQL migration and lifecycle validation only after the
-  migration review gate; preserve the existing index before that check.
-- NP-09 will provide the cross-profile quality benchmark. NP-08 verifies
-  isolation and reversibility rather than declaring a strategy superior.
+- The suite runs offline with mocks and validates dataset loading, metrics,
+  determinism, configuration capture, and failure reporting.
+- A local benchmark run writes a comparable result artifact.
+- Each golden case has human-verified expected facts; source hints are optional.
+- Results identify whether a failure arose during ingestion, retrieval,
+  reranking, prompting, or generation.
 
 ## Handoff Constraint
 
-No frontend work is required until the optional profile fields and their
-response semantics are finalized. Existing frontend requests must continue to
-work unchanged when no profile is sent.
-
-## Completion Record
-
-NP-08 completed 2026-09-07. The profile-aware implementation is in `d1182fb`;
-the migration validation record is `6ac9570`. The user performed live
-PowerShell retrieval against the default and `experiment-small` profiles: the
-default source IDs retained their legacy form, while experiment source IDs
-included `:experiment-small:`. PostgreSQL confirmed the profiles are stored
-separately. NP-09 or NP-06 requires a new activation decision.
+No frontend work is required. Golden cases must use verified facts rather than
+answers inferred from the system under evaluation.

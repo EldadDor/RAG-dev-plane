@@ -1,8 +1,8 @@
 # Working on
 
-- Backend: no active implementation phase; NP-08 is complete.
+- Backend NP-09: build the golden evaluation dataset and regression harness.
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
-- Planning: activate the recommended next backend phase, NP-09.
+- Backend NP-09: collect human-verified expected facts and optional source hints for representative questions.
 
 # Approved For future
 
