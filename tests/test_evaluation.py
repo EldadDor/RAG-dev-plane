@@ -1,5 +1,6 @@
 import json
 
+import httpx
 import pytest
 
 from app.domain.models import RetrievedChunk
@@ -7,6 +8,7 @@ from app.evaluation.dataset import load_golden_cases
 from app.evaluation.metrics import expected_fact_coverage, faithfulness_proxy, source_hint_metrics
 from app.evaluation.models import GoldenCase
 from app.evaluation.runner import BenchmarkRunner, write_report
+from app.evaluation.live_api import LiveApiBenchmarkClient
 
 
 def test_load_golden_cases_validates_and_loads_jsonl(tmp_path):
@@ -63,3 +65,21 @@ async def test_runner_reports_determinism_metrics_and_generation_failures(tmp_pa
     assert report.configuration["chunking_profile"] == "default"
     artifact = write_report(report, tmp_path / "artifacts" / "run.json")
     assert json.loads(artifact.read_text(encoding="utf-8"))["cases"][0]["deterministic"] is True
+
+
+@pytest.mark.asyncio
+async def test_live_api_adapter_maps_chat_sources_without_network():
+    def responder(request):
+        assert request.url.path == "/chat"
+        assert json.loads(request.content)["chunking_profile"] == "experiment-small"
+        return httpx.Response(200, json={"answer": "Answer", "sources": [{
+            "chunk_id": "chunk", "doc_id": "doc", "source_path": "docs/guide.md", "score": 0.8, "snippet": "Context",
+        }]})
+
+    transport = httpx.MockTransport(responder)
+    async with httpx.AsyncClient(base_url="http://test", transport=transport) as client:
+        adapter = LiveApiBenchmarkClient(client)
+        chunks = await adapter.retrieve("question", chunking_profile="experiment-small")
+
+    assert chunks[0].chunk_id == "chunk"
+    assert chunks[0].text == "Context"

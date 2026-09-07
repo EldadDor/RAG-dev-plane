@@ -31,7 +31,7 @@ comparable across chunking profiles, retrieval settings, and models.
 | CW-01 | Define the versioned golden-case JSONL schema, loader, and validation tests. | Complete 2026-09-07: strict JSONL loader and documented case template added. |
 | CW-02 | Implement offline retrieval and answer metric helpers with explicit failure-stage reporting. | Complete 2026-09-07: deterministic source-hint, fact-coverage, and faithfulness-proxy metrics added. |
 | CW-03 | Implement retrieval determinism checks and configuration/result artifacts. | Complete 2026-09-07: runner compares repeated retrieval IDs and writes portable JSON artifacts. |
-| CW-04 | Add a local benchmark runner behind the existing adapter boundaries. | Complete 2026-09-07: provider-agnostic runner supports mocked offline evaluation. |
+| CW-04 | Add a local benchmark runner behind the existing adapter boundaries. | Complete 2026-09-07: provider-agnostic runner supports mocked offline evaluation and an opt-in `/chat` CLI that writes JSON artifacts. |
 | CW-05 | Add human-verified cases from representative developer documents. | Blocked on verified expected facts and source hints. |
 | CW-06 | Run offline smoke validation, then an approved local live benchmark and record the baseline. | In progress: offline suite passed 2026-09-07 (`56 passed, 1 skipped`); live baseline awaits golden cases. |
 

@@ -10,3 +10,16 @@ human-verified answer fact; do not copy a model answer into this file.
 `expected_source_hints` is optional. Use a document filename, stable path
 fragment, or document ID. Keep real cases in `golden_cases.jsonl`; this README
 contains the template because the expected fact still requires human review.
+
+After creating the dataset, run an already-running local API without changing
+the index:
+
+```powershell
+uv run python scripts/run_benchmark.py `
+  --dataset evaluation/golden_cases.jsonl `
+  --output evaluation/results/baseline.json
+```
+
+The runner makes repeated chat requests for each case to check retrieval
+determinism. Those requests appear in Recent Chats; they do not ingest, delete,
+or replace document chunks.
