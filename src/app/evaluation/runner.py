@@ -68,6 +68,9 @@ class BenchmarkRunner:
             "answer_relevance": expected_fact_coverage(answer, case.expected_facts) if answer is not None else None,
             "faithfulness": faithfulness_proxy(answer, [chunk.text for chunk in first], case.expected_facts) if answer is not None else None,
         }
+        if answer is not None and metrics["answer_relevance"] == 0.0 and first:
+            failure_stage = failure_stage or FailureStage.generation
+            failure_message = failure_message or "Answer did not cover any verified expected fact despite retrieved context."
         return CaseResult(
             case_id=case.case_id, retrieved_chunk_ids=chunk_ids, answer=answer,
             latency_ms=(perf_counter() - started) * 1000, metrics=metrics, deterministic=deterministic,

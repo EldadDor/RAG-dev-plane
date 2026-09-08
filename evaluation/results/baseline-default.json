@@ -1,0 +1,72 @@
+{
+  "cases": [
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "soil",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 8732.585099991411,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:26",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:20",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:25",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:21",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:19"
+      ]
+    },
+    {
+      "answer": "According to the context passages, water in plants performs two main tasks: \n\n1. It transports minerals along with it, allowing the plant to absorb essential nutrients.\n2. It is split into hydrogen and oxygen molecules, with the hydrogen being absorbed by the plant and the oxygen being expelled from the leaf.",
+      "case_id": "plant-nutrition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 16965.21249995567,
+      "metrics": {
+        "answer_relevance": 0.5263157894736842,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5789473684210527
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:370",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:49",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:48",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:346",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345"
+      ]
+    },
+    {
+      "answer": "According to passage [2], a soil moisture deficit (SMD) is the term used to measure how dry the soil is, and is measured in mm. For example, a SMD of 15 mm means that it will take 15 mm of rainfall to bring the soil back to field capacity, which is equivalent to applying 15 litres of water per square metre.",
+      "case_id": "soil-moisture-irrigation",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 27027.06550003495,
+      "metrics": {
+        "answer_relevance": 0.7777777777777778,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5555555555555556
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:343",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:344",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:26",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:349"
+      ]
+    }
+  ],
+  "configuration": {
+    "api_url": "http://localhost:8000",
+    "top_k": 5,
+    "workspace_id": null
+  }
+}

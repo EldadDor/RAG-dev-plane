@@ -1,6 +1,6 @@
 # Golden Evaluation Dataset
 
-Add one JSON object per line to `golden_cases.jsonl`. Every case needs a
+Add one JSON object per line to `golden-cases.jsonl`. Every case needs a
 human-verified answer fact; do not copy a model answer into this file.
 
 ```json
@@ -16,7 +16,7 @@ the index:
 
 ```powershell
 uv run python scripts/run_benchmark.py `
-  --dataset evaluation/golden_cases.jsonl `
+  --dataset evaluation/golden-cases.jsonl `
   --output evaluation/results/baseline.json
 ```
 

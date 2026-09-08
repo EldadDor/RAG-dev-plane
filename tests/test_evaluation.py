@@ -37,6 +37,7 @@ def test_metrics_are_deterministic_and_source_hint_aware():
     assert recall == 1.0
     assert expected_fact_coverage("The release guide is in docs/release.md.", ["The release guide is in docs/release.md"]) == 1.0
     assert faithfulness_proxy("The release guide is in docs/release.md.", [chunk.text for chunk in chunks], ["The release guide is in docs/release.md"]) == 1.0
+    assert expected_fact_coverage("Water transports minerals.", ["Water transports minerals through the plant."]) > 0.5
 
 
 @pytest.mark.asyncio
