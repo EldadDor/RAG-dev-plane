@@ -20,6 +20,6 @@ uv run python scripts/run_benchmark.py `
   --output evaluation/results/baseline.json
 ```
 
-The runner makes repeated chat requests for each case to check retrieval
+The runner makes two chat requests for each case to check retrieval
 determinism. Those requests appear in Recent Chats; they do not ingest, delete,
 or replace document chunks.

@@ -1,9 +1,8 @@
 # Working on
 
-- Backend NP-09: build the golden evaluation dataset and regression harness.
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
-- Backend NP-09: collect human-verified expected facts and optional source hints for representative questions.
-- Backend NP-09: expand the initial three-case smoke set to roughly 10–20 cases before using trends for product decisions.
+- Backend NP-09: review the 19-case default-profile baseline and use it to judge later retrieval, prompt, or chunking changes.
+- Backend NP-09: add cases only when a new document type, profile, or meaningful failure mode needs coverage.
 
 # Approved For future
 

@@ -81,6 +81,8 @@ async def test_live_api_adapter_maps_chat_sources_without_network():
     async with httpx.AsyncClient(base_url="http://test", transport=transport) as client:
         adapter = LiveApiBenchmarkClient(client)
         chunks = await adapter.retrieve("question", chunking_profile="experiment-small")
+        answer = await adapter.answer_function(5)(GoldenCase("case", "question", ("fact",), chunking_profile="experiment-small"))
 
     assert chunks[0].chunk_id == "chunk"
     assert chunks[0].text == "Context"
+    assert answer == "Answer"

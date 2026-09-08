@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Activated:** 2026-09-07
-**Last reviewed:** 2026-09-07
+**Last reviewed:** 2026-09-09
 **Owner:** Project team
 **Roadmap:** [`extended_plan.md`](extended_plan.md)
 
@@ -34,6 +34,7 @@ comparable across chunking profiles, retrieval settings, and models.
 | CW-04 | Add a local benchmark runner behind the existing adapter boundaries. | Complete 2026-09-07: provider-agnostic runner supports mocked offline evaluation and an opt-in `/chat` CLI that writes JSON artifacts. |
 | CW-05 | Add human-verified cases from representative developer documents. | Complete initial set 2026-09-08: three verified vegetable-growing cases with source hints. Expand before treating metric trends as decision-grade. |
 | CW-06 | Run offline smoke validation, then an approved local live benchmark and record the baseline. | Complete initial baseline 2026-09-08: `58 passed, 1 skipped`; all three retrievals deterministic with source-hint precision/recall of 1.0. `soil` abstained despite retrieved context and is recorded as a generation-stage failure. |
+| CW-07 | Expand the human-verified set and record a decision-grade default-profile baseline. | Complete 2026-09-09: 19 cases ran against the local API; all retrievals were deterministic and source-hint precision/recall was 1.0. The artifact is `evaluation/results/baseline-default-expanded.json`; `soil` remains the sole generation-stage failure. |
 
 ## Acceptance Checks
 

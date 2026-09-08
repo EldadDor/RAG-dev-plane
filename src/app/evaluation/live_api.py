@@ -15,6 +15,10 @@ class LiveApiBenchmarkClient:
     def __init__(self, client: httpx.AsyncClient, workspace_id: str | None = None) -> None:
         self._client = client
         self._workspace_id = workspace_id
+        self._responses: dict[tuple[str, str | None, str | None, int], dict[str, Any]] = {}
+
+    def _key(self, question: str, workspace_id: str | None, chunking_profile: str | None, top_k: int) -> tuple[str, str | None, str | None, int]:
+        return question, workspace_id or self._workspace_id, chunking_profile, top_k
 
     async def _chat(self, case: GoldenCase, top_k: int) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -28,7 +32,9 @@ class LiveApiBenchmarkClient:
             payload["chunking_profile"] = case.chunking_profile
         response = await self._client.post("/chat", json=payload)
         response.raise_for_status()
-        return response.json()
+        body = response.json()
+        self._responses[self._key(case.question, case.workspace_id, case.chunking_profile, top_k)] = body
+        return body
 
     async def retrieve(self, question: str, top_k: int | None = None, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
         case = GoldenCase(
@@ -47,5 +53,8 @@ class LiveApiBenchmarkClient:
 
     def answer_function(self, top_k: int) -> Callable[[GoldenCase], Awaitable[str]]:
         async def answer(case: GoldenCase) -> str:
-            return str((await self._chat(case, top_k)).get("answer", ""))
+            response = self._responses.get(self._key(case.question, case.workspace_id, case.chunking_profile, top_k))
+            if response is None:
+                response = await self._chat(case, top_k)
+            return str(response.get("answer", ""))
         return answer
