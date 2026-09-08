@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock
 
 import pytest
@@ -76,6 +77,40 @@ async def test_experiment_ingestion_uses_profile_scoped_document_and_chunk_ids(m
     assert chunks[0]["chunk_id"] == "guide:experiment-small:0"
     assert chunks[0]["payload"]["chunking_profile"] == "experiment-small"
     vector_store.get_document_hash.assert_awaited_once_with("guide", "local", "experiment-small")
+
+
+@pytest.mark.asyncio
+async def test_ingestion_limits_in_flight_embedding_requests(monkeypatch):
+    source = "guide.txt"
+    document = Document("guide", source, SourceType.text, "Embedding concurrency test. " * 100)
+    monkeypatch.setattr("app.services.ingestion_service.load_document", lambda _: document)
+
+    active_requests = 0
+    max_active_requests = 0
+
+    async def create_embedding(_: str, __: str) -> list[float]:
+        nonlocal active_requests, max_active_requests
+        active_requests += 1
+        max_active_requests = max(max_active_requests, active_requests)
+        await asyncio.sleep(0)
+        active_requests -= 1
+        return [0.1]
+
+    embedding_client = AsyncMock()
+    embedding_client.create_embedding.side_effect = create_embedding
+    vector_store = AsyncMock()
+    vector_store.get_document_hash.return_value = None
+    service = IngestionService(
+        _settings(CHUNK_SIZE=40, CHUNK_OVERLAP=10, EMBEDDING_CONCURRENCY=3),
+        embedding_client,
+        vector_store,
+    )
+
+    result = await service.ingest_path(source)
+
+    assert result.chunks_indexed > 3
+    assert max_active_requests == 3
+    assert embedding_client.create_embedding.await_count == result.chunks_indexed
 
 
 @pytest.mark.asyncio

@@ -38,6 +38,18 @@ class IngestionService:
             )
         )
 
+    async def _embed_chunks(self, chunks: list[tuple[int, Any]]) -> list[list[float]]:
+        """Embed chunks in bounded batches to avoid exhausting OS socket limits."""
+        embeddings: list[list[float]] = []
+        batch_size = self._settings.embedding_concurrency
+        for start in range(0, len(chunks), batch_size):
+            batch = chunks[start:start + batch_size]
+            embeddings.extend(await asyncio.gather(*[
+                self._embedding_client.create_embedding(self._settings.embedding_model, chunk.text.strip())
+                for _, chunk in batch
+            ]))
+        return embeddings
+
     async def ingest_path(
         self, source_path: str, recursive: bool = False, workspace_id: str | None = None,
         chunking_profile: str | None = None, dry_run: bool = False,
@@ -133,10 +145,7 @@ class IngestionService:
                 continue
 
             # Embed only persistent ingestions; dry runs must not contact a model.
-            embeddings = await asyncio.gather(*[
-                self._embedding_client.create_embedding(self._settings.embedding_model, chunk.text.strip())
-                for _, chunk in valid_chunks
-            ])
+            embeddings = await self._embed_chunks(valid_chunks)
 
             chunker_provider = profile.provider
             document_chunks: list[IngestedChunk] = []
