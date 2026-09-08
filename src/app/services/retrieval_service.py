@@ -1,29 +1,59 @@
+import logging
+
 from app.clients.embedding_client import EmbeddingClient
 from app.clients.vector_store import LexicalSearchVectorStore, VectorStore
 from app.config import Settings
 from app.domain.models import RetrievedChunk
+from app.rerankers import LocalCrossEncoderReranker, Reranker, RerankerUnavailable
+
+
+logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
-    def __init__(self, settings: Settings, embedding_client: EmbeddingClient, vector_store: VectorStore) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        embedding_client: EmbeddingClient,
+        vector_store: VectorStore,
+        reranker: Reranker | None = None,
+    ) -> None:
         self._settings = settings
         self._embedding_client = embedding_client
         self._vector_store = vector_store
+        self._reranker = reranker or LocalCrossEncoderReranker(settings.rerank_model)
 
     async def retrieve(self, question: str, top_k: int | None = None, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
         embedding = await self._embedding_client.create_embedding(self._settings.embedding_model, question)
         limit = top_k or self._settings.top_k
-        candidate_limit = max(limit, self._settings.retrieval_candidate_k)
+        candidate_limit = max(
+            limit,
+            self._settings.retrieval_candidate_k,
+            self._settings.rerank_candidate_k if self._settings.rerank_enabled else 0,
+        )
         profile_name, _ = self._settings.chunking_profile(chunking_profile)
         semantic = await self._vector_store.search(embedding, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name)
         # Avoid treating unrelated semantic matches as grounded evidence.
         semantic = [item for item in semantic if item.score >= self._settings.min_retrieval_score]
 
         if not self._settings.hybrid_search_enabled or not isinstance(self._vector_store, LexicalSearchVectorStore):
-            return semantic[:limit]
+            return await self._rerank_or_trim(question, semantic, limit)
 
         lexical = await self._vector_store.search_text(question, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name)
-        return self._reciprocal_rank_fusion(semantic, lexical, limit)
+        fused = self._reciprocal_rank_fusion(semantic, lexical, candidate_limit)
+        return await self._rerank_or_trim(question, fused, limit)
+
+    async def _rerank_or_trim(
+        self, question: str, candidates: list[RetrievedChunk], limit: int
+    ) -> list[RetrievedChunk]:
+        """Apply the optional stage without changing disabled-mode behavior."""
+        if not self._settings.rerank_enabled:
+            return candidates[:limit]
+        try:
+            return (await self._reranker.rerank(question, candidates))[:limit]
+        except RerankerUnavailable as exc:
+            logger.warning("Reranking unavailable; returning fused candidate order: %s", exc)
+            return candidates[:limit]
 
     def _reciprocal_rank_fusion(
         self,

@@ -1,13 +1,12 @@
 # Working on
 
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
-- Backend NP-09: review the 19-case default-profile baseline and use it to judge later retrieval, prompt, or chunking changes.
-- Backend NP-09: add cases only when a new document type, profile, or meaningful failure mode needs coverage.
+- Backend NP-10: inspect the current retrieval boundary and add a cross-encoder reranking stage behind it.
+- Backend NP-10: compare the reranked default profile against the 19-case NP-09 baseline before enabling it by default.
 
 # Approved For future
 
 - NP-06: define required unit/API CI lanes and a separate manual live-stack lane.
-- NP-09: build the golden evaluation dataset and repeatable regression harness.
 - NP-07: reduce answer length through context packing, duplicate filtering, and prompt tuning after NP-08 and NP-09.
 - NP-10: activate cross-encoder reranking after NP-09 proves its value.
 - NP-12: deploy to Azure/office infrastructure after NP-08 and NP-09.

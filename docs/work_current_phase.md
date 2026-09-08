@@ -1,51 +1,58 @@
-# Current Work Phase — NP-09 Golden Evaluation Set and Regression Harness
+# Current Work Phase — NP-10 Activate Retrieval Reranking
 
 **Status:** Active
-**Activated:** 2026-09-07
+**Activated:** 2026-09-09
 **Last reviewed:** 2026-09-09
 **Owner:** Project team
 **Roadmap:** [`extended_plan.md`](extended_plan.md)
+**Baseline:** [`../evaluation/results/baseline-default-expanded.json`](../evaluation/results/baseline-default-expanded.json)
 
 ## Objective
 
-Make retrieval and answer-quality changes measurable, repeatable, and
-comparable across chunking profiles, retrieval settings, and models.
+Improve the precision of the context sent to the answer model by reranking a
+wider hybrid-retrieval candidate set, while retaining recall and the existing
+local/on-premises operating path.
 
 ## Scope and Guardrails
 
-- Store human-verified golden cases as JSONL with a question, expected facts,
-  and optional source hints.
-- Provide pytest-compatible offline smoke tests and a richer local benchmark
-  runner with result artifacts.
-- Record run configuration, latency, metrics, and failure stage.
-- Verify retrieval determinism before comparing metrics.
-- Keep the benchmark read-only with respect to the document index and do not
-  make live model/database checks mandatory in CI.
-- Do not change retrieval, prompt, provider, or chunking behavior in this
-  phase; NP-07 and NP-10 own those changes.
+- Turn the existing `RERANK_ENABLED` setting into an actual retrieval stage
+  behind an adapter boundary.
+- Fetch a wider candidate set, rerank it, and retain a configurable final
+  top-k result set for chat and retrieval callers.
+- Provide a local cross-encoder implementation or an explicit safe fallback
+  when that optional dependency is unavailable.
+- Preserve workspace and chunking-profile filters, source attribution, score
+  ordering, error envelopes, and the current behavior when reranking is off.
+- Do not modify document chunks, embeddings, provider selection, prompts, or
+  database schema in this phase.
+- Keep model downloads/initialization opt-in and never mandatory for the
+  offline test suite.
 
 ## Task Board
 
 | ID | Task | Status |
 | --- | --- | --- |
-| CW-01 | Define the versioned golden-case JSONL schema, loader, and validation tests. | Complete 2026-09-07: strict JSONL loader and documented case template added. |
-| CW-02 | Implement offline retrieval and answer metric helpers with explicit failure-stage reporting. | Complete 2026-09-07: deterministic source-hint, fact-coverage, and faithfulness-proxy metrics added. |
-| CW-03 | Implement retrieval determinism checks and configuration/result artifacts. | Complete 2026-09-07: runner compares repeated retrieval IDs and writes portable JSON artifacts. |
-| CW-04 | Add a local benchmark runner behind the existing adapter boundaries. | Complete 2026-09-07: provider-agnostic runner supports mocked offline evaluation and an opt-in `/chat` CLI that writes JSON artifacts. |
-| CW-05 | Add human-verified cases from representative developer documents. | Complete initial set 2026-09-08: three verified vegetable-growing cases with source hints. Expand before treating metric trends as decision-grade. |
-| CW-06 | Run offline smoke validation, then an approved local live benchmark and record the baseline. | Complete initial baseline 2026-09-08: `58 passed, 1 skipped`; all three retrievals deterministic with source-hint precision/recall of 1.0. `soil` abstained despite retrieved context and is recorded as a generation-stage failure. |
-| CW-07 | Expand the human-verified set and record a decision-grade default-profile baseline. | Complete 2026-09-09: 19 cases ran against the local API; all retrievals were deterministic and source-hint precision/recall was 1.0. The artifact is `evaluation/results/baseline-default-expanded.json`; `soil` remains the sole generation-stage failure. |
+| CW-01 | Map the existing retrieval/configuration boundary and document the chosen reranker interface. | Complete 2026-09-09: reranking belongs after profile/workspace-scoped hybrid fusion. |
+| CW-02 | Add configuration for candidate width, final top-k, and the local reranker adapter/fallback. | Complete 2026-09-09: optional lazy `sentence-transformers` adapter uses `RERANK_*`; existing `TOP_K` remains final result count. |
+| CW-03 | Implement reranking after hybrid fusion while preserving profile/workspace isolation and disabled-mode behavior. | Complete 2026-09-09: enabled mode reranks fused candidates; unavailable adapter safely preserves fused order. |
+| CW-04 | Add focused unit and API tests for ordering, fallback, configuration, and isolation. | Complete 2026-09-09: ordering, wider candidates, disabled mode, and unavailable-adapter fallback are covered; `61 passed, 1 skipped`. |
+| CW-05 | Run offline validation and an approved live A/B benchmark against the NP-09 19-case baseline. | Active: implementation validation is complete; live comparison is next. |
+| CW-06 | Decide whether reranking should be enabled by default; record the evidence and close or revise the phase. | Queued |
 
 ## Acceptance Checks
 
-- The suite runs offline with mocks and validates dataset loading, metrics,
-  determinism, configuration capture, and failure reporting.
-- A local benchmark run writes a comparable result artifact.
-- Each golden case has human-verified expected facts; source hints are optional.
-- Results identify whether a failure arose during ingestion, retrieval,
-  reranking, prompting, or generation.
+- With `RERANK_ENABLED=false`, retrieval is behaviorally unchanged.
+- With reranking enabled, candidates are retrieved wider, reranked, and
+  trimmed to the final top-k without crossing workspace or profile boundaries.
+- The offline suite covers deterministic ordering and a dependency/model-free
+  fallback path.
+- The local reranker path is configurable and does not download a model during
+  ordinary imports or tests.
+- On the 19-case NP-09 set, context precision improves at equal-or-better
+  recall. Any answer-length change is reported, not assumed.
+- The A/B artifact records both configurations and any failure stage.
 
 ## Handoff Constraint
 
-No frontend work is required. Golden cases must use verified facts rather than
-answers inferred from the system under evaluation.
+Do not enable reranking by default until the live A/B result is reviewed. No
+frontend work or destructive index/database operation is required.

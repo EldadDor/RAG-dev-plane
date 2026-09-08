@@ -113,6 +113,9 @@ TOP_K=5
 CHUNK_SIZE=800
 CHUNK_OVERLAP=120
 RERANK_ENABLED=false
+RERANK_PROVIDER=local_cross_encoder
+RERANK_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+RERANK_CANDIDATE_K=20
 ```
 
 ### 2.2 `config.py` additions

@@ -5,6 +5,7 @@ from app.services.retrieval_service import RetrievalService
 from app.services.chat_service import ChatService
 from app.domain.models import RetrievedChunk
 from app.config import Settings
+from app.rerankers import RerankerUnavailable
 
 
 def _make_settings(**overrides) -> Settings:
@@ -173,3 +174,72 @@ async def test_hybrid_retrieval_fuses_semantic_and_keyword_results():
     result = await RetrievalService(settings, embedding_client, HybridStore()).retrieve("PG_HOST", top_k=3)
 
     assert [chunk.chunk_id for chunk in result] == ["shared", "semantic", "keyword"]
+
+
+@pytest.mark.asyncio
+async def test_reranking_uses_wider_candidates_then_trims_results():
+    settings = _make_settings(
+        HYBRID_SEARCH_ENABLED="false",
+        RERANK_ENABLED="true",
+        RERANK_CANDIDATE_K="4",
+    )
+    embedding_client = AsyncMock()
+    embedding_client.create_embedding.return_value = [0.1, 0.2]
+    vector_store = AsyncMock()
+    candidates = [
+        RetrievedChunk(f"chunk-{index}", "doc", "guide.md", f"text {index}", 0.9 - index / 10)
+        for index in range(4)
+    ]
+    vector_store.search.return_value = candidates
+
+    class ReverseReranker:
+        async def rerank(self, question, chunks):
+            assert question == "question"
+            return list(reversed(chunks))
+
+    result = await RetrievalService(
+        settings, embedding_client, vector_store, reranker=ReverseReranker()
+    ).retrieve("question", top_k=2)
+
+    assert vector_store.search.call_args.kwargs["limit"] == 20
+    assert [chunk.chunk_id for chunk in result] == ["chunk-3", "chunk-2"]
+
+
+@pytest.mark.asyncio
+async def test_disabled_reranking_preserves_candidate_order():
+    settings = _make_settings(HYBRID_SEARCH_ENABLED="false", RERANK_ENABLED="false")
+    embedding_client = AsyncMock()
+    embedding_client.create_embedding.return_value = [0.1, 0.2]
+    vector_store = AsyncMock()
+    vector_store.search.return_value = [
+        RetrievedChunk("first", "doc", "guide.md", "first", 0.9),
+        RetrievedChunk("second", "doc", "guide.md", "second", 0.8),
+    ]
+    reranker = AsyncMock()
+
+    result = await RetrievalService(settings, embedding_client, vector_store, reranker=reranker).retrieve("question")
+
+    assert [chunk.chunk_id for chunk in result] == ["first", "second"]
+    reranker.rerank.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_unavailable_reranker_safely_returns_fused_candidate_order():
+    settings = _make_settings(HYBRID_SEARCH_ENABLED="false", RERANK_ENABLED="true")
+    embedding_client = AsyncMock()
+    embedding_client.create_embedding.return_value = [0.1, 0.2]
+    vector_store = AsyncMock()
+    vector_store.search.return_value = [
+        RetrievedChunk("first", "doc", "guide.md", "first", 0.9),
+        RetrievedChunk("second", "doc", "guide.md", "second", 0.8),
+    ]
+
+    class UnavailableReranker:
+        async def rerank(self, question, chunks):
+            raise RerankerUnavailable("optional dependency is absent")
+
+    result = await RetrievalService(
+        settings, embedding_client, vector_store, reranker=UnavailableReranker()
+    ).retrieve("question")
+
+    assert [chunk.chunk_id for chunk in result] == ["first", "second"]

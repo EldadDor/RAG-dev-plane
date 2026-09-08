@@ -1,6 +1,6 @@
 # Extended Application Plan — Frontend and Backend
 
-**Status:** Approved roadmap. NP-08 is complete; the next backend phase requires activation.
+**Status:** Approved roadmap. NP-08 and NP-09 are complete; NP-10 is active.
 **Prepared:** 2026-09-04
 **Basis:** All documentation under `docs/` (excluding `phase_qa/`), the phase
 history through NP-05, the FP-01 frontend phase records, and the current
@@ -13,9 +13,10 @@ backend phases. Each phase still requires its own activation review through
 
 ## Current State
 
-**Update 2026-09-07:** NP-08 is complete and live-validated. Frontend FP-01
-and FP-02 are complete; the legacy snapshot below is retained as roadmap
-context and is superseded by the current phase records.
+**Update 2026-09-09:** NP-08 is complete and live-validated. NP-09 is complete
+with a 19-case default-profile baseline. Frontend FP-01 and FP-02 are complete;
+the legacy snapshot below is retained as roadmap context and is superseded by
+the current phase records.
 
 ### Backend — NP-01 through NP-05 complete
 
@@ -38,8 +39,8 @@ integration checklist in `frontend/integration_test_plan.md` and phase closure.
 
 ### Known gaps
 
-- Reranking is configuration-visible (`RERANK_ENABLED`) but is not an active
-  retrieval stage.
+- Cross-encoder reranking is implemented behind `RERANK_ENABLED`, remains off
+  by default, and still requires a live A/B decision against the NP-09 set.
 - The application has only been run and validated on local machines.
 - Ingestion and chat have been exercised mainly through AI-agent flows on
   simple documents.
@@ -107,7 +108,7 @@ the workspace to the winning profile.
   profile's chunks.
 - Ingestion, retrieval, and chat are unchanged when no profile is specified.
 
-### NP-09 — Golden Evaluation Set and Regression Harness (Queued)
+### NP-09 — Golden Evaluation Set and Regression Harness (Complete)
 
 **Objective:** Make "is it better?" measurable and repeatable.
 
@@ -127,7 +128,7 @@ the workspace to the winning profile.
 **Acceptance:** The eval suite runs offline with mocks; a live mode runs
 against the local stack and writes a comparable result artifact.
 
-### NP-10 — Activate Retrieval Reranking (Queued after NP-09)
+### NP-10 — Activate Retrieval Reranking (Active)
 
 **Objective:** Lift context precision so answers can get tighter.
 

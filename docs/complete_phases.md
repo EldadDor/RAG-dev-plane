@@ -109,6 +109,33 @@ experiment-profile chat queries returned isolated source IDs.
 
 - NP-09 evaluates which profile improves retrieval and answer quality.
 
+## Phase: NP-09 Golden Evaluation Set and Regression Harness
+
+**Status:** Complete
+**Completed:** 2026-09-09
+**Commit(s):** `0de699b`, `4afe8a6`, `5916672`, `c159a94`
+**Validation:** `58 passed, 1 skipped` in the offline suite; an approved local
+19-case default-profile benchmark wrote
+`evaluation/results/baseline-default-expanded.json`.
+
+**Delivered:**
+
+- Strict, human-authored JSONL golden-case schema, loader, and validation
+  tests.
+- Offline metric and runner seam for source hints, lexical fact coverage,
+  faithfulness proxy, failure classification, and retrieval determinism.
+- Opt-in local `/chat` benchmark runner with configuration and result artifacts
+  that does not alter the document index.
+- Decision-grade default-profile baseline: all 19 retrievals deterministic and
+  source-hint precision/recall 1.0; `soil` is recorded as the sole
+  generation-stage failure.
+
+**Deferred:**
+
+- NP-10 uses this baseline to evaluate cross-encoder reranking.
+- Add golden cases only for a new document type, profile, or meaningful
+  failure mode.
+
 ## Record Template
 
 Use this structure for future completed phases:

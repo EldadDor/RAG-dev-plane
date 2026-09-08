@@ -109,6 +109,9 @@ class Settings(BaseSettings):
     chunking_profiles: dict[str, ChunkingProfile] = Field(default_factory=dict, alias="CHUNKING_PROFILES")
     default_chunking_profile: str = Field(default=DEFAULT_CHUNKING_PROFILE, alias="DEFAULT_CHUNKING_PROFILE")
     rerank_enabled: bool = Field(default=False, alias="RERANK_ENABLED")
+    rerank_provider: str = Field(default="local_cross_encoder", alias="RERANK_PROVIDER")
+    rerank_model: str = Field(default="cross-encoder/ms-marco-MiniLM-L-6-v2", alias="RERANK_MODEL")
+    rerank_candidate_k: int = Field(default=20, alias="RERANK_CANDIDATE_K", ge=1)
     min_retrieval_score: float = Field(default=0.35, alias="MIN_RETRIEVAL_SCORE")
     hybrid_search_enabled: bool = Field(default=True, alias="HYBRID_SEARCH_ENABLED")
     retrieval_candidate_k: int = Field(default=20, alias="RETRIEVAL_CANDIDATE_K")
@@ -137,6 +140,8 @@ class Settings(BaseSettings):
             raise ValueError("PG_HOST is required when VECTOR_STORE=postgres")
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
+        if self.rerank_provider not in {"local_cross_encoder"}:
+            raise ValueError("RERANK_PROVIDER must be 'local_cross_encoder'")
         profiles = dict(self.chunking_profiles)
         profiles.setdefault(
             DEFAULT_CHUNKING_PROFILE,
