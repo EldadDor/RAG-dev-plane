@@ -1,6 +1,6 @@
 # Extended Application Plan — Frontend and Backend
 
-**Status:** Approved roadmap. NP-08 and NP-09 are complete; NP-10 is active.
+**Status:** Approved roadmap. NP-08 through NP-10 are complete; NP-10 reranking remains opt-in.
 **Prepared:** 2026-09-04
 **Basis:** All documentation under `docs/` (excluding `phase_qa/`), the phase
 history through NP-05, the FP-01 frontend phase records, and the current
@@ -39,8 +39,9 @@ integration checklist in `frontend/integration_test_plan.md` and phase closure.
 
 ### Known gaps
 
-- Cross-encoder reranking is implemented behind `RERANK_ENABLED`, remains off
-  by default, and still requires a live A/B decision against the NP-09 set.
+- Cross-encoder reranking is implemented behind `RERANK_ENABLED` and remains
+  off by default: the 2026-09-10 live A/B run improved answer metrics slightly
+  but had saturated context precision/recall and added 50.0% mean latency.
 - The application has only been run and validated on local machines.
 - Ingestion and chat have been exercised mainly through AI-agent flows on
   simple documents.
@@ -128,7 +129,7 @@ the workspace to the winning profile.
 **Acceptance:** The eval suite runs offline with mocks; a live mode runs
 against the local stack and writes a comparable result artifact.
 
-### NP-10 — Activate Retrieval Reranking (Active)
+### NP-10 — Activate Retrieval Reranking (Complete)
 
 **Objective:** Lift context precision so answers can get tighter.
 
@@ -140,8 +141,11 @@ against the local stack and writes a comparable result artifact.
   prompt.
 - Offer a local reranker option to keep the on-premises path working.
 
-**Acceptance:** Context precision improves over baseline on the NP-09 golden
-set at equal or better recall; answer length drops as a side effect.
+**Completion decision:** The 2026-09-10 live A/B run was deterministic and
+reranked every case, but context precision/recall were already saturated at
+1.0. The small answer-quality gains did not offset 50.0% mean latency, so the
+feature remains opt-in rather than enabled by default. Evidence is recorded in
+`docs/work_current_phase.md` and `evaluation/results/np10-*.json`.
 
 ### NP-11 — Frontend Live Validation and Phase Closure (Queued)
 

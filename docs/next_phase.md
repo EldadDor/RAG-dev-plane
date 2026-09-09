@@ -1,7 +1,7 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-10 is active; NP-06 remains queued as a parallel follow-up.
-**Last reviewed:** 2026-09-09
+**Status:** NP-10 is complete with reranking retained as opt-in; NP-06 is the next queued backend phase.
+**Last reviewed:** 2026-09-10
 
 This is the ordered backlog for the next approved phase. Each item must have a
 defined scope, acceptance checks, and an approval decision before implementation.
@@ -19,17 +19,19 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 7 | NP-07 | Answer conciseness and groundedness tuning | Answer verbosity is driven by context volume and precision before prompt wording; tune retrieval-side context assembly first. | Queued after NP-08 and NP-09 |
 | 8 | NP-08 | Non-destructive chunking experimentation lab | Profile-scoped indexing, dry runs, and isolated retrieval are implemented and live-validated. | Completed 2026-09-07 |
 | 9 | NP-09 | Golden evaluation set and regression harness | 19-case default-profile baseline, offline smoke lane, and local artifact runner are complete. | Completed 2026-09-09 |
-| 10 | NP-10 | Activate retrieval reranking | Reranking is configuration-visible but not an active stage; precision gains tighten answers. | **Active.** Approved 2026-09-09 |
+| 10 | NP-10 | Activate retrieval reranking | Optional local cross-encoder reranking is active behind configuration; default enablement was evaluated but declined because the benchmark's precision/recall was saturated and reranking added 50.0% mean latency. | **Complete — default remains off.** 2026-09-10 |
 | 11 | NP-11 | Frontend live validation and phase closure | FP-01 closure and live streaming validation are recorded by the frontend phase records. | Completed 2026-09-05 |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
 
 ## Current Phase State
 
-### NP-10 — Activate Retrieval Reranking (Active)
+### NP-10 — Activate Retrieval Reranking (Complete)
 
 The implementation record, task board, approval gates, and validation plan are
-authoritative in [`work_current_phase.md`](work_current_phase.md). The
-19-case NP-09 default-profile artifact is the baseline for every comparison.
+authoritative in [`work_current_phase.md`](work_current_phase.md). The live A/B
+comparison was completed on 2026-09-10; reranking remains opt-in because the
+baseline's context metrics were saturated and the experiment added 50.0% mean
+latency.
 
 ## Completed-Phase Reference
 

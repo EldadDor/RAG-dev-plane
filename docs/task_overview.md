@@ -1,8 +1,8 @@
 # Working on
 
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
-- Backend NP-10: inspect the current retrieval boundary and add a cross-encoder reranking stage behind it.
-- Backend NP-10: compare the reranked default profile against the 19-case NP-09 baseline before enabling it by default.
+- Backend NP-10: complete. The local cross-encoder reranking stage is opt-in;
+  the 2026-09-10 A/B result retained `RERANK_ENABLED=false` as the default.
 
 # Approved For future
 

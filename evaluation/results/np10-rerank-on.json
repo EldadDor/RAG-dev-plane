@@ -1,0 +1,408 @@
+{
+  "cases": [
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "soil",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 67744.03459997848,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:13",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:21",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:20",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:69",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:349"
+      ]
+    },
+    {
+      "answer": "According to passage [3], the use of water in plants is to transport minerals along with it, and also to perform another important task.",
+      "case_id": "plant-nutrition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 18062.159300083295,
+      "metrics": {
+        "answer_relevance": 0.15789473684210525,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5789473684210527
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:369",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:383",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:49",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:344"
+      ]
+    },
+    {
+      "answer": "According to passage [2], a soil moisture deficit (SMD) is the term used to measure how dry the soil is, and it is measured in mm. For example, a SMD of 15 mm means that it will take 15 mm of rainfall to bring the soil back to field capacity, which is equivalent to applying 15 litres of water per square metre.",
+      "case_id": "soil-moisture-irrigation",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 19971.824999898672,
+      "metrics": {
+        "answer_relevance": 0.7777777777777778,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5555555555555556
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:343",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:344",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:97",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:87"
+      ]
+    },
+    {
+      "answer": "Garden compost is the end result of the decomposition of plant and food waste by an enormous population of micro-organisms and soil animals in a moist, warm, aerobic environment, resulting in a dark crumbly material that is free of pathogens, weed-free, and stable.",
+      "case_id": "compost-definition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 18837.30349992402,
+      "metrics": {
+        "answer_relevance": 0.5384615384615384,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.3076923076923077
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:107",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:125",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:99",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:116",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:1"
+      ]
+    },
+    {
+      "answer": "According to the context passages, there are two phases in the production of compost: \n\n1. The heat production phase\n2. The maturation phase",
+      "case_id": "compost-phases",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17000.56890002452,
+      "metrics": {
+        "answer_relevance": 0.35294117647058826,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.7058823529411765
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:108",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:115",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:113",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:114",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:109"
+      ]
+    },
+    {
+      "answer": "According to the context passages, materials that can be added to a compost heap include:\n\n* Kitchen scraps (including meat)\n* Grass\n* Hedge clippings\n* Eggshells\n* Garden waste\n* Leaves\n* Weeds (including nasty ones like docks, dandelions, and scutch)\n* Sawdust\n* Cardboard\n* Straw\n* Partially rotted leaves\n* Woody prunings\n* Brussels sprout stems (chopped up)\n* Small particles (with a screen size of 12-40 mm)\n* Clay soil (up to 10% of the total heap)\n\nNote that some materials should be added with caution or in moderation, such as diseased plants (except for certain exceptions like club root, white rot, and sclerotinia) and meat, which may attract rats.",
+      "case_id": "compost-materials",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 28476.310800062492,
+      "metrics": {
+        "answer_relevance": 0.8333333333333333,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.75
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:118",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:119",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:112",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:111",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:108"
+      ]
+    },
+    {
+      "answer": "You can keep pests off your crops using covers, and your options are fleece or insect netting. Both can be placed directly over your crops and anchored at the edges, allowing light and water to pass through while keeping the majority of pests out.",
+      "case_id": "pest-prevention-covers",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 19343.522100010887,
+      "metrics": {
+        "answer_relevance": 0.34615384615384615,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.2692307692307692
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:148",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:168",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:571",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:8",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:161"
+      ]
+    },
+    {
+      "answer": "The Sustainable Use Directive (SUD) is a set of rules known as the Sustainable Use Directive or SUD for short, which relates to the sensible use of pesticides and aims to reduce the risk and impact of pesticide use on people's health and the environment. A big part of the SUD is the onus on professional users to comply with the principles of Integrated Pest Management (IPM).",
+      "case_id": "sud-definition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 20733.020900050178,
+      "metrics": {
+        "answer_relevance": 0.5609756097560976,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.4878048780487805
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:151",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:150",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:69",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:90",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:109"
+      ]
+    },
+    {
+      "answer": "According to the context passages, the specialists who can help identify pests and diseases are:\n\n1. Plant pathologist (deals with diseases)\n2. Entomologist (helps with pest identification)",
+      "case_id": "pest-disease-identification-experts",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17834.05529987067,
+      "metrics": {
+        "answer_relevance": 0.2647058823529412,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.29411764705882354
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:152",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:153",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:467",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:147",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:206"
+      ]
+    },
+    {
+      "answer": "Growth occurs at temperatures above 6\u00b0C and doubles for every 10\u00b0C increase in temperature within the range normally encountered.",
+      "case_id": "temperature-growth-rate",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17947.41480005905,
+      "metrics": {
+        "answer_relevance": 0.3870967741935484,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.7096774193548387
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:315",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:313",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:393",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:322",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:24"
+      ]
+    },
+    {
+      "answer": "According to passage [1], the two categories of vegetable hardiness are:\n\n1. Hardy vegetables\n2. Half-hardy vegetables",
+      "case_id": "hardiness-categories",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17721.96949995123,
+      "metrics": {
+        "answer_relevance": 0.20689655172413793,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.4482758620689655
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:315",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:316",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:319",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:528",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:421"
+      ]
+    },
+    {
+      "answer": "According to passage [1], the grass minimum (Gmin) temperature is the temperature at ground level, which can be as low as 5-6\u00b0C, and it matters for vegetables because it can be lower than air temperature. This temperature is more meaningful for vegetable crops than the air temperature measured at a height of 1.25 m.",
+      "case_id": "grass-min-temperature",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 20638.883899897337,
+      "metrics": {
+        "answer_relevance": 0.4864864864864865,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.7027027027027027
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:317",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:357",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:322",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:315",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:24"
+      ]
+    },
+    {
+      "answer": "According to the context passages, when frost occurs, it can cause damage to plants, ranging from none to total tissue destruction, depending on the hardiness of the plant and the degree of frost. The factors that can affect the damage include:\n\n* The hardiness of the plant\n* The degree of frost\n* The age of the tissue (older tissue is more prone to frost damage than younger tissue)\n* The rate of thaw (a rapid rate of thaw can exacerbate the situation)\n\nThese factors can interact with each other to determine the extent of the damage caused by frost.",
+      "case_id": "frost-plant-damage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 22066.55630003661,
+      "metrics": {
+        "answer_relevance": 0.7352941176470589,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.7352941176470589
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:318",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:322",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:533",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:316",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:390"
+      ]
+    },
+    {
+      "answer": "According to passage [4], you might need to ignore the calendar when deciding sowing and planting dates because of the unpredictable weather, which can thwart or aid your ambitions to grow good crops.",
+      "case_id": "sowing-timing-weather",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 19408.471300033852,
+      "metrics": {
+        "answer_relevance": 0.1346153846153846,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5192307692307693
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:314",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:437",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:425",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:313",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:327"
+      ]
+    },
+    {
+      "answer": "The ideal storage temperature for potatoes is 4\u00b0C.",
+      "case_id": "potato-storage-temp",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 14734.107699943706,
+      "metrics": {
+        "answer_relevance": 0.25,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:394",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:393",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:535",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:288"
+      ]
+    },
+    {
+      "answer": "If light reaches stored potato tubers, they develop poisonous alkaloids in the surface of the tuber as they turn green in colour.",
+      "case_id": "potato-light-damage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 15311.276099877432,
+      "metrics": {
+        "answer_relevance": 0.6111111111111112,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.3888888888888889
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:306",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:393",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:295",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:539"
+      ]
+    },
+    {
+      "answer": "According to the context passages, onions and garlic must be kept dry during storage because dormancy in them will quickly be broken by water or moisture.",
+      "case_id": "onion-storage-dryness",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 15514.315800042823,
+      "metrics": {
+        "answer_relevance": 0.625,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.75
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:395",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:394",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:507",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:388",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:481"
+      ]
+    },
+    {
+      "answer": "According to passage [1], winter vegetables can be stored in the ground by allowing the weather to be cold enough from November to March to restrict growth and development, which acts as natural refrigeration. However, severe frosts should be avoided, and in colder parts of the country, earth up root crops with soil or cover them with a layer of straw, bracken, or leaves.",
+      "case_id": "in-ground-winter-storage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 20166.653299937025,
+      "metrics": {
+        "answer_relevance": 0.7037037037037037,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.6666666666666666
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:390",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:388",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:452",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:37"
+      ]
+    },
+    {
+      "answer": "According to [2], onions should be harvested in May-June, and according to [3], when the tops start to topple over, it's a sign that the crop is maturing and getting close to harvest. However, [3] also mentions that the exact timing may vary depending on the variety, but it's generally recommended to harvest when the tops are dry and the necks are completely dry.",
+      "case_id": "onion-harvest-timing",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 22228.81339979358,
+      "metrics": {
+        "answer_relevance": 0.23076923076923078,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.38461538461538464
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:395",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:522",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:507",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:481",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:511"
+      ]
+    }
+  ],
+  "configuration": {
+    "api_url": "http://localhost:8001",
+    "top_k": 5,
+    "workspace_id": null
+  }
+}
