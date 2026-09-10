@@ -13,10 +13,10 @@ backend phases. Each phase still requires its own activation review through
 
 ## Current State
 
-**Update 2026-09-09:** NP-08 is complete and live-validated. NP-09 is complete
-with a 19-case default-profile baseline. Frontend FP-01 and FP-02 are complete;
-the legacy snapshot below is retained as roadmap context and is superseded by
-the current phase records.
+**Update 2026-09-10:** NP-08 through NP-10 are complete. NP-09 provides the
+19-case default-profile baseline and NP-10 retains reranking as opt-in.
+Frontend FP-01 and FP-02 are complete. NP-13 through NP-15 are proposed for
+Word ingestion and cited-image display; they are not approved.
 
 ### Backend — NP-01 through NP-05 complete
 
@@ -47,6 +47,8 @@ integration checklist in `frontend/integration_test_plan.md` and phase closure.
   simple documents.
 - Chunking is a single global `CHUNK_SIZE`/`CHUNK_OVERLAP` setting, and
   re-ingestion replaces existing chunks per `(workspace_id, doc_id)`.
+- `.docx` is not supported, embedded document images have no managed lifecycle,
+  and citations cannot currently deliver or display source images.
 
 ## Approved Goals Driving the New Phases
 
@@ -166,6 +168,34 @@ App Service, Managed Identity, Nginx identity-header injection, TLS and CORS.
 Re-ingestion is required if the embedding model or dimension changes; validate
 quality before and after migration with the NP-09 golden set.
 
+### NP-13 — Structured Microsoft Word Ingestion (Proposed)
+
+**Objective:** Add safe, deterministic `.docx` ingestion for ordered text,
+headings, lists and tables while retaining stable anchors for embedded media.
+
+**Boundary:** Support modern OOXML `.docx`; do not automate desktop Word or
+parse legacy binary `.doc`. Existing loaders and embeddings remain unchanged.
+
+### NP-14 — Embedded Image Asset Lifecycle (Proposed after NP-13)
+
+**Objective:** Extract original embedded image bytes, store them behind a local
+and future object-storage adapter, and associate them with the relevant text
+chunks under workspace/profile/document ownership.
+
+**Boundary:** Store image metadata and associations in PostgreSQL, binary bytes
+outside the vector table, and perform no OCR or visual embedding.
+
+### NP-15 — Authorized Image Citations and Chat Display (Proposed after NP-14)
+
+**Objective:** Extend structured citations with related asset metadata, serve
+images through a workspace-authorized endpoint, and render lazy image previews
+in the frontend Sources experience.
+
+**Boundary:** The application—not the answer model—creates image URLs and
+controls rendering. Existing text-only citation payloads remain compatible.
+
+**Detailed review:** [`document_image_support_plan.md`](document_image_support_plan.md)
+
 ## Existing NP-06
 
 NP-06 (CI test lanes) remains queued as previously registered. Once NP-09
@@ -180,6 +210,9 @@ NP-09              --> NP-10 (reranker)
 NP-11 (frontend closure)   [parallel]
 NP-06 (CI lanes)           [parallel]
 NP-12 (deployment)         [after NP-08 and NP-09]
+NP-13 (Word text)          --> NP-14 (image lifecycle)
+NP-14 (image lifecycle)    --> NP-15 (authorized chat display)
+NP-15                      --> optional OCR/multimodal phase [separate approval]
 ```
 
 NP-08 starts first because it makes every later chunking or retrieval change

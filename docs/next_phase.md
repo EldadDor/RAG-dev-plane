@@ -22,6 +22,9 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 10 | NP-10 | Activate retrieval reranking | Optional local cross-encoder reranking is active behind configuration; default enablement was evaluated but declined because the benchmark's precision/recall was saturated and reranking added 50.0% mean latency. | **Complete — default remains off.** 2026-09-10 |
 | 11 | NP-11 | Frontend live validation and phase closure | FP-01 closure and live streaming validation are recorded by the frontend phase records. | Completed 2026-09-05 |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
+| 13 | NP-13 | Structured Microsoft Word ingestion | Add safe `.docx` text/structure extraction and stable image anchors without changing existing loaders. | **Proposed — review required** |
+| 14 | NP-14 | Embedded image asset lifecycle | Preserve Word image bytes behind an asset-store boundary and relate them to workspace/profile-scoped chunks. | **Proposed after NP-13 — review required** |
+| 15 | NP-15 | Authorized image citations and chat display | Add an authorized asset route, citation asset metadata, and accessible image previews in chat. | **Proposed after NP-14 — review required** |
 
 ## Current Phase State
 
@@ -78,6 +81,25 @@ and documentation indexing completed 2026-08-29.
 **Objective:** Keep unit/API verification required and isolated, while making
 live stack verification explicitly manual and environment-scoped.
 
+### NP-13 through NP-15 — Word and Embedded Images (Proposed)
+
+**Objective:** Ingest modern Word documents as structured text and show their
+embedded screenshots with grounded citations, without requiring OCR or visual
+embeddings in the first release.
+
+**Proposed sequence:**
+
+1. NP-13 adds `.docx` text/structure parsing and stable image anchors.
+2. NP-14 adds binary asset persistence, chunk association and replacement
+   cleanup behind an `AssetStore` adapter.
+3. NP-15 adds workspace-authorized image delivery and frontend citation
+   previews.
+
+**Review document:** [`document_image_support_plan.md`](document_image_support_plan.md)
+
+These phases are not active. Their API, migration, storage limits and frontend
+contract require approval before implementation.
+
 ## Phase Intake Checklist
 
 Before a candidate becomes active, record:
@@ -97,3 +119,5 @@ Before a candidate becomes active, record:
 - Making live model/database tests mandatory in CI.
 - Production deployment changes.
 - Replacing the dual chat/embedding provider architecture.
+- OCR, image caption generation, visual embeddings and multimodal answering
+  until a separate visual-understanding phase is approved.

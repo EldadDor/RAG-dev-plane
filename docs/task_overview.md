@@ -8,7 +8,6 @@
 
 - NP-06: define required unit/API CI lanes and a separate manual live-stack lane.
 - NP-07: reduce answer length through context packing, duplicate filtering, and prompt tuning after NP-08 and NP-09.
-- NP-10: activate cross-encoder reranking after NP-09 proves its value.
 - NP-12: deploy to Azure/office infrastructure after NP-08 and NP-09.
 - FP-03: integrate the frontend with office deployment, gateway identity, proxy, TLS, CORS, and delivery infrastructure.
 
@@ -19,3 +18,10 @@
 - Whether the optional semantic splitter is worth enabling for comparison.
 - Whether to expose chunking-profile selection in the frontend; the current UI correctly continues to use `default`.
 - Final Azure model/provider choice, gateway identity details, and deployment configuration.
+- NP-13: `.docx` text/structure parsing, stable block offsets and image anchors.
+- NP-14: profile-scoped embedded-image storage, chunk association, lifecycle
+  cleanup and local/Azure asset-store boundaries.
+- NP-15: authorized image delivery and accessible image previews attached to
+  grounded chat citations.
+- Whether the proposed Word/image limits and preservation-only first release
+  in `document_image_support_plan.md` should be approved as written.

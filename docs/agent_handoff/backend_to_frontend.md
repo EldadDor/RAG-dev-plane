@@ -3,6 +3,26 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-10 — Proposed image-bearing source citations
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change
+- **Status:** Needs review
+- **Affected contract/files:** `POST /chat`, `POST /chat/stream`, proposed
+  `GET /workspaces/{workspace_id}/assets/{asset_id}`,
+  `docs/document_image_support_plan.md`
+- **Message:** Proposed NP-13 through NP-15 add `.docx` ingestion and related
+  image assets. A source may gain an optional `assets` array containing safe
+  metadata and an application-issued content URL. The SSE sequence does not
+  change, old payloads without assets remain valid, and the frontend would
+  render cited images in the Sources experience rather than trusting image
+  Markdown generated in the answer text.
+- **Action requested:** Review the proposed typed contract, authorization-loss
+  behavior, lazy loading, full-size interaction and accessibility acceptance
+  checks. Do not implement until the user approves the proposal.
+- **Supersedes / follow-up:** New proposal; no current contract is superseded.
+
 ## 2026-09-05 — Optional chunking-profile query contract published
 
 - **From:** Backend

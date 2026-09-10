@@ -3,7 +3,7 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-05
+**Last reviewed:** 2026-09-10
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -33,8 +33,13 @@ and record the applicable approval decision.
 | Priority | ID | Candidate task | Why it matters | Approval required |
 | --- | --- | --- | --- | --- |
 | 1 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
+| 2 | NP-15-FE | Image-bearing source citations | Render authorized images associated with retrieved Word citations in the Sources experience. | **Proposed after backend NP-14 — review required** |
 
 ## Recommended Next Phase
+
+FP-03 remains the existing delivery candidate. The NP-15 frontend slice is a
+separate review proposal and must not begin until Word asset persistence and
+the authorized API contract are approved and implemented by the backend.
 
 ## Phase Intake Checklist
 
@@ -52,3 +57,5 @@ and record the applicable approval decision.
 - Nginx CI/CD, static asset path, backend upstream, TLS, and CORS changes.
 - Archive-versus-permanent-deletion wording.
 - Ingestion, administration, provider, database, or backend contract changes.
+- Image-bearing citation UI until NP-13 through NP-15 and the contract in
+  `../document_image_support_plan.md` are approved.

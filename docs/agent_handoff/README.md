@@ -37,11 +37,10 @@ inside either implementation directory, so each side can read and write it.
 ## Current cross-team state
 
 - Backend NP-05 workspace discovery and authorization are complete and
-  live-validated. The frontend's FP-01 work is implemented through FP-07;
-  operator-run live integration validation and formal phase closure remain.
-- Backend NP-08 is active. It may add optional profile-selection fields to
-  ingestion, retrieval, and chat, but existing frontend requests must retain
-  their current behavior when no profile is supplied.
-- No frontend implementation is requested until NP-08 publishes an approved
-  API contract change in `docs/frontend_architecture.md` and
-  `backend_to_frontend.md`.
+  live-validated. Frontend FP-01 and FP-02 are complete, including operator-run
+  streaming validation.
+- Backend NP-08 through NP-10 are complete. Reranking remains opt-in after the
+  NP-10 A/B decision.
+- NP-13 through NP-15 propose Word ingestion and image-bearing citations. They
+  are under review, not approved. No frontend implementation is requested
+  until the user approves the plan and the authoritative contract is updated.
