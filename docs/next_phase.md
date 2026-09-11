@@ -26,6 +26,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 14 | NP-14 | Embedded image asset lifecycle | Content-addressed asset storage, migration 004 and profile-scoped chunk associations implemented. | **Implementation and migration complete** |
 | 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Implementation complete; live browser validation pending** |
 | 16 | NP-16 | Hebrew and multilingual RAG evaluation | Work documents are largely Hebrew; local models (`nomic-embed-text`, `llama3.2:3b`) are English-centric, and Hebrew failures are retrieval-side before generation-side. | **Proposed after NP-13–15 live validation — activation required** |
+| 17 | NP-17 | Embedding model profiles and embedding cache | Comparing embedding models needs per-model dimensions, isolated storage, and cached embeddings so a model switch is configuration-only; NP-16 benchmarks depend on this plumbing. | **Proposed — enables NP-16; activation required** |
 
 ## Current Phase State
 
@@ -80,7 +81,34 @@ operating path.
 
 **Activation note:** Queued after NP-13–15 live validation and NP-06 CI lanes.
 Requires explicit activation approval and, for dimension changes, a separate
-migration approval.
+migration approval. NP-17 provides the model-profile plumbing that makes these
+benchmarks repeatable.
+
+### NP-17 — Embedding Model Profiles and Embedding Cache (Proposed)
+
+**Objective:** Make embedding models with different dimensions and prompt
+prefixes switchable without re-chunking, re-parsing, or discarding existing
+embeddings.
+
+**Proposed scope:**
+
+- Registry-backed model profiles (provider, model, dimensions, prefixes,
+  storage target) with the current configuration seeded as `default`.
+- Per-model chunk storage provisioned through SQL and validated at startup;
+  the existing default index is untouched.
+- A persistent embedding cache keyed by text and model identity so repeat
+  ingestion or model switch-back avoids provider calls.
+- A warming operation that embeds an existing profile's chunks into a new
+  model profile without re-chunking, with a dry-run mode.
+- Configuration-only activation of a warmed profile; retrieval stays scoped
+  through the existing chunking-profile and model-profile boundaries.
+
+**Review document:**
+[`embedding_model_profiles_plan.md`](embedding_model_profiles_plan.md)
+
+**Activation note:** Enables NP-16's embedding-model benchmarks and the
+Azure embedding migration. Requires approval of the new `rag.*` registry and
+cache tables plus per-profile storage provisioning before implementation.
 
 ## Phase Intake Checklist
 
