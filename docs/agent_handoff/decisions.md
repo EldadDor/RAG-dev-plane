@@ -37,7 +37,7 @@ frontend. Add newest entries directly below this heading.
 
 ## 2026-08-24 — Workspace discovery and authorization
 
-- **Status:** Approved and implemented; live database validation pending.
+- **Status:** Approved and implemented; migration 004 applied, live browser validation pending.
 - **Decision:** The frontend discovers authorized text workspace IDs through
   `GET /workspaces` and never sends a user ID. The backend derives identity and
   revalidates membership for every workspace-scoped operation.

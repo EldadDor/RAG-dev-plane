@@ -1,72 +1,68 @@
-# Current Work Phase — NP-10 Activate Retrieval Reranking
+# Current Work Phase — NP-13 through NP-15 Word Documents and Images
 
-**Status:** Complete — reranking retained as an opt-in capability; the default remains disabled
-**Activated:** 2026-09-09
-**Last reviewed:** 2026-09-10
+**Status:** Implementation and PostgreSQL migration complete; live Word/image browser validation pending
+**Approved:** 2026-09-11
+**Last reviewed:** 2026-09-11
 **Owner:** Project team
-**Roadmap:** [`extended_plan.md`](extended_plan.md)
-**Baseline:** [`../evaluation/results/baseline-default-expanded.json`](../evaluation/results/baseline-default-expanded.json)
+**Plan:** [`document_image_support_plan.md`](document_image_support_plan.md)
 
 ## Objective
 
-Improve the precision of the context sent to the answer model by reranking a
-wider hybrid-retrieval candidate set, while retaining recall and the existing
-local/on-premises operating path.
+Ingest modern Microsoft Word `.docx` files as structured searchable text,
+preserve embedded image bytes under the existing workspace/profile lifecycle,
+and show authorized related images with grounded chat citations.
 
-## Scope and Guardrails
+## Guardrails
 
-- Turn the existing `RERANK_ENABLED` setting into an actual retrieval stage
-  behind an adapter boundary.
-- Fetch a wider candidate set, rerank it, and retain a configurable final
-  top-k result set for chat and retrieval callers.
-- Provide a local cross-encoder implementation or an explicit safe fallback
-  when that optional dependency is unavailable.
-- Preserve workspace and chunking-profile filters, source attribution, score
-  ordering, error envelopes, and the current behavior when reranking is off.
-- Do not modify document chunks, embeddings, provider selection, prompts, or
-  database schema in this phase.
-- Keep model downloads/initialization opt-in and never mandatory for the
-  offline test suite.
+- No legacy `.doc`, Office automation, OCR, visual embeddings or multimodal
+  model calls.
+- Original image bytes remain outside pgvector and outside prompts.
+- Browsers receive only application-issued, workspace-authorized asset URLs.
+- Existing text-only loaders, citations and SSE event order remain compatible.
+- Migration 004 is additive and does not alter existing chunks or embeddings.
 
 ## Task Board
 
 | ID | Task | Status |
 | --- | --- | --- |
-| CW-01 | Map the existing retrieval/configuration boundary and document the chosen reranker interface. | Complete 2026-09-09: reranking belongs after profile/workspace-scoped hybrid fusion. |
-| CW-02 | Add configuration for candidate width, final top-k, and the local reranker adapter/fallback. | Complete 2026-09-09: optional lazy `sentence-transformers` adapter uses `RERANK_*`; existing `TOP_K` remains final result count. |
-| CW-03 | Implement reranking after hybrid fusion while preserving profile/workspace isolation and disabled-mode behavior. | Complete 2026-09-09: enabled mode reranks fused candidates; unavailable adapter safely preserves fused order. |
-| CW-04 | Add focused unit and API tests for ordering, fallback, configuration, and isolation. | Complete 2026-09-09: ordering, wider candidates, disabled mode, and unavailable-adapter fallback are covered; `61 passed, 1 skipped`. |
-| CW-05 | Run offline validation and an approved live A/B benchmark against the NP-09 19-case baseline. | Complete 2026-09-10: 19 cases × 2 passes completed against ports 8000 (control) and 8001 (rerank); both runs were deterministic. |
-| CW-06 | Decide whether reranking should be enabled by default; record the evidence and close or revise the phase. | Complete 2026-09-10: keep `RERANK_ENABLED=false` by default. Reranking improved answer metrics but did not improve the saturated context-precision/recall measure, and it increased latency materially. |
+| NP13-01 | Add safe `.docx` loader and dependency. | Complete: `python-docx` plus bounded ZIP/OOXML validation. |
+| NP13-02 | Preserve ordered Word structure and stable image anchors. | Complete: headings, paragraphs, lists, tables, page breaks, block offsets, captions and image relationships. |
+| NP13-03 | Make source hashing image-aware. | Complete: loader-supplied package hash detects image-only changes. |
+| NP14-01 | Add binary asset-store boundary and limits. | Complete: content-addressed local/in-memory adapters, safe keys and bounded extraction settings. |
+| NP14-02 | Add profile-scoped metadata and chunk associations. | Complete; `004_document_assets.sql` was applied and verified on 2026-09-11. |
+| NP14-03 | Integrate asset replacement, cleanup and retrieval metadata. | Complete offline for PostgreSQL and Qdrant paths. |
+| NP15-01 | Add authorized asset delivery. | Complete: membership check, media allowlist, private caching, ETag and `nosniff`. |
+| NP15-02 | Extend citation/SSE contract compatibly. | Complete: optional image asset metadata; old payloads map to an empty array. |
+| NP15-03 | Render cited images in chat. | Complete: lazy previews in Sources and a deduplicated related-images section. |
+| NP15-04 | Run offline validation. | Complete: 74 backend tests, 7 frontend tests, TypeScript and production build pass. |
+| NP15-05 | Apply migration and run live `.docx` ingestion/chat/browser validation. | Blocked 2026-09-11: configured PostgreSQL `10.100.102.12:5432` timed out; no database changes were made. |
 
-## Acceptance Checks
+## Acceptance State
 
-- With `RERANK_ENABLED=false`, retrieval is behaviorally unchanged.
-- With reranking enabled, candidates are retrieved wider, reranked, and
-  trimmed to the final top-k without crossing workspace or profile boundaries.
-- The offline suite covers deterministic ordering and a dependency/model-free
-  fallback path.
-- The local reranker path is configurable and does not download a model during
-  ordinary imports or tests.
-- On the 19-case NP-09 set, context precision improves at equal-or-better
-  recall. Any answer-length change is reported, not assumed.
-- The A/B artifact records both configurations and any failure stage.
+- Safe deterministic Word parsing: passed with synthetic fixtures.
+- Image-only change detection: passed.
+- Original byte round-trip, storage-key safety and pruning: passed.
+- Chunk association, dry-run no-write behavior and limits: passed.
+- Workspace authorization, safe headers, unsupported-media behavior and ETag:
+  passed through in-process API tests.
+- Frontend backward compatibility, asset mapping, type checking and build:
+  passed.
+- Real PostgreSQL migration, real Word ingestion and browser image rendering:
+  pending environment availability.
 
-## Handoff Constraint
+## Validation Commands
 
-Do not enable reranking by default until the live A/B result is reviewed. No
-frontend work or destructive index/database operation is required.
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\ --ignore=tests\integration -q
+node node_modules\vitest\vitest.mjs run
+node node_modules\typescript\bin\tsc -b
+node node_modules\vite\bin\vite.js build
+```
 
-## 2026-09-10 Live A/B Result
+## Next Operator Step
 
-| Condition | Endpoint | Context precision | Context recall | Answer relevance | Faithfulness | Mean latency |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| Control (`RERANK_ENABLED=false`) | `http://localhost:8000` | 1.0000 | 1.0000 | 0.4184 | 0.5222 | 14,512 ms |
-| Reranked (`RERANK_ENABLED=true`, candidate k=20) | `http://localhost:8001` | 1.0000 | 1.0000 | 0.4317 | 0.5397 | 21,776 ms |
-
-- Artifacts: [`../evaluation/results/np10-control-rerank-off.json`](../evaluation/results/np10-control-rerank-off.json) and [`../evaluation/results/np10-rerank-on.json`](../evaluation/results/np10-rerank-on.json).
-- Both conditions completed all 19 cases with deterministic retrieval results. The same `soil` case retained its pre-existing generation-stage failure in both runs.
-- Reranking changed the retrieved ordering for every case, so the experiment exercised the intended stage. It added 7,264 ms mean latency (50.0%) and 7,837 ms median latency (68.1%).
-- The dataset's context precision and recall were already saturated at 1.0 in control, so it cannot demonstrate the required precision improvement. The modest answer relevance (+0.0133) and faithfulness (+0.0175) improvements do not justify enabling the default with this latency cost.
-
-**Decision:** close NP-10 with the reranker available behind its explicit configuration, but leave it disabled by default. Any future default-enable proposal needs a less-saturated, precision-discriminating evaluation set and a latency budget.
+Bring the configured PostgreSQL service online, apply
+`database/migrations/004_document_assets.sql`, restart the API, ingest a safe
+review fixture or approved real `.docx`, and validate that a grounded answer
+shows its related screenshot in the frontend. Do not close the phase until
+this live path passes.

@@ -8,6 +8,7 @@ class SourceType(str, Enum):
     markdown = "markdown"
     html = "html"
     pdf = "pdf"
+    word = "word"
     text = "text"
     code = "code"
     unknown = "unknown"
@@ -24,6 +25,31 @@ class Document:
     title: str | None = None
     # Structural metadata preserved from the source
     metadata: dict = field(default_factory=dict)
+    # Loaders may hash source material that is not represented in text (for
+    # example embedded images in a Word package).
+    content_hash: str | None = None
+    assets: list["DocumentAsset"] = field(default_factory=list)
+
+
+@dataclass
+class DocumentAsset:
+    """An embedded source asset extracted by a loader before persistence."""
+
+    anchor_id: str
+    relationship_id: str
+    content: bytes = field(repr=False)
+    content_hash: str = ""
+    media_type: str = "application/octet-stream"
+    original_name: str | None = None
+    ordinal: int = 0
+    block_id: str | None = None
+    block_ordinal: int | None = None
+    source_index: int | None = None
+    section: str | None = None
+    alt_text: str | None = None
+    caption: str | None = None
+    width: int | None = None
+    height: int | None = None
 
 
 @dataclass
@@ -53,6 +79,8 @@ class RetrievedChunk:
     title: str | None = None
     page: int | None = None
     section: str | None = None
+    related_asset_ids: tuple[str, ...] = ()
+    related_assets: tuple[dict, ...] = ()
 
 
 @dataclass
@@ -94,6 +122,7 @@ class IngestedDocumentResult:
     chunks_indexed: int
     skipped: bool = False
     skip_reason: str | None = None
+    assets_found: int = 0
 
 
 @dataclass

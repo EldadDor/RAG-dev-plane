@@ -44,6 +44,11 @@ h2 { font-size: 1rem; }
 .source-list li { background: #142237; border: 1px solid #38516f; border-radius: .5rem; display: grid; gap: .3rem; padding: .75rem; }
 .source-list span { color: #9fb1c9; font-size: .85rem; }
 .source-list p { color: #c6d4e7; font-size: .9rem; line-height: 1.45; margin: .2rem 0 0; }
+.source-list figure, .related-images figure { margin: .5rem 0 0; }
+.source-list img, .related-images img { background: #0d1625; border: 1px solid #38516f; border-radius: .4rem; display: block; height: auto; max-height: 22rem; max-width: 100%; object-fit: contain; }
+.source-list figcaption, .related-images figcaption { color: #9fb1c9; font-size: .8rem; margin-top: .35rem; }
+.related-images { border-top: 1px solid #2a3b53; margin-top: 1.5rem; padding-top: 1rem; }
+.related-images > div { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
 .rename-form { background: #101c2e; border: 1px solid #2a3b53; border-radius: .65rem; display: grid; gap: .5rem; margin-top: 1rem; padding: 1rem; }
 .rename-form > div { display: flex; flex-wrap: wrap; gap: .5rem; }
 .rename-form input { flex: 1; min-width: 0; }

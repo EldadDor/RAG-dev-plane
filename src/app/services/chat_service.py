@@ -4,8 +4,9 @@ from collections.abc import AsyncIterator
 from uuid import uuid4
 import json
 import re
+from urllib.parse import quote
 
-from app.api.schemas import ChatResponse, SourceReference
+from app.api.schemas import ChatResponse, SourceAssetReference, SourceReference
 from app.clients.chat_client import ChatClient
 from app.config import Settings
 from app.prompts.chat_prompt import build_context_prompt
@@ -132,6 +133,22 @@ class ChatService:
                 section=item.section,
                 score=item.score,
                 snippet=item.text[:300],
+                assets=[
+                    SourceAssetReference(
+                        asset_id=asset["asset_id"],
+                        media_type=asset["media_type"],
+                        width=asset.get("width"),
+                        height=asset.get("height"),
+                        alt_text=asset.get("alt_text"),
+                        caption=asset.get("caption"),
+                        content_url=(
+                            f"/workspaces/{quote(workspace_id or self._settings.default_workspace_id, safe='')}/assets/{asset['asset_id']}"
+                            if asset.get("media_type") in {"image/png", "image/jpeg", "image/gif", "image/webp"}
+                            else None
+                        ),
+                    )
+                    for asset in item.related_assets
+                ],
             )
             for item in retrieved
         ]

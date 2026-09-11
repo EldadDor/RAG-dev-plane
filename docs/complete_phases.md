@@ -136,6 +136,28 @@ experiment-profile chat queries returned isolated source IDs.
 - Add golden cases only for a new document type, profile, or meaningful
   failure mode.
 
+## Phase: NP-10 Activate Retrieval Reranking
+
+**Status:** Complete
+**Completed:** 2026-09-10
+**Commit(s):** `dbcb04a`, `3c2a941`
+**Validation:** 19 cases × 2 passes for control and reranked configurations;
+both runs deterministic.
+
+**Delivered:**
+
+- Optional local cross-encoder reranking over a wider retrieval candidate set.
+- Safe disabled-mode and unavailable-model fallback behavior.
+- A/B evidence in `evaluation/results/np10-control-rerank-off.json` and
+  `evaluation/results/np10-rerank-on.json`.
+- Decision to retain `RERANK_ENABLED=false`: context precision/recall were
+  saturated and reranking added 50.0% mean latency.
+
+**Deferred:**
+
+- Any future default-enable proposal needs a precision-discriminating dataset
+  and an explicit latency budget.
+
 ## Record Template
 
 Use this structure for future completed phases:

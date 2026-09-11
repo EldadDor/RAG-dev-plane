@@ -1,6 +1,6 @@
 # Word Documents and Embedded Images — Review Proposal
 
-**Status:** Proposed for review; not approved for implementation
+**Status:** Approved 2026-09-11; implementation and PostgreSQL migration complete, live browser validation pending
 **Prepared:** 2026-09-10
 **Proposed phases:** NP-13, NP-14, NP-15
 
@@ -134,7 +134,8 @@ text chunks, and keep their lifecycle consistent with document replacement.
   `RetrievedChunk` metadata for PostgreSQL and Qdrant parity.
 - Make document replacement atomic from the application's perspective: do not
   publish new metadata until text chunks and assets are ready; clean obsolete
-  links and garbage-collect blobs only when no asset row references them.
+  links transactionally. Expose unreferenced-blob pruning as an explicit
+  maintenance operation rather than racing concurrent ingestion workers.
 - Ensure `dry_run` reports image counts/types/bytes but writes no files, rows or
   embeddings.
 - Add lifecycle, profile/workspace isolation, deduplication, cleanup, dry-run,
@@ -274,6 +275,13 @@ documents or screenshots containing internal data:
 - Production storage must use private access and application-mediated
   authorization. Signed object-store URLs, if later used, must be short-lived
   and created only after the same workspace check.
+
+## Approval Record
+
+The user approved NP-13 through NP-15 on 2026-09-11. The implementation uses
+the proposed `.docx`-only, preservation-first, private local asset store and
+authorized citation-display design. Migration 004 was applied and verified on
+2026-09-11; live Word/image chat validation remains pending.
 
 ## Approval Gates
 

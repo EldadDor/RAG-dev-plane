@@ -9,7 +9,8 @@ export type ChatSession = {
 }
 export type ChatTurn = { role: 'user' | 'assistant'; content: string; createdAt: string }
 export type ChatSessionDetail = ChatSession & { summary: string | null; turns: ChatTurn[] }
-export type SourceReference = { docId: string; chunkId: string; sourcePath: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null }
+export type SourceAsset = { assetId: string; mediaType: string; width: number | null; height: number | null; altText: string | null; caption: string | null; contentUrl: string | null }
+export type SourceReference = { docId: string; chunkId: string; sourcePath: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null; assets: SourceAsset[] }
 export type StreamMeta = { sessionId: string; grounded: boolean; sources: SourceReference[] }
 export type StreamRequest = { question: string; workspaceId?: string; sessionId?: string }
 export type StreamHandlers = { onAnswer: (delta: string) => void; onMeta: (meta: StreamMeta) => void }
@@ -28,7 +29,8 @@ type ApiSessionDetail = ApiSession & {
   turns: Array<{ role: 'user' | 'assistant'; content: string; created_at: string }>
 }
 type ApiErrorBody = { code?: unknown; message?: unknown }
-type ApiSourceReference = { doc_id: string; chunk_id: string; source_path: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null }
+type ApiSourceAsset = { asset_id: string; media_type: string; width?: number | null; height?: number | null; alt_text?: string | null; caption?: string | null; content_url?: string | null }
+type ApiSourceReference = { doc_id: string; chunk_id: string; source_path: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null; assets?: ApiSourceAsset[] }
 type ApiStreamMeta = { session_id: string; grounded: boolean; sources: ApiSourceReference[]; debug: object | null }
 
 export class ApiError extends Error {
@@ -102,7 +104,19 @@ export async function archiveSession(sessionId: string): Promise<void> {
 }
 
 function toSourceReference(source: ApiSourceReference): SourceReference {
-  return { docId: source.doc_id, chunkId: source.chunk_id, sourcePath: source.source_path, title: source.title, page: source.page, section: source.section, score: source.score, snippet: source.snippet }
+  const assets = source.assets ?? []
+  if (!assets.every((asset) => asset && typeof asset.asset_id === 'string' && typeof asset.media_type === 'string')) throw new ApiError(500, 'stream_protocol_error')
+  return {
+    docId: source.doc_id, chunkId: source.chunk_id, sourcePath: source.source_path,
+    title: source.title, page: source.page, section: source.section, score: source.score,
+    snippet: source.snippet,
+    assets: assets.map((asset) => ({
+      assetId: asset.asset_id, mediaType: asset.media_type,
+      width: asset.width ?? null, height: asset.height ?? null,
+      altText: asset.alt_text ?? null, caption: asset.caption ?? null,
+      contentUrl: asset.content_url ?? null,
+    })),
+  }
 }
 
 function parseEvent(block: string): { name: string; data: string } | null {

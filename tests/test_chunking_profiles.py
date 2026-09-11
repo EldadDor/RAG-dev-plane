@@ -72,11 +72,39 @@ async def test_experiment_ingestion_uses_profile_scoped_document_and_chunk_ids(m
 
     await service.ingest_path(source, chunking_profile="experiment-small")
 
-    stored_document, chunks = vector_store.replace_document.await_args.args
+    stored_document, chunks, assets = vector_store.replace_document.await_args.args
     assert stored_document["chunking_profile"] == "experiment-small"
     assert chunks[0]["chunk_id"] == "guide:experiment-small:0"
     assert chunks[0]["payload"]["chunking_profile"] == "experiment-small"
+    assert assets == []
     vector_store.get_document_hash.assert_awaited_once_with("guide", "local", "experiment-small")
+
+
+@pytest.mark.asyncio
+async def test_ingestion_uses_loader_supplied_hash_for_non_text_content(monkeypatch):
+    source = "guide.docx"
+    source_hash = "a" * 64
+    document = Document(
+        "guide",
+        source,
+        SourceType.word,
+        "Visible Word text",
+        content_hash=source_hash,
+    )
+    monkeypatch.setattr("app.services.ingestion_service.load_document", lambda _: document)
+
+    embedding_client = AsyncMock()
+    vector_store = AsyncMock()
+    vector_store.get_document_hash.return_value = source_hash
+    service = IngestionService(_settings(), embedding_client, vector_store)
+
+    result = await service.ingest_path(source)
+
+    assert result.documents[0].skipped is True
+    assert result.documents[0].skip_reason == "unchanged"
+    vector_store.get_document_hash.assert_awaited_once_with("guide", "local", "default")
+    embedding_client.create_embedding.assert_not_awaited()
+    vector_store.replace_document.assert_not_awaited()
 
 
 @pytest.mark.asyncio

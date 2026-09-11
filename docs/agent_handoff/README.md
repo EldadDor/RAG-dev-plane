@@ -41,6 +41,6 @@ inside either implementation directory, so each side can read and write it.
   streaming validation.
 - Backend NP-08 through NP-10 are complete. Reranking remains opt-in after the
   NP-10 A/B decision.
-- NP-13 through NP-15 propose Word ingestion and image-bearing citations. They
-  are under review, not approved. No frontend implementation is requested
-  until the user approves the plan and the authoritative contract is updated.
+- NP-13 through NP-15 Word ingestion and image-bearing citations were approved
+  and implemented on 2026-09-11. Offline validation passes and migration 004
+  is applied; live browser validation remains pending.

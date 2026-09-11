@@ -183,6 +183,8 @@ class PgVectorStore:
                 f"{self._schema}.conversation_summaries",
                 f"{self._schema}.workspaces",
                 f"{self._schema}.workspace_members",
+                f"{self._schema}.document_assets",
+                f"{self._schema}.chunk_assets",
             ]
             missing = [name for name in required if await conn.fetchval("SELECT to_regclass($1)", name) is None]
             if missing:
@@ -192,10 +194,10 @@ class PgVectorStore:
                 )
             applied_versions = await conn.fetch(
                 f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
-                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles"],
+                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets"],
             )
             applied_version_names = {row["version"] for row in applied_versions}
-            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles"}
+            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets"}
             if applied_version_names != required_versions:
                 missing_versions = sorted(required_versions - applied_version_names)
                 raise RuntimeError(
@@ -278,7 +280,7 @@ class PgVectorStore:
                 doc_id, workspace_id, chunking_profile,
             )
 
-    async def replace_document(self, document: dict, chunks: list[dict]) -> None:
+    async def replace_document(self, document: dict, chunks: list[dict], assets: list[dict] | None = None) -> None:
         """Atomically replace a document's chunks only after embeddings are ready."""
         async with self._pool.acquire() as conn:
             async with conn.transaction():
@@ -300,6 +302,39 @@ class PgVectorStore:
                     document["source_type"], document["content_hash"], document.get("metadata", {}),
                 )
                 await self._upsert_on_connection(conn, chunks)
+                await conn.execute(
+                    f"""DELETE FROM {self._schema}.document_assets
+                    WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3""",
+                    document["workspace_id"], document["chunking_profile"], document["doc_id"],
+                )
+                for asset in assets or []:
+                    await conn.execute(
+                        f"""INSERT INTO {self._schema}.document_assets
+                        (asset_id, workspace_id, chunking_profile, doc_id, storage_key,
+                         content_hash, media_type, byte_size, original_name,
+                         relationship_id, ordinal, width, height, alt_text, caption,
+                         anchor_block_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+                                $12, $13, $14, $15, $16)""",
+                        asset["asset_id"], document["workspace_id"],
+                        document["chunking_profile"], document["doc_id"],
+                        asset["storage_key"], asset["content_hash"],
+                        asset["media_type"], asset["byte_size"],
+                        asset.get("original_name"), asset.get("relationship_id"),
+                        asset["ordinal"], asset.get("width"), asset.get("height"),
+                        asset.get("alt_text"), asset.get("caption"),
+                        asset.get("anchor_block_id"),
+                    )
+                    for display_order, chunk_id in enumerate(asset.get("related_chunk_ids", [])):
+                        await conn.execute(
+                            f"""INSERT INTO {self._schema}.chunk_assets
+                            (workspace_id, chunking_profile, doc_id, chunk_id,
+                             asset_id, display_order)
+                            VALUES ($1, $2, $3, $4, $5, $6)""",
+                            document["workspace_id"], document["chunking_profile"],
+                            document["doc_id"], chunk_id, asset["asset_id"],
+                            display_order,
+                        )
 
     async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
         async with self._pool.acquire() as conn:
@@ -323,6 +358,25 @@ class PgVectorStore:
         except Exception:
             return False
 
+    async def get_asset_metadata(self, workspace_id: str, asset_id: str) -> dict | None:
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(
+                f"""SELECT asset_id, workspace_id, chunking_profile, doc_id,
+                storage_key, content_hash, media_type, byte_size, original_name, width, height,
+                alt_text, caption
+                FROM {self._schema}.document_assets
+                WHERE workspace_id=$1 AND asset_id=$2""",
+                workspace_id, asset_id,
+            )
+        return dict(row) if row is not None else None
+
+    async def list_asset_storage_keys(self) -> list[str]:
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"SELECT DISTINCT storage_key FROM {self._schema}.document_assets"
+            )
+        return [row["storage_key"] for row in rows]
+
 
 def _row_to_retrieved_chunk(row: asyncpg.Record) -> RetrievedChunk:
     metadata = row["metadata"] or {}
@@ -342,4 +396,6 @@ def _row_to_retrieved_chunk(row: asyncpg.Record) -> RetrievedChunk:
         title=metadata.get("title"),
         page=row["page_number"],
         section=metadata.get("section"),
+        related_asset_ids=tuple(metadata.get("related_asset_ids", [])),
+        related_assets=tuple(metadata.get("related_assets", [])),
     )

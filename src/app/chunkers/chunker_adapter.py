@@ -35,10 +35,23 @@ class DefaultChunker:
         self._splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            add_start_index=True,
         )
 
     def chunk(self, text: str) -> list[ChunkedText]:
-        return [ChunkedText(text=part) for part in self._splitter.split_text(text)]
+        documents = self._splitter.create_documents([text])
+        return [
+            ChunkedText(
+                text=document.page_content,
+                start_index=document.metadata.get("start_index"),
+                end_index=(
+                    document.metadata["start_index"] + len(document.page_content)
+                    if document.metadata.get("start_index") is not None
+                    else None
+                ),
+            )
+            for document in documents
+        ]
 
 
 class ChonkieRecursiveAdapter:

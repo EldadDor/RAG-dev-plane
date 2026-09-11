@@ -9,11 +9,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import chat, health, ingest, workspaces
+from app.api.routers import assets, chat, health, ingest, workspaces
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
 from app.services.workspace_store import AuthorizedWorkspace, InMemoryWorkspaceStore, PostgresWorkspaceStore
+from app.services.asset_store import LocalFileAssetStore
+from app.clients.qdrant_client import QdrantVectorStore
 
 # Configure logging before anything else
 configure_logging()
@@ -23,6 +25,7 @@ _ERRORS = {
     401: ("authentication_required", "Authentication is required."),
     403: ("workspace_access_denied", "You do not have access to this workspace."),
     404: ("resource_not_found", "The requested resource was not found."),
+    415: ("unsupported_media_type", "The requested media type cannot be displayed."),
     422: ("invalid_request", "The request is invalid."),
     502: ("upstream_unavailable", "The answer service is temporarily unavailable."),
     500: ("internal_error", "An unexpected server error occurred."),
@@ -61,6 +64,7 @@ async def _init_pg_vector_store(settings: Settings):
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
+    app.state.asset_store = LocalFileAssetStore(settings.asset_storage_root)
     app.state.conversation_store = InMemoryConversationStore(settings.memory_max_turns)
     app.state.workspace_store = InMemoryWorkspaceStore(
         {
@@ -84,6 +88,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             settings.pg_schema,
             settings.pg_table,
             settings.pg_vector_dim,
+        )
+    elif settings.vector_store == "qdrant":
+        app.state.vector_store = QdrantVectorStore(
+            url=settings.qdrant_url,
+            api_key=settings.qdrant_api_key,
+            collection_name=settings.qdrant_collection,
+            check_compatibility=settings.qdrant_check_compatibility,
         )
 
     logger.info(
@@ -143,6 +154,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router)
     app.include_router(workspaces.router)
     app.include_router(ingest.router)
+    app.include_router(assets.router)
 
     return app
 

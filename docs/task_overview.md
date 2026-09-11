@@ -3,6 +3,8 @@
 - Frontend: no active implementation phase; FP-01 and FP-02 are complete.
 - Backend NP-10: complete. The local cross-encoder reranking stage is opt-in;
   the 2026-09-10 A/B result retained `RERANK_ENABLED=false` as the default.
+- NP-13 through NP-15: Word ingestion and cited-image implementation is
+  complete; migration 004 is applied and live browser validation is pending.
 
 # Approved For future
 
@@ -18,10 +20,3 @@
 - Whether the optional semantic splitter is worth enabling for comparison.
 - Whether to expose chunking-profile selection in the frontend; the current UI correctly continues to use `default`.
 - Final Azure model/provider choice, gateway identity details, and deployment configuration.
-- NP-13: `.docx` text/structure parsing, stable block offsets and image anchors.
-- NP-14: profile-scoped embedded-image storage, chunk association, lifecycle
-  cleanup and local/Azure asset-store boundaries.
-- NP-15: authorized image delivery and accessible image previews attached to
-  grounded chat citations.
-- Whether the proposed Word/image limits and preservation-only first release
-  in `document_image_support_plan.md` should be approved as written.

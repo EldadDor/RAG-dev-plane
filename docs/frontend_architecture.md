@@ -124,7 +124,7 @@ event: answer
 data: {"delta":"a release, run `deploy rollback`."}
 
 event: meta
-data: {"session_id":"9b1de4f0-0d4e-4b92-a3d7-0a72ea62b7d4","grounded":true,"sources":[{"doc_id":"release-guide","chunk_id":"release-guide:14","source_path":"docs/releases.md","title":"Release guide","page":null,"section":"Rollback","score":0.92,"snippet":"Run deploy rollback to restore the prior release."}],"debug":null}
+data: {"session_id":"9b1de4f0-0d4e-4b92-a3d7-0a72ea62b7d4","grounded":true,"sources":[{"doc_id":"release-guide","chunk_id":"release-guide:14","source_path":"docs/releases.md","title":"Release guide","page":null,"section":"Rollback","score":0.92,"snippet":"Run deploy rollback to restore the prior release.","assets":[]}],"debug":null}
 
 event: done
 data: {"reason":"completed"}
@@ -139,6 +139,14 @@ data: {"reason":"completed"}
   completion payload: save `session_id`, replace the source drawer with
   `sources`, and use `grounded` rather than inferring grounding from sources.
   `debug` is `null` unless the request opted in.
+- Each `SourceReference` has an `assets` array. It is empty for ordinary text
+  citations. Image entries contain `asset_id`, `media_type`, nullable
+  `width`/`height`, nullable `alt_text`/`caption`, and nullable `content_url`.
+  Older payloads that omit `assets` are interpreted as an empty array.
+- A non-null `content_url` is an application-issued relative route such as
+  `/workspaces/local/assets/<asset-id>`. Render only these URLs, load them
+  lazily, and retain the source path/snippet. A null URL means the preserved
+  media type is not safe for inline browser display.
 - `done` is always `{ "reason": "completed" }` after `meta`, or
   `{ "reason": "error" }` after `error`. Do not treat transport EOF without
   `done` as success.
@@ -180,6 +188,15 @@ appropriate `done` event as incomplete. Stop, workspace/chat changes, and
 view disposal abort the browser request; an abort does not display an error or
 trigger a retry. A later turn refreshes its selected session through the normal
 session route when the session ID has been received.
+
+### Source image display
+
+The Sources pane renders image assets under their owning citation. The central
+chat pane may also show a deduplicated “Related source images” section for the
+active grounded response. Images link to a full-size authorized route, use
+provided alt text/caption or a neutral document-derived fallback, and are not
+interpreted as proof that the model examined their pixels. Workspace/session
+changes clear citations and image references together.
 
 The UI must be validated with the live backend using
 `docs/frontend/integration_test_plan.md`. This is manual integration

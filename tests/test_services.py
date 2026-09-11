@@ -76,6 +76,10 @@ async def test_chat_service_returns_answer_with_sources():
         text="Python is a programming language.",
         score=0.95,
         title="Python Docs",
+        related_assets=({
+            "asset_id": "asset-1", "media_type": "image/png", "width": None,
+            "height": None, "alt_text": "Python console", "caption": None,
+        },),
     )
     retrieval_service = AsyncMock()
     retrieval_service.retrieve.return_value = [chunk]
@@ -97,6 +101,7 @@ async def test_chat_service_returns_answer_with_sources():
     assert len(response.sources) == 1
     assert response.sources[0].doc_id == "doc1"
     assert response.sources[0].score == 0.95
+    assert response.sources[0].assets[0].content_url == "/workspaces/local/assets/asset-1"
 
 
 @pytest.mark.asyncio

@@ -1,6 +1,6 @@
 # Extended Application Plan — Frontend and Backend
 
-**Status:** Approved roadmap. NP-08 through NP-10 are complete; NP-10 reranking remains opt-in.
+**Status:** Approved roadmap. NP-13 through NP-15 are active with live validation pending.
 **Prepared:** 2026-09-04
 **Basis:** All documentation under `docs/` (excluding `phase_qa/`), the phase
 history through NP-05, the FP-01 frontend phase records, and the current
@@ -15,8 +15,8 @@ backend phases. Each phase still requires its own activation review through
 
 **Update 2026-09-10:** NP-08 through NP-10 are complete. NP-09 provides the
 19-case default-profile baseline and NP-10 retains reranking as opt-in.
-Frontend FP-01 and FP-02 are complete. NP-13 through NP-15 are proposed for
-Word ingestion and cited-image display; they are not approved.
+Frontend FP-01 and FP-02 are complete. NP-13 through NP-15 were approved on
+2026-09-11; implementation is complete and live validation is pending.
 
 ### Backend — NP-01 through NP-05 complete
 
@@ -168,7 +168,7 @@ App Service, Managed Identity, Nginx identity-header injection, TLS and CORS.
 Re-ingestion is required if the embedding model or dimension changes; validate
 quality before and after migration with the NP-09 golden set.
 
-### NP-13 — Structured Microsoft Word Ingestion (Proposed)
+### NP-13 — Structured Microsoft Word Ingestion (Implementation Complete)
 
 **Objective:** Add safe, deterministic `.docx` ingestion for ordered text,
 headings, lists and tables while retaining stable anchors for embedded media.
@@ -176,7 +176,7 @@ headings, lists and tables while retaining stable anchors for embedded media.
 **Boundary:** Support modern OOXML `.docx`; do not automate desktop Word or
 parse legacy binary `.doc`. Existing loaders and embeddings remain unchanged.
 
-### NP-14 — Embedded Image Asset Lifecycle (Proposed after NP-13)
+### NP-14 — Embedded Image Asset Lifecycle (Implementation Complete)
 
 **Objective:** Extract original embedded image bytes, store them behind a local
 and future object-storage adapter, and associate them with the relevant text
@@ -185,7 +185,7 @@ chunks under workspace/profile/document ownership.
 **Boundary:** Store image metadata and associations in PostgreSQL, binary bytes
 outside the vector table, and perform no OCR or visual embedding.
 
-### NP-15 — Authorized Image Citations and Chat Display (Proposed after NP-14)
+### NP-15 — Authorized Image Citations and Chat Display (Implementation Complete)
 
 **Objective:** Extend structured citations with related asset metadata, serve
 images through a workspace-authorized endpoint, and render lazy image previews
@@ -195,6 +195,10 @@ in the frontend Sources experience.
 controls rendering. Existing text-only citation payloads remain compatible.
 
 **Detailed review:** [`document_image_support_plan.md`](document_image_support_plan.md)
+
+**Validation state:** 75 backend tests, 7 frontend tests, TypeScript and the
+production build pass. Migration 004 was applied and verified on 2026-09-11;
+live Word/image chat validation remains pending.
 
 ## Existing NP-06
 

@@ -75,6 +75,23 @@ default profile. Send `chunking_profile` with `/chat` or `/chat/stream` to
 query that profile in isolation. Apply migration `003_chunking_profiles.sql`
 before using this feature against PostgreSQL.
 
+## Word documents and source images
+
+Modern Microsoft Word `.docx` files are ingested as ordered headings,
+paragraphs, lists, tables and page-break hints. Legacy `.doc`, encrypted,
+corrupt and unsafe OOXML packages are rejected. Embedded images are preserved
+as original bytes in the private `ASSET_STORAGE_ROOT`; only their metadata and
+chunk associations are stored in PostgreSQL/vector payloads.
+
+When a retrieved Word chunk has a related browser-safe image, its source
+citation includes an authorized `content_url`. The frontend shows these images
+in Sources and under “Related source images.” The initial implementation does
+not perform OCR, image embeddings or visual interpretation.
+
+Apply `004_document_assets.sql` before starting the updated API with
+PostgreSQL. Keep the asset directory private and persistent; browsers fetch
+bytes only through `GET /workspaces/{workspace_id}/assets/{asset_id}`.
+
 PostgreSQL retrieval uses hybrid search by default: pgvector semantic search
 plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error

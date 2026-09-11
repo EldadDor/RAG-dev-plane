@@ -14,6 +14,7 @@ from app.services.workspace_store import (
     InMemoryWorkspaceStore,
     WorkspaceStore,
 )
+from app.services.asset_store import AssetStore, LocalFileAssetStore
 
 
 def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
@@ -67,8 +68,11 @@ def get_embedding_client(settings: Settings = Depends(get_settings)) -> Embeddin
 
 
 def get_vector_store(request: Request, settings: Settings = Depends(get_settings)) -> VectorStore:
+    shared_store = getattr(request.app.state, "vector_store", None)
+    if shared_store is not None:
+        return shared_store
     if settings.vector_store == "postgres":
-        # Pool is initialized in lifespan (main.py) and stored in app.state
+        # Production lifespan always initializes PostgreSQL before requests.
         return request.app.state.vector_store
     return QdrantVectorStore(
         url=settings.qdrant_url,
@@ -97,6 +101,13 @@ def get_chat_service(
     conversation_store: ConversationStore = getattr(
         request.app.state, "conversation_store", InMemoryConversationStore(settings.memory_max_turns)
     )
+
+
+def get_asset_store(request: Request, settings: Settings = Depends(get_settings)) -> AssetStore:
+    store = getattr(request.app.state, "asset_store", None)
+    if store is not None:
+        return store
+    return LocalFileAssetStore(settings.asset_storage_root)
     return ChatService(
         settings=settings,
         retrieval_service=retrieval_service,
@@ -106,12 +117,15 @@ def get_chat_service(
 
 
 def get_ingestion_service(
+    request: Request,
     settings: Settings = Depends(get_settings),
     embedding_client: EmbeddingClient = Depends(get_embedding_client),
     vector_store: VectorStore = Depends(get_vector_store),
+    asset_store: AssetStore = Depends(get_asset_store),
 ) -> IngestionService:
     return IngestionService(
         settings=settings,
         embedding_client=embedding_client,
         vector_store=vector_store,
+        asset_store=asset_store,
     )

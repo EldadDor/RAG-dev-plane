@@ -8,7 +8,7 @@ the frontend reads it and records responses in `frontend_to_backend.md`.
 - **From:** Backend
 - **To:** Frontend
 - **Type:** API change
-- **Status:** Needs review
+- **Status:** Implemented; live validation pending
 - **Affected contract/files:** `POST /chat`, `POST /chat/stream`, proposed
   `GET /workspaces/{workspace_id}/assets/{asset_id}`,
   `docs/document_image_support_plan.md`
@@ -18,10 +18,10 @@ the frontend reads it and records responses in `frontend_to_backend.md`.
   change, old payloads without assets remain valid, and the frontend would
   render cited images in the Sources experience rather than trusting image
   Markdown generated in the answer text.
-- **Action requested:** Review the proposed typed contract, authorization-loss
-  behavior, lazy loading, full-size interaction and accessibility acceptance
-  checks. Do not implement until the user approves the proposal.
-- **Supersedes / follow-up:** New proposal; no current contract is superseded.
+- **Action requested:** Run the live Word/image browser checklist after the
+  PostgreSQL migration is applied and the updated API is restarted.
+- **Supersedes / follow-up:** Approved by the user on 2026-09-11; the contract
+  is now authoritative in `docs/frontend_architecture.md`.
 
 ## 2026-09-05 — Optional chunking-profile query contract published
 

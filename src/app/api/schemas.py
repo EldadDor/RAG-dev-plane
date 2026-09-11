@@ -66,6 +66,16 @@ class ApiErrorResponse(BaseModel):
     message: str
 
 
+class SourceAssetReference(BaseModel):
+    asset_id: str
+    media_type: str
+    width: int | None = None
+    height: int | None = None
+    alt_text: str | None = None
+    caption: str | None = None
+    content_url: str | None = None
+
+
 class SourceReference(BaseModel):
     doc_id: str
     chunk_id: str
@@ -75,6 +85,7 @@ class SourceReference(BaseModel):
     section: str | None = None
     score: float
     snippet: str
+    assets: list[SourceAssetReference] = Field(default_factory=list)
 
 
 class IngestRequest(BaseModel):
@@ -91,6 +102,7 @@ class IngestResult(BaseModel):
     chunks_indexed: int
     skipped: bool = False
     skip_reason: str | None = None
+    assets_found: int = 0
 
 
 class IngestResponse(BaseModel):

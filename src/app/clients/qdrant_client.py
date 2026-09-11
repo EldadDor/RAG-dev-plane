@@ -13,6 +13,7 @@ class QdrantVectorStore:
         self._ensured = False
         self._document_hashes: dict[tuple[str, str, str], str] = {}
         self._documents: dict[tuple[str, str, str], dict] = {}
+        self._assets: dict[str, dict] = {}
 
     async def ensure_collection(self, vector_size: int) -> None:
         """Create the collection if it does not already exist. Idempotent after first success."""
@@ -74,6 +75,8 @@ class QdrantVectorStore:
                     title=p.get("title"),
                     page=p.get("page"),
                     section=p.get("section"),
+                    related_asset_ids=tuple(p.get("related_asset_ids", [])),
+                    related_assets=tuple(p.get("related_assets", [])),
                 )
             )
         return chunks
@@ -89,7 +92,7 @@ class QdrantVectorStore:
     async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:
         return self._document_hashes.get((workspace_id, chunking_profile, doc_id))
 
-    async def replace_document(self, document: dict, chunks: list[dict]) -> None:
+    async def replace_document(self, document: dict, chunks: list[dict], assets: list[dict] | None = None) -> None:
         await self._client.delete(
             collection_name=self._collection_name,
             points_selector=qdrant_models.Filter(
@@ -104,6 +107,22 @@ class QdrantVectorStore:
         key = (document["workspace_id"], document["chunking_profile"], document["doc_id"])
         self._document_hashes[key] = document["content_hash"]
         self._documents[key] = document
+        self._assets = {
+            asset_id: asset
+            for asset_id, asset in self._assets.items()
+            if not (
+                asset["workspace_id"] == document["workspace_id"]
+                and asset["chunking_profile"] == document["chunking_profile"]
+                and asset["doc_id"] == document["doc_id"]
+            )
+        }
+        for asset in assets or []:
+            self._assets[asset["asset_id"]] = {
+                **asset,
+                "workspace_id": document["workspace_id"],
+                "chunking_profile": document["chunking_profile"],
+                "doc_id": document["doc_id"],
+            }
 
     async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
         stale = [key for key, document in self._documents.items() if document.get("root_path") == root_path and key[0] == workspace_id and key[1] == chunking_profile and key[2] not in present_doc_ids]
@@ -120,7 +139,25 @@ class QdrantVectorStore:
                 ),
             )
             self._document_hashes.pop(key, None)
+            self._assets = {
+                asset_id: asset
+                for asset_id, asset in self._assets.items()
+                if not (
+                    asset["workspace_id"] == workspace_id
+                    and asset["chunking_profile"] == chunking_profile
+                    and asset["doc_id"] == document["doc_id"]
+                )
+            }
         return len(stale)
+
+    async def get_asset_metadata(self, workspace_id: str, asset_id: str) -> dict | None:
+        asset = self._assets.get(asset_id)
+        if asset is None or asset["workspace_id"] != workspace_id:
+            return None
+        return dict(asset)
+
+    async def list_asset_storage_keys(self) -> list[str]:
+        return sorted({asset["storage_key"] for asset in self._assets.values()})
 
 
 def _chunk_id_to_int(chunk_id: str) -> int:

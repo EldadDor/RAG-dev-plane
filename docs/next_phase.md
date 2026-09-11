@@ -1,7 +1,7 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-10 is complete with reranking retained as opt-in; NP-06 is the next queued backend phase.
-**Last reviewed:** 2026-09-10
+**Status:** NP-13 through NP-15 are active; implementation is complete and live environment validation is pending.
+**Last reviewed:** 2026-09-11
 
 This is the ordered backlog for the next approved phase. Each item must have a
 defined scope, acceptance checks, and an approval decision before implementation.
@@ -22,9 +22,9 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 10 | NP-10 | Activate retrieval reranking | Optional local cross-encoder reranking is active behind configuration; default enablement was evaluated but declined because the benchmark's precision/recall was saturated and reranking added 50.0% mean latency. | **Complete — default remains off.** 2026-09-10 |
 | 11 | NP-11 | Frontend live validation and phase closure | FP-01 closure and live streaming validation are recorded by the frontend phase records. | Completed 2026-09-05 |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
-| 13 | NP-13 | Structured Microsoft Word ingestion | Add safe `.docx` text/structure extraction and stable image anchors without changing existing loaders. | **Proposed — review required** |
-| 14 | NP-14 | Embedded image asset lifecycle | Preserve Word image bytes behind an asset-store boundary and relate them to workspace/profile-scoped chunks. | **Proposed after NP-13 — review required** |
-| 15 | NP-15 | Authorized image citations and chat display | Add an authorized asset route, citation asset metadata, and accessible image previews in chat. | **Proposed after NP-14 — review required** |
+| 13 | NP-13 | Structured Microsoft Word ingestion | Safe `.docx` structure extraction, image anchors and image-aware hashing implemented. | **Implementation complete; live validation pending** |
+| 14 | NP-14 | Embedded image asset lifecycle | Content-addressed asset storage, migration 004 and profile-scoped chunk associations implemented. | **Implementation and migration complete** |
+| 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Implementation complete; live browser validation pending** |
 
 ## Current Phase State
 
@@ -81,7 +81,7 @@ and documentation indexing completed 2026-08-29.
 **Objective:** Keep unit/API verification required and isolated, while making
 live stack verification explicitly manual and environment-scoped.
 
-### NP-13 through NP-15 — Word and Embedded Images (Proposed)
+### NP-13 through NP-15 — Word and Embedded Images (Active)
 
 **Objective:** Ingest modern Word documents as structured text and show their
 embedded screenshots with grounded citations, without requiring OCR or visual
@@ -97,8 +97,9 @@ embeddings in the first release.
 
 **Review document:** [`document_image_support_plan.md`](document_image_support_plan.md)
 
-These phases are not active. Their API, migration, storage limits and frontend
-contract require approval before implementation.
+The user approved these phases on 2026-09-11. Offline implementation validation
+passes; migration and live end-to-end validation wait for the configured
+PostgreSQL host to become reachable.
 
 ## Phase Intake Checklist
 

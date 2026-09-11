@@ -17,6 +17,7 @@ flowchart LR
     PG["PostgreSQL + pgvector\nDefault"]
     Qdrant["Qdrant\nAlternative"]
     Sources["Docs and source repositories"]
+    Assets["Private source asset store"]
 
     Client -->|"POST /ingest, /chat"| API
     Sources -->|"load and chunk"| API
@@ -24,6 +25,7 @@ flowchart LR
     API -->|"embed documents and questions"| Embed
     API -->|"chunks, source lifecycle, chat memory"| PG
     API -. "alternative vector store" .-> Qdrant
+    API -->|"embedded image bytes"| Assets
 ```
 
 ## API Surface
@@ -33,6 +35,7 @@ flowchart LR
 | `GET /workspaces` | Returns only the PostgreSQL-authorized workspaces for the server-derived principal. |
 | `POST /ingest` | Loads one file or a directory, chunks supported content, embeds chunks, and synchronizes the selected workspace. |
 | `POST /chat` | Retrieves workspace-scoped evidence, generates a grounded answer, returns sources, and maintains session memory. |
+| `GET /workspaces/{workspace_id}/assets/{asset_id}` | Authorizes workspace membership and returns a browser-safe image associated with a cited chunk. |
 | `GET /health` | Returns process-level health and configured environment. |
 | `GET /readiness` | Checks vector-store reachability and reports configured provider/model details. |
 
@@ -56,12 +59,15 @@ flowchart LR
     Delete --> Store
 ```
 
-The loader registry supports Markdown, HTML, plain text, PDF, Python, Java, Kotlin, and common configuration/code extensions. Loaders preserve source path, title, type, and relevant metadata.
+The loader registry supports Markdown, HTML, plain text, PDF, modern Word `.docx`, Python, Java, Kotlin, and common configuration/code extensions. Loaders preserve source path, title, type, and relevant metadata.
 
 - Python files are chunked by module, class, and function using the Python AST.
 - Java files use Tree-sitter to preserve package/type/member symbols and line ranges; malformed Java falls back to generic text chunking.
 - Kotlin (`.kt`, `.kts`) uses Tree-sitter declaration-aware chunking for type and function symbols, enclosing types, and line ranges; malformed Kotlin falls back to generic chunking.
 - Documents retain provenance-rich metadata, including source path, repository details when available, language/symbol information for code, line ranges, workspace ID, and chunk position.
+- Word files preserve ordered headings, paragraphs, lists, tables, page-break
+  hints and embedded-image anchors. Text is embedded normally; original image
+  bytes go to the private asset store and related asset IDs travel with chunks.
 
 For PostgreSQL, `rag.source_documents` records a content hash per `(workspace_id, doc_id)`. During rescans, unchanged files are skipped, changed files replace their old chunks, and documents missing from the scanned root are removed. This prevents stale chunks from remaining retrievable.
 
@@ -94,7 +100,7 @@ sequenceDiagram
 
 `RetrievalService` embeds the question through the embedding adapter, then filters semantic matches below `MIN_RETRIEVAL_SCORE`. PostgreSQL hybrid search adds full-text results and combines semantic and lexical ranks using reciprocal rank fusion. Set `HYBRID_SEARCH_ENABLED=false` for semantic-only retrieval.
 
-If no evidence remains after retrieval, the service returns an explicit abstention instead of calling the chat model for an ungrounded answer. Grounded responses include structured source references with document/chunk IDs, source path, score, and snippet.
+If no evidence remains after retrieval, the service returns an explicit abstention instead of calling the chat model for an ungrounded answer. Grounded responses include structured source references with document/chunk IDs, source path, score, snippet, and optional related-image assets. The model never creates asset URLs; the API emits authorized application routes.
 
 ## Conversation Memory
 
@@ -114,6 +120,7 @@ Conversation memory is separate from the document index and is never embedded as
 | Vector storage | PostgreSQL + pgvector | Qdrant | `VectorStore` adapter |
 | Lexical retrieval | PostgreSQL full-text search | Not required for Qdrant | `LexicalSearchVectorStore` capability |
 | Conversation memory | PostgreSQL | In-memory fallback | `ConversationStore` adapter |
+| Embedded source assets | Private local filesystem | Azure Blob-compatible future adapter | `AssetStore` adapter |
 
 Configuration is centralized in `app.config.Settings`. Provider-specific URLs, credentials, models, timeouts, vector dimensions, retrieval tuning, and memory settings are environment-driven. The repository `.env` is intentionally not committed; `.env.example` describes the supported settings.
 
@@ -125,6 +132,8 @@ The default pgvector store uses:
 - `rag.source_documents` for workspace-scoped source lifecycle records;
 - `rag.conversation_turns` and `rag.conversation_summaries` for durable chat memory.
 - `rag.workspaces` and `rag.workspace_members` for workspace discovery and authorization.
+- `rag.document_assets` and `rag.chunk_assets` for profile-scoped image
+  metadata and chunk relationships. Binary bytes remain outside PostgreSQL.
 
 Database objects are created by versioned SQL under `database/migrations`, not
 by application startup. Startup validates the required tables, migration
@@ -141,5 +150,7 @@ The normal pytest suite uses mocks and in-process FastAPI transport, so it does 
 
 ## Current Boundaries and Planned Work
 
-- Reranking remains configuration-visible but is not yet an active retrieval stage.
+- Word image support preserves and displays cited images; it does not perform
+  OCR, visual embeddings or multimodal reasoning.
+- Reranking is implemented but remains opt-in after NP-10 validation.
 - The next approved improvements are tracked in [next_phase.md](next_phase.md), rather than as an outdated architecture gap list.

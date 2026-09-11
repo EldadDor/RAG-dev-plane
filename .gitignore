@@ -27,6 +27,7 @@ env/
 # ---- Testing & coverage ----
 .pytest_cache/
 .codex-test-tmp/
+.codex-test-tmp*/
 .pytest-integration-tmp/
 .coverage
 htmlcov/
@@ -49,6 +50,7 @@ Thumbs.db
 .env
 secrets/
 service-account.json
+.rag-assets/
 
 # ---- Python version management ----
 

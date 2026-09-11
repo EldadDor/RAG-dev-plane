@@ -53,6 +53,7 @@ async def ingest(
                     chunks_indexed=item.chunks_indexed,
                     skipped=item.skipped,
                     skip_reason=item.skip_reason,
+                    assets_found=item.assets_found,
                 )
                 for item in result.documents
             ],

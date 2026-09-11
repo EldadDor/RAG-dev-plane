@@ -94,9 +94,25 @@ describe('API client', () => {
     expect(onMeta).toHaveBeenCalledWith({
       sessionId: 'session-1', grounded: true, sources: [{
         docId: 'doc-1', chunkId: 'doc-1:1', sourcePath: 'docs/guide.md', title: 'Guide',
-        page: null, section: 'Intro', score: 0.9, snippet: 'Hello world',
+        page: null, section: 'Intro', score: 0.9, snippet: 'Hello world', assets: [],
       }],
     })
+  })
+
+  it('maps optional source image assets and rejects malformed asset entries', async () => {
+    const valid = 'event: meta\ndata: {"session_id":"session-1","grounded":true,"sources":[{"doc_id":"doc-1","chunk_id":"chunk-1","source_path":"guide.docx","title":"Guide","page":null,"section":"Deploy","score":0.9,"snippet":"Console","assets":[{"asset_id":"asset-1","media_type":"image/png","alt_text":"Console","content_url":"/workspaces/local/assets/asset-1"}]}],"debug":null}\n\nevent: done\ndata: {"reason":"completed"}\n\n'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(streamResponse(valid)))
+    const onMeta = vi.fn()
+    await streamChat({ question: 'Show it' }, { onAnswer: vi.fn(), onMeta }, new AbortController().signal)
+    expect(onMeta.mock.calls[0]?.[0].sources[0].assets[0]).toEqual({
+      assetId: 'asset-1', mediaType: 'image/png', width: null, height: null,
+      altText: 'Console', caption: null, contentUrl: '/workspaces/local/assets/asset-1',
+    })
+
+    const malformed = 'event: meta\ndata: {"session_id":"session-1","grounded":true,"sources":[{"doc_id":"doc-1","chunk_id":"chunk-1","source_path":"guide.docx","title":"Guide","page":null,"section":null,"score":0.9,"snippet":"Console","assets":[{"media_type":"image/png"}]}],"debug":null}\n\n'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(streamResponse(malformed)))
+    await expect(streamChat({ question: 'Show it' }, { onAnswer: vi.fn(), onMeta: vi.fn() }, new AbortController().signal))
+      .rejects.toMatchObject({ code: 'stream_protocol_error' })
   })
 
   it('treats an SSE response without its terminal done event as incomplete', async () => {

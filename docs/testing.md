@@ -29,6 +29,8 @@ service and HTTP clients are mocked at their adapters.
 | `test_domain_models.py` | Checks that the ingestion model emits the top-level chunk ID expected by vector-store adapters. |
 | `test_java_code_chunker.py` | Covers Java type/member symbol extraction and fallback behavior for malformed Java. |
 | `test_loaders.py` | Covers text, Markdown, HTML, directory loading, unsupported/missing files, file-size limits, and Java discovery exclusions. |
+| `test_word_loader.py` | Covers safe `.docx` structure extraction, image anchors, image-aware hashing, discovery and hostile package rejection. |
+| `test_assets.py` | Covers binary asset persistence/pruning, chunk association, dry runs, authorized delivery, caching and media allowlisting. |
 | `test_services.py` | Covers retrieval orchestration, chat grounding/abstention, provider separation, debug metadata, and hybrid reciprocal-rank fusion. |
 | `test_workspace_authorization.py` | Covers workspace discovery, authorization-before-chat, principal propagation, session-scope mismatch rejection, and two-user isolation through FastAPI dependency overrides. |
 
