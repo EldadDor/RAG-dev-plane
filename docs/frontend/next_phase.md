@@ -3,7 +3,7 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-10
+**Last reviewed:** 2026-09-11
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -23,6 +23,10 @@ tracks work after FP-02; authoritative current-task status remains in
   Vite proxy with the live LLM and pgvector stack.
 - Backend live-stack workspace/session validation and documentation indexing
   are complete; NP-05 is closed.
+- The 2026-09-10 backend handoff confirms image-bearing source citations are
+  implemented and contract-authoritative. The frontend implementation and
+  focused parser coverage are present; only the separately approved live
+  Word/image browser checklist remains before NP-15-FE can close.
 
 This file is the frontend-only intake and ordering record. Before a candidate
 becomes active, move it into `work_current_phase.md`, define its task board,
