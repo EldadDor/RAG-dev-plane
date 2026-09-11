@@ -25,61 +25,9 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 13 | NP-13 | Structured Microsoft Word ingestion | Safe `.docx` structure extraction, image anchors and image-aware hashing implemented. | **Implementation complete; live validation pending** |
 | 14 | NP-14 | Embedded image asset lifecycle | Content-addressed asset storage, migration 004 and profile-scoped chunk associations implemented. | **Implementation and migration complete** |
 | 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Implementation complete; live browser validation pending** |
+| 16 | NP-16 | Hebrew and multilingual RAG evaluation | Work documents are largely Hebrew; local models (`nomic-embed-text`, `llama3.2:3b`) are English-centric, and Hebrew failures are retrieval-side before generation-side. | **Proposed after NP-13–15 live validation — activation required** |
 
 ## Current Phase State
-
-### NP-10 — Activate Retrieval Reranking (Complete)
-
-The implementation record, task board, approval gates, and validation plan are
-authoritative in [`work_current_phase.md`](work_current_phase.md). The live A/B
-comparison was completed on 2026-09-10; reranking remains opt-in because the
-baseline's context metrics were saturated and the experiment added 50.0% mean
-latency.
-
-## Completed-Phase Reference
-
-### NP-01 — Refresh Architecture Documentation (Complete)
-
-**Proposed objective:** Make `docs/architecture.md` accurately describe the
-current RAG request, ingestion, workspace, memory, hybrid retrieval, and
-provider flows.
-
-**In scope:** Documentation only; no provider, schema, API, or runtime behavior
-changes.
-
-**Acceptance checks:**
-
-- The diagram/text distinguishes chat and embedding adapters.
-- Ingestion documents provenance metadata, source lifecycle behavior, and
-  workspace boundaries.
-- Retrieval documents PostgreSQL hybrid semantic/lexical search and Qdrant as
-  an alternative.
-- Conversation memory and its separation from document retrieval are stated.
-- The document is indexed after approval and completion.
-
-**Completion record:** Approved and completed 2026-08-20 in `df37f9b`.
-
-### NP-03 — Parser-Aware Kotlin Chunking (Complete)
-
-**Completion record:** Tree-sitter parsing, fallback behavior, and focused unit
-validation completed 2026-08-21.
-
-### NP-05 — Workspace Discovery and Authorization (Complete)
-
-**Objective:** Resolve the frontend blocker by defining how an authenticated user discovers only their authorized workspaces and how `workspace_id` is enforced for chat and session operations.
-
-**Delivered contract:** PostgreSQL-backed membership, fixed local/gateway office principals, `GET /workspaces`, canonical workspace/session and safe-error payloads, and centralized authorization for chat/session operations.
-
-**Completion record:** Migrations `001_baseline` and
-`002_workspace_authorization`, the local seed, live PostgreSQL API validation,
-and documentation indexing completed 2026-08-29.
-
-**Tracking:** [`work_current_phase.md`](work_current_phase.md).
-
-### NP-06 — CI Test Lanes (Queued)
-
-**Objective:** Keep unit/API verification required and isolated, while making
-live stack verification explicitly manual and environment-scoped.
 
 ### NP-13 through NP-15 — Word and Embedded Images (Active)
 
@@ -87,19 +35,52 @@ live stack verification explicitly manual and environment-scoped.
 embedded screenshots with grounded citations, without requiring OCR or visual
 embeddings in the first release.
 
-**Proposed sequence:**
+**Scope:**
 
-1. NP-13 adds `.docx` text/structure parsing and stable image anchors.
-2. NP-14 adds binary asset persistence, chunk association and replacement
-   cleanup behind an `AssetStore` adapter.
-3. NP-15 adds workspace-authorized image delivery and frontend citation
-   previews.
+- Structured `.docx` parsing with headings, lists, tables, page-break hints and
+  stable image anchors.
+- Private content-addressed asset persistence and profile/workspace-scoped
+  chunk associations.
+- Authorized image delivery and accessible frontend previews under citations.
 
 **Review document:** [`document_image_support_plan.md`](document_image_support_plan.md)
 
 The user approved these phases on 2026-09-11. Offline implementation validation
 passes; migration and live end-to-end validation wait for the configured
 PostgreSQL host to become reachable.
+
+### NP-16 — Hebrew and Multilingual RAG Evaluation (Proposed)
+
+**Objective:** Measure and close the Hebrew quality gap with comparable
+evaluation evidence before any model swap, while preserving the local-first
+operating path.
+
+**Proposed scope:**
+
+- Extend the NP-09 golden set with human-verified Hebrew cases from real
+  documents; expected facts and source hints remain human-authored.
+- Benchmark the embedding side first on the Hebrew set: `nomic-embed-text`
+  (current) versus at least one local multilingual candidate (for example
+  `bge-m3`, noting its 1024-dimension change requires `PG_VECTOR_DIM` and
+  re-ingestion; chunking profiles do not isolate embedding dimensions).
+- A/B chat models that fit the desktop's 8 GB GPU (DictaLM 3.0 12B,
+  Gemma 3 12B/4B, Qwen3 8B) using the NP-09 runner; keep configuration-only
+  model changes and record latency alongside quality.
+- Extend PostgreSQL lexical retrieval for Hebrew morphology (attached prefixes)
+  if the golden set shows lexical misses.
+- Produce a repeatable local-versus-Azure comparison artifact so the eventual
+  Azure OpenAI deployment (`text-embedding-3-large`, GPT-5) can be evaluated
+  against the same Hebrew cases.
+
+**Constraints:**
+
+- No model swap or embedding-dimension migration without a benchmark report
+  showing a retrieval-quality improvement on the Hebrew golden cases.
+- Keep the default local configuration working without cloud calls.
+
+**Activation note:** Queued after NP-13–15 live validation and NP-06 CI lanes.
+Requires explicit activation approval and, for dimension changes, a separate
+migration approval.
 
 ## Phase Intake Checklist
 
@@ -120,5 +101,3 @@ Before a candidate becomes active, record:
 - Making live model/database tests mandatory in CI.
 - Production deployment changes.
 - Replacing the dual chat/embedding provider architecture.
-- OCR, image caption generation, visual embeddings and multimodal answering
-  until a separate visual-understanding phase is approved.
