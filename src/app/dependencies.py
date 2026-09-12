@@ -101,6 +101,12 @@ def get_chat_service(
     conversation_store: ConversationStore = getattr(
         request.app.state, "conversation_store", InMemoryConversationStore(settings.memory_max_turns)
     )
+    return ChatService(
+        settings=settings,
+        retrieval_service=retrieval_service,
+        chat_client=chat_client,
+        conversation_store=conversation_store,
+    )
 
 
 def get_asset_store(request: Request, settings: Settings = Depends(get_settings)) -> AssetStore:
@@ -108,12 +114,6 @@ def get_asset_store(request: Request, settings: Settings = Depends(get_settings)
     if store is not None:
         return store
     return LocalFileAssetStore(settings.asset_storage_root)
-    return ChatService(
-        settings=settings,
-        retrieval_service=retrieval_service,
-        chat_client=chat_client,
-        conversation_store=conversation_store,
-    )
 
 
 def get_ingestion_service(

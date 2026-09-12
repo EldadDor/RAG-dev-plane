@@ -1,0 +1,282 @@
+{
+  "cases": [
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-address-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 9949.334600009024,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:29",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:15",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "large-file-email",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 7555.989200016484,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-content-gibberish",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 8244.563600048423,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:29"
+      ]
+    },
+    {
+      "answer": "\u05d0\u05e0\u05d9 \u05dc\u05d0 \u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05e6\u05d9\u05d1 \u05d0\u05ea \u05d4\u05e1\u05d9\u05d1\u05d4 \u05dc\u05d4.",
+      "case_id": "email-not-received",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 9496.405800106004,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:24"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-template-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 10434.152400121093,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:15"
+      ]
+    },
+    {
+      "answer": "\"\u05d0\u05dd \u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05d9\u05d9\u05dc \u05d6\u05d5\u05d4\u05ea\u05d4 \u05db\u05e9\u05d2\u05d5\u05d9\u05d4, \u05dc\u05d0 \u05d9\u05d4\u05d9\u05d4 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05e0\u05d5\u05e1\u05e3 \u05dc\u05e9\u05dc\u05d5\u05d7 \u05dc\u05db\u05ea\u05d5\u05d1\u05ea \u05d6\u05d5 \u05d5\u05ea\u05d5\u05e6\u05d2 \u05d4\u05d5\u05d3\u05e2\u05d4 \u05dc\u05de\u05e9\u05ea\u05de\u05e9 \u05db\u05d9 \u05d4\u05db\u05ea\u05d5\u05d1\u05ea \u05e9\u05d2\u05d5\u05d9\u05d4. \u05d0\u05dd \u05d4\u05db\u05ea\u05d5\u05d1\u05ea \u05e0\u05db\u05d5\u05e0\u05d4, \u05e6\u05e8\u05d9\u05da \u05dc\u05de\u05d7\u05d5\u05e7 \u05d0\u05d5\u05ea\u05d4 \u05de\u05d4\u05e4\u05e8\u05d8\u05d9\u05dd \u05e9\u05dc \u05d4\u05dc\u05e7\u05d5\u05d7, \u05dc\u05e9\u05de\u05d5\u05e8, \u05d5\u05dc\u05d4\u05db\u05e0\u05d9\u05e1 \u05de\u05d7\u05d3\u05e9 (\u05de\u05d7\u05d9\u05e7\u05d4 \u05d5\u05d4\u05db\u05e0\u05e1\u05d4 \u05de\u05d1\u05dc\u05d9 \u05e9\u05de\u05d9\u05e8\u05d4 \u05d1\u05d0\u05de\u05e6\u05e2 \u05dc\u05d0 \u05ea\u05e2\u05d6\u05d5\u05e8). \u05d0\u05d6 \u05d4\u05db\u05ea\u05d5\u05d1\u05ea \u05ea\u05d6\u05d5\u05d4\u05d4 \u05db\u05d7\u05d3\u05e9\u05d4 \u05d5\u05ea\u05ea\u05d0\u05e4\u05e9\u05e8 \u05e9\u05dc\u05d9\u05d7\u05ea \u05de\u05d9\u05d9\u05dc\u05d9\u05dd \u05d0\u05dc\u05d9\u05d4.\"",
+      "case_id": "email-login-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 46956.61749993451,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.2,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:15",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:4"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-transfer-between-users",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 8705.09080006741,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:45"
+      ]
+    },
+    {
+      "answer": "\u05d0\u05e0\u05d9 \u05dc\u05d0 \u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05e6\u05d9\u05d1 \u05d0\u05ea \u05d4\u05e4\u05ea\u05e8\u05d5\u05df.",
+      "case_id": "personal-fax-issue",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 10219.509599963203,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:45"
+      ]
+    },
+    {
+      "answer": "25%",
+      "case_id": "heb_006",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 6794.27310009487,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:2",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "heb_007",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 10380.57680008933,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:11",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:28",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:29",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26"
+      ]
+    },
+    {
+      "answer": "\u05d0\u05d9\u05dc\u05d5 \u05de\u05db\u05e1\u05d9\u05dd \u05d4\u05d8\u05d9\u05dc\u05d4 \u05e1\u05d9\u05df \u05d1\u05de\u05e8\u05e5 \u05e2\u05dc \u05e1\u05d7\u05d5\u05e8\u05d5\u05ea \u05d0\u05de\u05e8\u05d9\u05e7\u05d0\u05d9\u05d5\u05ea,  \u05d4\u05de\u05db\u05e1\u05d9\u05dd  \u05d4\u05d5\u05e6\u05e8\u05d5  \u05d1\u05de\u05e7\u05e1\u05d9\u05e7\u05d5  \u05d5\u05d1\u05e7\u05e0\u05d3\u05d4.",
+      "case_id": "heb_008",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17919.41659990698,
+      "metrics": {
+        "answer_relevance": 0.16055513114336642,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.21046600458365164
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:15",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:35"
+      ]
+    },
+    {
+      "answer": "\"\u05dc\u05d4\u05d8\u05d9\u05dc 14.2 \u05de\u05d9\u05dc\u05d9\u05d0\u05e8\u05d3 \u05d3\u05d5\u05dc\u05e8\"",
+      "case_id": "heb_009",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 9922.922200057656,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:39",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:9",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:57"
+      ]
+    },
+    {
+      "answer": "\u05d0\u05e0\u05d9 \u05dc\u05d0 \u05d9\u05db\u05d5\u05dc \u05dc\u05e1\u05d9\u05d9\u05e3 \u05ea\u05e9\u05d5\u05d1\u05d4.",
+      "case_id": "heb_010",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 10384.200199972838,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:26",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:29",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:17"
+      ]
+    }
+  ],
+  "configuration": {
+    "api_url": "http://127.0.0.1:8001",
+    "top_k": 5,
+    "workspace_id": null
+  }
+}

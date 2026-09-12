@@ -1,6 +1,8 @@
 import pytest
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+from app.dependencies import get_chat_service
 from app.services.retrieval_service import RetrievalService
 from app.services.chat_service import ChatService
 from app.domain.models import RetrievedChunk
@@ -25,6 +27,18 @@ def _make_settings(**overrides) -> Settings:
     }
     defaults.update(overrides)
     return Settings(**{k: v for k, v in defaults.items()})
+
+
+def test_chat_service_dependency_returns_configured_service():
+    conversation_store = MagicMock()
+    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(conversation_store=conversation_store)))
+    retrieval_service = MagicMock()
+    chat_client = MagicMock()
+
+    service = get_chat_service(request, _make_settings(), retrieval_service, chat_client)
+
+    assert isinstance(service, ChatService)
+    assert service._conversation_store is conversation_store
 
 
 @pytest.mark.asyncio
