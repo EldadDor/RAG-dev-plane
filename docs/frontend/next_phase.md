@@ -3,7 +3,7 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-11
+**Last reviewed:** 2026-09-12
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -27,6 +27,10 @@ tracks work after FP-02; authoritative current-task status remains in
   implemented and contract-authoritative. The frontend implementation and
   focused parser coverage are present; only the separately approved live
   Word/image browser checklist remains before NP-15-FE can close.
+- Hebrew and multilingual RAG evaluation is a backend-owned proposed NP-16
+  requirement. Its requested evaluation and profile-isolation design were
+  recorded in `../agent_handoff/frontend_to_backend.md` on 2026-09-12; it does
+  not activate frontend work without a browser-visible contract or results UI.
 
 This file is the frontend-only intake and ordering record. Before a candidate
 becomes active, move it into `work_current_phase.md`, define its task board,

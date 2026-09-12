@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-02 Frontend Hardening and UX Refinement
 
 **Status:** Completed
-**Last reviewed:** 2026-09-11
+**Last reviewed:** 2026-09-12
 **Owner:** Frontend team
 
 ## Objective
@@ -79,3 +79,10 @@ ran `rg` for image-citation implementation and `git diff --check` (passed).
 No type check, test suite, production build, browser automation, or live
 backend/model/database validation ran because this was a read-only status
 review.
+
+Hebrew-ingestion review, 2026-09-12: this is backend-owned work, so no
+frontend task was started. Recorded the benchmark-first and profile-isolation
+requirements in `docs/agent_handoff/frontend_to_backend.md`. Evidence: reviewed
+the supplied Perplexity thread, official DICTA and Ollama model documentation,
+and official OpenAI embedding documentation. No application code, service,
+model, database, or frontend validation command ran.

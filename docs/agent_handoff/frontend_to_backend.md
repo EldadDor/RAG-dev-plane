@@ -3,6 +3,54 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-09-12 — Proposed NP-16: Hebrew and multilingual RAG evaluation
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Proposed capability / evaluation
+- **Status:** Proposed; backend-phase activation and design approval required
+- **Affected contract/files:** Ingestion/extraction pipeline; embedding client;
+  vector-store profile/index design; retrieval evaluation harness; provider
+  configuration. No browser API change is requested yet.
+- **Message:** Work documents will include Hebrew. The current local stack
+  (`nomic-embed-text` plus `llama3.2:3b`) may be retained as a baseline, but
+  it must not be accepted or replaced on anecdotal chat quality alone. Evaluate
+  extraction, retrieval, and generation separately using a small, approved,
+  non-sensitive Hebrew golden set drawn from representative document types.
+  Measure at least retrieval Recall@k/MRR (or equivalent judged evidence
+  coverage), grounded-answer correctness, and latency. Benchmark retrieval
+  first; only then A/B a Hebrew-capable local chat model that fits the available
+  hardware. DictaLM 3.0 has an official Hebrew-trained 1.7B instruct variant
+  suitable as the low-VRAM first generation candidate; larger candidates remain
+  optional experiments, not a required production selection.
+
+  A profile must be an immutable retrieval namespace, not merely a query
+  switch. Persist its provider/model revision, configured embedding dimension,
+  instruction/query prefix, normalization/chunking version, and index/store
+  identity. Queries must only search chunks embedded by that exact profile.
+  Embeddings with different dimensions cannot share a typed pgvector index;
+  create a distinct profile-scoped store/table/collection and perform one
+  re-embedding pass per new profile. An embedding cache can later make a return
+  to an already-tested profile fast, but its key must include the exact chunk
+  content hash plus all embedding-affecting profile fields; it does not remove
+  the first re-embedding pass.
+
+  For Azure, treat deployment name, API version, model revision, and requested
+  `dimensions` as explicit profile configuration. `text-embedding-3-large`
+  supports configurable dimensions in the OpenAI API, so neither 3072 nor any
+  local dimension should be hard-coded or silently shared across profiles.
+  Confirm Azure deployment support and record the observed vector length before
+  migration.
+- **Action requested:** Propose and obtain approval for a backend NP-16 phase:
+  (1) Hebrew UTF-8/document-extraction smoke tests, (2) golden-set and metric
+  format, (3) profile-scoped storage migration plan, and (4) a baseline-versus-
+  candidate experiment. Do not alter the current default profile, migrate
+  vector dimensions, send workplace documents to Azure, or expose provider
+  credentials to the browser until that phase is approved.
+- **Supersedes / follow-up:** New requirement originating from the Hebrew
+  ingestion review. Frontend has no implementation work until a browser-visible
+  contract or evaluation-results UI is approved.
+
 ## 2026-09-04 — Empty workspace-ID fix acknowledged
 
 - **From:** Frontend
