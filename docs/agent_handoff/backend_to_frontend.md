@@ -3,6 +3,21 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-13 — NP-17 profile support started
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Status
+- **Status:** Active
+- **Affected contract/files:** Future optional model-profile selection on chat
+  and ingestion requests; no current browser contract change.
+- **Message:** NP-17 is implementing model-profile isolation and embedding
+  caching for local and future Azure runs. Existing requests remain valid when
+  they omit a model-profile selector. The local bge-m3/DictaLM evidence does
+  not require an immediate frontend change.
+- **Action requested:** None. Do not add a profile selector until the backend
+  publishes the validated optional field and profile-readiness behavior.
+
 ## 2026-09-12 — NP-13 through NP-15 live validation complete
 
 - **From:** Backend
