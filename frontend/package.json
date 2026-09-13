@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "dev": "vite --config apps/rag-dev-plane/vite.config.ts",
+    "build": "npm run build:all",
+    "build:rag-dev-plane": "tsc -b && vite build --config apps/rag-dev-plane/vite.config.ts",
+    "build:all": "npm run build:rag-dev-plane",
+    "preview": "vite preview --config apps/rag-dev-plane/vite.config.ts",
     "test": "vitest run"
   },
   "dependencies": {
