@@ -1,6 +1,6 @@
 # Current Work Phase — NP-16 Hebrew and Multilingual RAG Evaluation
 
-**Status:** Active — Phase A: baseline evidence and evaluation hardening
+**Status:** Complete — closed 2026-09-13
 **Activated:** 2026-09-13
 **Owner:** Project team
 **Prerequisite:** NP-13 through NP-15 completed and live-validated on 2026-09-12
@@ -13,10 +13,8 @@ deployment provider.
 
 ## Guardrails
 
-- Keep the active `nomic-embed-text` / `llama3.2:3b` profile unchanged.
-- Do not download a new model, alter `PG_VECTOR_DIM`, create a new vector
-  table, or send workplace documents to Azure during Phase A.
-- Keep the existing default index and chat contract intact.
+- The historical `nomic-embed-text` / `llama3.2:3b` baseline remains intact.
+- `bge-m3` and DictaLM experiments use separate profile storage.
 - Treat image text as out of scope; Hebrew text embedded in screenshots still
   requires a separately approved OCR or visual-understanding phase.
 
@@ -46,6 +44,19 @@ table untouched. Its 13-case artifact, `evaluation/results/bge-m3-hebrew.json`,
 measured 100.0% source precision, source-hint recall, and MRR; median paired
 case latency was 7.06 s. The default profile remains the rollback target.
 
+With that same retrieval profile, `dictalm2.0-instruct` completed all 13 cases
+without a generation failure. Its artifact,
+`evaluation/results/bge-m3-dictalm2-hebrew.json`, measured 47.1% answer
+relevance and 56.0% faithfulness, versus 2.8% and 16.3% for `llama3.2:3b`.
+The median paired-case latency increased to 14.13 s.
+
+The existing 19-case English set was also re-run with bge-m3 and DictaLM.
+`evaluation/results/bge-m3-dictalm2-english.json` recorded 100.0% source-hint
+recall and MRR, 96.8% source precision, 64.3% answer relevance, 53.3%
+faithfulness, no generation failures, and 14.19 s median paired-case latency.
+The older English baseline uses a different chat-model configuration, so its
+answer metrics are contextual rather than an embedding-only A/B comparison.
+
 ## Task Board
 
 | ID | Task | Status |
@@ -55,7 +66,7 @@ case latency was 7.06 s. The default profile remains the rollback target.
 | NP16-03 | Add a Hebrew `.docx` extraction regression fixture/test. | Complete: Hebrew text and mixed punctuation are preserved by `WordLoader`. |
 | NP16-04 | Document the baseline diagnosis and a reproducible local comparison command. | Complete: default baseline artifact refreshed 2026-09-13. |
 | NP16-05 | Compare a multilingual embedding profile (`bge-m3`) against the baseline. | Complete: the isolated 1024-dimension profile reached 100.0% source precision, recall, and MRR. |
-| NP16-06 | Compare Hebrew-capable local chat models only after the best embedding profile is known. | Blocked pending NP16-05 evidence and approval of the chosen download. |
+| NP16-06 | Compare Hebrew-capable local chat models only after the best embedding profile is known. | Complete: `dictalm2.0-instruct` with bge-m3 completed all 13 cases with no generation failures. |
 
 ## Completion Criteria
 
@@ -67,9 +78,9 @@ case latency was 7.06 s. The default profile remains the rollback target.
 - Any candidate model experiment is isolated from the default index and has an
   evidence-backed rollback path.
 
-## Decision Gate for Phase B
+## Outcome and Handoff
 
-Before comparing `bge-m3`, approve NP-17's additive registry/cache migration,
-profile-specific 1024-dimension storage, and the model download. That approval
-will permit a non-destructive re-embedding experiment while preserving the
-current 768-dimension default profile.
+NP-16 is closed. The recommended local operational pairing is bge-m3 retrieval
+with DictaLM chat; preserve the original profile as a rollback/reference. NP-17
+continues with application-level model-profile resolution, cache adapters, and
+an Azure-ready profile configuration.

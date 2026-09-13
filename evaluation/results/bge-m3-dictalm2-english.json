@@ -1,0 +1,427 @@
+{
+  "cases": [
+    {
+      "answer": "A soil is defined by its makeup, including the texture (consisting of different sized particles) and structure (aggregates with spaces or pores in between). Additionally, soils have varying degrees of air, water, and warmth needed for plant growth. The health of the soil, plant, and animal are one and indivisible, as stated by Sir Albert Howard. Soils are crucial to life on earth and the source of all we eat. They can be improved with the addition of organic matter and drainage if needs be.",
+      "case_id": "soil",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 15471.696600005089,
+      "metrics": {
+        "answer_relevance": 0.08333333333333333,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.25,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:13",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:14",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:26",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:21",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:19"
+      ]
+    },
+    {
+      "answer": "Water is essential for plant growth as it performs several functions. Firstly, water makes up a large portion of the vegetable's dry matter, with most vegetables being around 90% water. When analyzed, the dry matter consists mainly of carbon and oxygen with much smaller amounts of hydrogen and minerals. The carbon and oxygen come from CO2 that the leaves breathe in, while the hydrogen comes from water. Plant roots suck up water, and the water molecules (H2O) are split in two - the hydrogen ends up in the plant, and the oxygen atoms recombine to form O2 which is expelled from the leaf. The water also transports minerals along with it.\n\nThe minerals or nutrients that a plant uses a lot of are called major elements. These include nitrogen (N), phosphorus (P), potash (K), sulphur (S), calcium (Ca) and magnesium (Mg). Plants take up water through their roots, and it is lost from their leaves through small pores or stomata. The loss of water from the plant is a physical process and is determined by the amount of sunshine, temperature, relative humidity, and amount of wind. However, a plant is able to restrict its water loss when there is a shortage of soil moisture or when the rate of loss is extremely high.\n\nWater also plays an important role in vegetable growing. During hot summer days, a vegetable crop that fully covers the ground and which has a plentiful supply of soil moisture will lose upwards of 5 litres of water per square metre of crop per day. Conversely, under cloudier, cooler conditions, this rate of loss is reduced. Irrigation is also essential for vegetable growing, with ideal conditions being to irrigate every time the crops need water. However, time constraints and hose",
+      "case_id": "plant-nutrition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 27329.76210000197,
+      "metrics": {
+        "answer_relevance": 0.631578947368421,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5789473684210527,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:48",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:49",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:129",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:350"
+      ]
+    },
+    {
+      "answer": "The soil moisture deficit (SMD) is a measurement of how dry the soil is and is expressed in millimeters (mm). It indicates the amount of rainfall required to bring the soil back to field capacity, which is the point where the soil has drained all excess water and is ready for planting. For example, if the SMD is 15 mm, it means that it will take 15 mm of rainfall to bring the soil back to field capacity. This information can be found on the Met Eireann website under Forecasts > Agricultural Data Graphs.",
+      "case_id": "soil-moisture-irrigation",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 12228.417599995737,
+      "metrics": {
+        "answer_relevance": 0.6666666666666666,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5555555555555556,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:343",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:345",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:344",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:85",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:97"
+      ]
+    },
+    {
+      "answer": "Garden compost is the end result of the decomposition of plant and food waste by an enormous population of micro-organisms and soil animals in a moist, warm, aerobic (aerated) environment. The final product is decomposed organic matter (OM) including humus, that is free of pathogens, weed free and stable; humus, a fraction of organic matter, is a complex biological material that is rich in nutrients for vegetable growth.",
+      "case_id": "compost-definition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 10502.817100001266,
+      "metrics": {
+        "answer_relevance": 0.8461538461538461,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.3076923076923077,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:107",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:1",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:125",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:126",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:99"
+      ]
+    },
+    {
+      "answer": "There are two phases in the production of compost: the heat production phase and the maturation phase. The initial ingredients of four week old compost that has been turned are unrecognisable and have turned into a dark raw sticky compost, which then needs to be left for several months to mature into a compost that is friable, brown and pleasant to handle. It takes about 3 months to make compost during the warmer months but this can double in the colder months. The heat production phase occurs once the wastes are gathered into a heap, the moisture content brought to a suitable level, and the mass aerated. The readily degradable constituents of the organic wastes - sugars, starches, fats, proteins, and hemi-celluloses - go to make new microbes. The materials are oxidised to carbon dioxide and water in the energy liberating reaction. Part of this energy is used for microbe metabolism, while the excess is given off as heat. After the initial spike in temperature, the heap begins to cool down and after a number of weeks reaches ambient. The end product of the process, humus or compost, is made up of the more resistant parts of the organic wastes - cellulose and lignin, breakdown products, dead and some living microbes. The maturation phase occurs once the initial ingredients have turned into a dark raw sticky compost. It then needs to be left for several months to mature into a compost that is friable, brown, and pleasant to handle. This takes about 3 months during the warmer months but can double in the colder months.",
+      "case_id": "compost-phases",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 25192.161200000555,
+      "metrics": {
+        "answer_relevance": 0.7058823529411765,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.47058823529411764,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:115",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:108",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:109",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:107",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:125"
+      ]
+    },
+    {
+      "answer": "Materials that can be added to a compost heap include kitchen scraps (including meat), grass and hedge clippings, eggshells, garden waste, leaves, weeds, sawdust, straw, cardboard, diseased plants (except for club root, white rot, sclerotinia, and potato blight if they are particularly noxious), clay soil in up to 10% of the heap, and organic matter such as compost or farmyard manure. It is recommended to blend different materials together to create a mix of wetter and drier, greener and woody, and small and large particles for optimal aerobic decomposition. The ideal moisture content of compost is around 50%, which can be checked by squeezing a handful of compost and ensuring it feels moist like a wet sponge without excess water dripping.",
+      "case_id": "compost-materials",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 14384.43240000197,
+      "metrics": {
+        "answer_relevance": 0.8333333333333333,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.75,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:112",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:111",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:118",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:119",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:99"
+      ]
+    },
+    {
+      "answer": "To keep pests off your crops using covers, you have two options: fleece or insect netting. Both of these can be placed directly over your crops and anchored at the edges - they will keep the majority of pests out but still allow light and water to pass through. Fleece is a light woven material that can be used as a cover, while insect netting is also an option.\n\nTo prevent or reduce an attack from carrot fly, you can try covering your crop with fleece or net from late April and leave it on until around mid-September. Alternatively, surround the area with a 60 cm high wall with something like clear plastic. The carrot fly isn't a strong flier and won't be able to find the carrots if they are barricaded off.\n\nFor other pests such as cabbage root fly, caterpillars, slugs, and aphids, you can use fleece or insect netting to cover your crops directly over them and anchor at the edges. This will keep most of these pests out but still allow light and water to pass through.\n\nI don't have enough information in the indexed documents to answer this question: How can I prevent pests from attacking my crops using leaves as an alternative to straw?",
+      "case_id": "pest-prevention-covers",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 19096.993200000725,
+      "metrics": {
+        "answer_relevance": 0.5,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.23076923076923078,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:148",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:172",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:453",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:147",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:145"
+      ]
+    },
+    {
+      "answer": "The Sustainable Use Directive (SUD) is a set of rules established by the European Union (EU) that aims to reduce the risk and impact of pesticide use on people's health and the environment. It relates to the sensible use of pesticides and focuses on professional users complying with the principles of Integrated Pest Management (IPM). The SUD also emphasizes the need for amateur and commercial users to comply with these principals, as well as promoting sustainable practices in gardening and agriculture.",
+      "case_id": "sud-definition",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 21423.316100001102,
+      "metrics": {
+        "answer_relevance": 0.5853658536585366,
+        "context_precision": 0.4,
+        "context_recall": 1.0,
+        "faithfulness": 0.4878048780487805,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:151",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:150",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:25",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:27",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:36"
+      ]
+    },
+    {
+      "answer": "To correctly identify a pest or disease, a plant pathologist is the person that deals with diseases and an entomologist can help out with pest identification.",
+      "case_id": "pest-disease-identification-experts",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 9018.955599996843,
+      "metrics": {
+        "answer_relevance": 0.29411764705882354,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.3235294117647059,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:153",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:152",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:176",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:147",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:148"
+      ]
+    },
+    {
+      "answer": "Temperature affects the growth rate of vegetables by driving or limiting their growth. Growth occurs at temperatures above 6\u00b0C, and doubles for every 10\u00b0C increase within the range normally encountered. This is why we use protection to increase growth rates e.g. propagate seedlings and grow vegetables in a frame, polythene tunnel or glasshouse. The ideal summer combination of sunshine and showers is one to hope for but seldom happens, as weather is one of the major drivers of growth in vegetables. However, over the course of a year, the weather tends to even itself out. When it comes to planned sowing and planting dates, the calendar may well be used along with soil temperature requirements for germination: 5\u00b0C for brassicas, lettuce, pea, broad bean; 7\u00b0C for carrot, parsnip, beetroot, onion, scallion, leek; 10-12\u00b0C for French bean, runner bean, courgette, sweetcorn, tomato. These are minimum temperatures, and for every vegetable there is an optimum soil temperature for germination, at which the maximum number of seeds will germinate in less time than at any other temperature. A good guideline figure that suits the majority of vegetables is 20\u00b0C. However, take note that there are upper temperature limits for certain crops, such as butterhead lettuce not germinating above 25\u00b0C and leeks and onions not germinating well above 21-24\u00b0C. Additionally, swedes can be prone to damage if the shoots produced in spring are exposed to cold weather. Vegetables are also susceptible to bolting, which is when they start flowering and setting seed in year one due to a cold check.",
+      "case_id": "temperature-growth-rate",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 27003.560899996955,
+      "metrics": {
+        "answer_relevance": 0.8709677419354839,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.6774193548387096,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:315",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:313",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:357",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:322",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:48"
+      ]
+    },
+    {
+      "answer": "The two categories of vegetable hardiness are hardy and half-hardy. Hardy vegetables are those that survive the normal Irish winter and can be harvested during the coldest months, while half-hardy vegetables are damaged by frost and are grown and harvested during the warmer months.",
+      "case_id": "hardiness-categories",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 7908.747699999367,
+      "metrics": {
+        "answer_relevance": 0.6551724137931034,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.4482758620689655,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:315",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:316",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:319",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:401",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:457"
+      ]
+    },
+    {
+      "answer": "Grass minimum (Gmin) temperature is the measurement of ground level frost, also known as ground frost, which can be up to 5-6\u00b0C lower than air temperature. It matters for vegetables because it provides a more meaningful figure for vegetable crops compared to air temperature measurements at a height of 1.25 m. Gmin temperatures are important to check on the Met Eireann website under Latest Weather Reports > Yesterday's Weather, Gmin or Climate > Daily Data. Vegetables have different minimum soil temperature requirements for germination, and Gmin can affect their growth and establishment. For example:\n\n\u2022 5\u00b0C: brassicas, lettuce, pea, broad bean\n\u2022 7\u00b0C: carrot, parsnip, beetroot, onion, scallion, leek\n\u2022 10-12\u00b0C: French bean, runner bean, courgette, sweetcorn, tomato\n\nThese are minimum temperatures, and at the optimum soil temperature for germination, the maximum number of seeds will germinate in less time than at any other temperature. Gmin can also affect the development of modular propagation, which reduces root damage and improves speed of establishment. Vegetables like carrots and parsnips that have a tap root and are grown at high densities are generally direct drilled, while swedes are sometimes transplanted but growers will tell you that the root shape is always poorer with the transplanted crop as against the drilled crop.",
+      "case_id": "grass-min-temperature",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 24043.176000006497,
+      "metrics": {
+        "answer_relevance": 0.8918918918918919,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.6756756756756757,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:317",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:357",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:356",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:24",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:316"
+      ]
+    },
+    {
+      "answer": "When frost occurs, ice forms within the plant. The damage that subsequently occurs will vary from none to total tissue destruction depending on the hardiness of the plant and the degree of frost. Other factors can also affect the outcome: older tissue is more prone to frost damage than younger tissue, and a rapid rate of thaw can exacerbate the situation.\n\nI don't have enough information in the indexed documents to answer this question.",
+      "case_id": "frost-plant-damage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 10737.598499996238,
+      "metrics": {
+        "answer_relevance": 0.8823529411764706,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.7352941176470589,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:318",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:326",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:322",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:221",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:390"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question. However, based on the context passages provided, it seems that the reason for ignoring the calendar when deciding sowing and planting dates is due to weather conditions. The text mentions that \"When it comes to planned sowing and planting dates the calendar may well have to be ditched if the weather turns too wet or too cold.\" Additionally, it suggests that \"Experienced growers will tell you that a crop that is \u2018mucked in\u2019 in unfavourable conditions will often be passed out by a crop planted later on in good conditions. So be patient, and delay that sowing or planting until soil conditions or soil temperature come right, even if it means waiting a week or two.\"",
+      "case_id": "sowing-timing-weather",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 14285.977300001832,
+      "metrics": {
+        "answer_relevance": 0.7115384615384616,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.5384615384615384,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:314",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:313",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:327",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:47",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:328"
+      ]
+    },
+    {
+      "answer": "The ideal storage temperature for potatoes is 4\u00b0C. However, I don't have enough information in the indexed documents to answer this question specifically about your situation or specific potato variety. The context passages only provide general guidelines and recommendations for storing potatoes.",
+      "case_id": "potato-storage-temp",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 8603.592400002526,
+      "metrics": {
+        "answer_relevance": 0.3333333333333333,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 1.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:393",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:394",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:584",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:543"
+      ]
+    },
+    {
+      "answer": "If light gets at the tubers they develop poisonous alkaloids in the surface of the tuber as they turn green in color, which can cause damage and spoilage to the potatoes. It is recommended to store them in a cool, dark, frost-free shed to prevent this from happening.",
+      "case_id": "potato-light-damage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 8193.777799999225,
+      "metrics": {
+        "answer_relevance": 0.8888888888888888,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.3333333333333333,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:393",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:585",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:534",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:306"
+      ]
+    },
+    {
+      "answer": "To keep onions and garlic dry during storage is important because moisture or water on the bulb will quickly break dormancy, which is a natural process that helps them store for several months at ambient temperatures in an unheated building. This reason also explains why storing them in any sort of plastic bag should be avoided.",
+      "case_id": "onion-storage-dryness",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 9381.292199999734,
+      "metrics": {
+        "answer_relevance": 0.625,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.75,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:394",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:395",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:507",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:388",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:481"
+      ]
+    },
+    {
+      "answer": "To store winter vegetables in the ground, they are best planted or sown early enough to allow them reach the desirable size before growth ceases but late enough so as to prevent them getting too large and in the case of root crops too woody. They can be left growing where they are planted in the soil, which acts as natural refrigeration due to the cold weather from November to March restricting growth and development. However, it is important to be mindful of severe frosts causing damage, so winter brassicas are normally not protected but in colder parts of the country it may be worthwhile to earth up root crops with soil or cover them with a layer of straw, bracken or leaves.",
+      "case_id": "in-ground-winter-storage",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 13457.37480000389,
+      "metrics": {
+        "answer_relevance": 0.7407407407407407,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.6666666666666666,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:390",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:388",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:7",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:392",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:379"
+      ]
+    },
+    {
+      "answer": "To successfully store onions, it's recommended to choose a variety that has good storage qualities and ensure the crop is harvested correctly. The best of the seed varieties (e.g. Hyfort F1) will store until March or April before sprouting becomes a problem. When most of the tops have fallen over in August or September, the clumps should be pulled up and left on the surface to dry. Once thoroughly dry, they can be broken up and stored in a cool dry place. All bulbs should not be used in autumn or winter; a quantity of the smaller, well-ripened ones should be kept back for planting in the following spring. The harvest time for onions is from mid-August to mid-September.",
+      "case_id": "onion-harvest-timing",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 14193.056700001762,
+      "metrics": {
+        "answer_relevance": 0.46153846153846156,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.34615384615384615,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:395",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:522",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:507",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:523",
+        "f1162cb0522e3fcde0128902bc7cf31cf7130a05f3550735458bca6c094df17a:511"
+      ]
+    }
+  ],
+  "configuration": {
+    "api_url": "http://127.0.0.1:8001",
+    "top_k": 5,
+    "workspace_id": null
+  }
+}

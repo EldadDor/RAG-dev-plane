@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-13 through NP-15 are complete. NP-16 and NP-17 are active.
+**Status:** NP-13 through NP-16 are complete. NP-17 is active.
 **Last reviewed:** 2026-09-11
 
 This is the ordered backlog for the next approved phase. Each item must have a
