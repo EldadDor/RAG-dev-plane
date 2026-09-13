@@ -8,6 +8,7 @@ from app.config import Settings, get_settings
 from app.services.chat_service import ChatService
 from app.services.conversation_store import ConversationStore, InMemoryConversationStore
 from app.services.ingestion_service import IngestionService
+from app.services.model_profile_warmer import ModelProfileWarmer
 from app.services.retrieval_service import RetrievalService
 from app.services.workspace_store import (
     AuthorizedWorkspace,
@@ -144,3 +145,15 @@ def get_ingestion_service(
             if settings.embedding_cache_enabled else None
         ),
     )
+
+
+def get_model_profile_warmer(
+    request: Request,
+    embedding_client: EmbeddingClient = Depends(get_embedding_client),
+    vector_store: VectorStore = Depends(get_vector_store),
+) -> ModelProfileWarmer:
+    profile_store = getattr(request.app.state, "model_profile_store", None)
+    cache = getattr(request.app.state, "embedding_cache", None)
+    if profile_store is None or cache is None:
+        raise RuntimeError("Model-profile warming requires PostgreSQL model-profile storage")
+    return ModelProfileWarmer(vector_store, embedding_client, profile_store, cache)

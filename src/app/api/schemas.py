@@ -115,6 +115,22 @@ class IngestResponse(BaseModel):
     documents: list[IngestResult]
 
 
+class WarmModelProfileRequest(BaseModel):
+    source_model_profile: str = Field(default="default", min_length=1, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+    workspace_id: str | None = Field(default=None, min_length=1)
+    dry_run: bool = False
+
+
+class WarmModelProfileResponse(BaseModel):
+    profile_name: str
+    source_model_profile: str
+    workspace_id: str
+    chunks: int
+    cache_hits: int
+    provider_calls: int
+    dry_run: bool
+
+
 class HealthResponse(BaseModel):
     status: str
     environment: str

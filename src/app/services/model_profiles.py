@@ -33,8 +33,14 @@ class ModelProfileUnavailable(ValueError):
 class ModelProfileStore(Protocol):
     async def get(self, profile_name: str) -> ModelProfile | None: ...
 
+    async def set_status(self, profile_name: str, status: str) -> None: ...
+
 
 class EmbeddingCache(Protocol):
+    async def contains(self, cache_key: str, dimensions: int) -> bool: ...
+
+    async def contains_many(self, cache_keys: list[str], dimensions: int) -> set[str]: ...
+
     async def get(self, cache_key: str, dimensions: int) -> list[float] | None: ...
 
     async def put(
@@ -54,10 +60,28 @@ class InMemoryModelProfileStore:
     async def get(self, profile_name: str) -> ModelProfile | None:
         return self._profiles.get(profile_name)
 
+    async def set_status(self, profile_name: str, status: str) -> None:
+        profile = self._profiles.get(profile_name)
+        if profile is None:
+            raise ModelProfileUnavailable(f"Unknown model profile: {profile_name}")
+        self._profiles[profile_name] = ModelProfile(**{**profile.__dict__, "status": status})
+
 
 class InMemoryEmbeddingCache:
     def __init__(self) -> None:
         self._values: dict[str, list[float]] = {}
+
+    async def contains(self, cache_key: str, dimensions: int) -> bool:
+        value = self._values.get(cache_key)
+        if value is not None and len(value) != dimensions:
+            raise ValueError("Cached embedding dimension does not match the model profile")
+        return value is not None
+
+    async def contains_many(self, cache_keys: list[str], dimensions: int) -> set[str]:
+        return {
+            cache_key for cache_key in cache_keys
+            if await self.contains(cache_key, dimensions)
+        }
 
     async def get(self, cache_key: str, dimensions: int) -> list[float] | None:
         value = self._values.get(cache_key)
@@ -97,6 +121,18 @@ class PostgresModelProfileStore:
             )
         return ModelProfile(**dict(row)) if row is not None else None
 
+    async def set_status(self, profile_name: str, status: str) -> None:
+        if status not in {"draft", "warming", "ready", "archived"}:
+            raise ValueError(f"Invalid model profile status: {status}")
+        async with self._pool.acquire() as conn:
+            result = await conn.execute(
+                f"UPDATE {self._schema}.model_profiles SET status=$2, updated_at=now() WHERE profile_name=$1",
+                profile_name,
+                status,
+            )
+        if result.endswith("0"):
+            raise ModelProfileUnavailable(f"Unknown model profile: {profile_name}")
+
 
 class PostgresEmbeddingCache:
     def __init__(self, pool: asyncpg.Pool, schema: str) -> None:
@@ -104,6 +140,30 @@ class PostgresEmbeddingCache:
             raise ValueError(f"Invalid PostgreSQL schema: {schema!r}")
         self._pool = pool
         self._schema = schema
+
+    async def contains(self, cache_key: str, dimensions: int) -> bool:
+        async with self._pool.acquire() as conn:
+            stored_dimensions = await conn.fetchval(
+                f"SELECT dimensions FROM {self._schema}.embedding_cache WHERE cache_key=$1",
+                cache_key,
+            )
+        if stored_dimensions is not None and stored_dimensions != dimensions:
+            raise ValueError("Cached embedding dimension does not match the model profile")
+        return stored_dimensions is not None
+
+    async def contains_many(self, cache_keys: list[str], dimensions: int) -> set[str]:
+        if not cache_keys:
+            return set()
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"""SELECT cache_key, dimensions FROM {self._schema}.embedding_cache
+                    WHERE cache_key = ANY($1::text[])""",
+                cache_keys,
+            )
+        for row in rows:
+            if row["dimensions"] != dimensions:
+                raise ValueError("Cached embedding dimension does not match the model profile")
+        return {row["cache_key"] for row in rows}
 
     async def get(self, cache_key: str, dimensions: int) -> list[float] | None:
         async with self._pool.acquire() as conn:

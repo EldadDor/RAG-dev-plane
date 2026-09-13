@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 from app.main import app
 from app.api.schemas import ChatResponse, SourceReference
 from app.domain.models import RetrievedChunk
+from app.api.schemas import WarmModelProfileResponse
 
 
 @pytest.fixture
@@ -102,3 +103,31 @@ async def test_chat_provider_failure_has_safe_error_envelope():
         "code": "upstream_unavailable",
         "message": "The answer service is temporarily unavailable.",
     }
+
+
+@pytest.mark.asyncio
+async def test_local_profile_warm_endpoint_uses_workspace_scoped_dry_run():
+    from app.dependencies import get_model_profile_warmer
+
+    warmer = AsyncMock()
+    warmer.warm.return_value = WarmModelProfileResponse(
+        profile_name="bge-m3",
+        source_model_profile="default",
+        workspace_id="local",
+        chunks=12,
+        cache_hits=12,
+        provider_calls=0,
+        dry_run=True,
+    )
+    app.dependency_overrides[get_model_profile_warmer] = lambda: warmer
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                "/admin/model-profiles/bge-m3/warm", json={"dry_run": True}
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["provider_calls"] == 0
+    warmer.warm.assert_awaited_once_with("bge-m3", "default", "local", dry_run=True)

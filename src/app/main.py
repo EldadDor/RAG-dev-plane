@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import assets, chat, health, ingest, workspaces
+from app.api.routers import admin, assets, chat, health, ingest, workspaces
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
@@ -162,6 +162,7 @@ def create_app() -> FastAPI:
     app.include_router(workspaces.router)
     app.include_router(ingest.router)
     app.include_router(assets.router)
+    app.include_router(admin.router)
 
     return app
 

@@ -147,6 +147,9 @@ behave exactly as today.
   estimated provider calls without writes.
 - Idempotent and workspace-scoped; re-running embeds only new or changed
   chunks (existing content-hash lifecycle still governs source changes).
+- Is available only in `APP_ENV=local`. A gateway/workplace deployment must
+  add an explicit operator authorization policy before exposing a write-capable
+  warming operation.
 
 After warming once, `MODEL_PROFILE=<name>` switches models with zero provider
 calls. A/B runs follow the NP-10 pattern: same parsed data, two profiles,
@@ -177,7 +180,7 @@ no-database path keeps working.
 | NP17-02 | Add `ModelProfileStore` and `EmbeddingCache` protocols with PostgreSQL and fallback implementations; seed default profile to current table. | Complete: typed in-memory/PostgreSQL adapters; migration 005 seeds `default`. |
 | NP17-03 | Add `CachedEmbeddingClient` decorator with prefix handling per provider/model. | Complete: query/document prefixes, profile-aware keys, and dimension checks covered by unit tests. |
 | NP17-04 | Route ingestion and retrieval through model-profile resolution; keep unspecified-request behavior byte-compatible. | Complete and live-validated: optional API field resolves ready registry profiles; omission uses `MODEL_PROFILE`. |
-| NP17-05 | Implement the `warm` operation with dry-run; add focused unit/API tests including dimension-mismatch failures. |
+| NP17-05 | Implement the `warm` operation with dry-run; add focused unit/API tests including dimension-mismatch failures. | Complete 2026-09-13: local-only workspace-scoped endpoint, batched cache inspection, dry-run reporting, and dimension-mismatch coverage. |
 | NP17-06 | Live validation: provision a second profile for a Hebrew-capable model, warm it, and run the NP-09 harness against both profiles; record artifacts. | Complete for `bge-m3:latest`: 1,150 chunks warmed and a 13-case Hebrew artifact recorded. |
 
 ## Acceptance Checks

@@ -244,6 +244,31 @@ class PgVectorStore:
         async with self._pool.acquire() as conn:
             await self._upsert_on_connection(conn, chunks)
 
+    async def list_warmable_chunks(self, workspace_id: str) -> list[dict[str, Any]]:
+        """Return one workspace's text and provenance for profile-to-profile warming."""
+        if not self._ensured:
+            await self.ensure_collection()
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"""SELECT id, content, metadata, source, page_number, chunk_index
+                    FROM {self._schema}.{self._table}
+                    WHERE metadata->>'workspace_id'=$1
+                    ORDER BY id""",
+                workspace_id,
+            )
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            metadata = row["metadata"] or {}
+            payload = dict(metadata)
+            payload.update(
+                text=row["content"],
+                source_path=row["source"] or metadata.get("source_path", ""),
+                page=row["page_number"],
+                chunk_index=row["chunk_index"],
+            )
+            result.append({"chunk_id": metadata.get("chunk_id", str(row["id"])), "payload": payload})
+        return result
+
     async def _upsert_on_connection(self, conn: asyncpg.Connection, chunks: list[dict]) -> None:
         sql = _UPSERT_SQL.format(schema=self._schema, table=self._table)
         records: list[tuple[Any, ...]] = []
