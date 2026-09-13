@@ -23,12 +23,16 @@ matching the convention used by QdrantVectorStore.
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from typing import Any
 
 import asyncpg
 
 from app.domain.models import RetrievedChunk
+
+
+_IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]*$")
 
 
 _UPSERT_SQL = """
@@ -105,6 +109,16 @@ class PgVectorStore:
     def pool(self) -> asyncpg.Pool:
         """Pool shared with first-party persistence components."""
         return self._pool
+
+    async def for_profile(self, storage_target: str, vector_dim: int) -> "PgVectorStore":
+        """Return a validated view over a provisioned profile table."""
+        if not _IDENTIFIER.fullmatch(storage_target):
+            raise ValueError(f"Invalid model-profile storage target: {storage_target!r}")
+        if storage_target == self._table and vector_dim == self._vector_dim:
+            return self
+        store = type(self)(self._pool, self._schema, storage_target, vector_dim)
+        await store.ensure_collection(vector_dim)
+        return store
 
     # ------------------------------------------------------------------
     # Factory — creates pool + validates externally managed SQL migrations
@@ -185,6 +199,8 @@ class PgVectorStore:
                 f"{self._schema}.workspace_members",
                 f"{self._schema}.document_assets",
                 f"{self._schema}.chunk_assets",
+                f"{self._schema}.model_profiles",
+                f"{self._schema}.embedding_cache",
             ]
             missing = [name for name in required if await conn.fetchval("SELECT to_regclass($1)", name) is None]
             if missing:
@@ -194,10 +210,10 @@ class PgVectorStore:
                 )
             applied_versions = await conn.fetch(
                 f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
-                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets"],
+                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles"],
             )
             applied_version_names = {row["version"] for row in applied_versions}
-            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets"}
+            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles"}
             if applied_version_names != required_versions:
                 missing_versions = sorted(required_versions - applied_version_names)
                 raise RuntimeError(
@@ -276,7 +292,15 @@ class PgVectorStore:
     async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:
         async with self._pool.acquire() as conn:
             return await conn.fetchval(
-                f"SELECT content_hash FROM {self._schema}.source_documents WHERE doc_id = $1 AND workspace_id = $2 AND chunking_profile = $3",
+                f"""SELECT source.content_hash
+                    FROM {self._schema}.source_documents source
+                    WHERE source.doc_id=$1 AND source.workspace_id=$2 AND source.chunking_profile=$3
+                      AND EXISTS (
+                        SELECT 1 FROM {self._schema}.{self._table} chunks
+                        WHERE chunks.metadata->>'doc_id'=$1
+                          AND chunks.metadata->>'workspace_id'=$2
+                          AND COALESCE(chunks.metadata->>'chunking_profile', 'default')=$3
+                      )""",
                 doc_id, workspace_id, chunking_profile,
             )
 

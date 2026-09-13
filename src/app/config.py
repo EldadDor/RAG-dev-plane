@@ -92,6 +92,8 @@ class Settings(BaseSettings):
     embedding_model: str = Field(default="nomic-embed-text", alias="EMBEDDING_MODEL")
     embedding_timeout_seconds: float = Field(default=120.0, alias="EMBEDDING_TIMEOUT_SECONDS", gt=0)
     embedding_concurrency: int = Field(default=8, alias="EMBEDDING_CONCURRENCY", ge=1)
+    model_profile: str = Field(default="default", alias="MODEL_PROFILE", min_length=1)
+    embedding_cache_enabled: bool = Field(default=True, alias="EMBEDDING_CACHE_ENABLED")
 
     # ---- Azure OpenAI (shared by chat + embeddings when using azure_openai provider) ----
     azure_openai_endpoint: str | None = Field(default=None, alias="AZURE_OPENAI_ENDPOINT")

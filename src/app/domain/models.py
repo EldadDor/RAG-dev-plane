@@ -134,5 +134,6 @@ class IngestionResult:
     chunks_indexed: int
     chunker_provider: str
     chunking_profile: str = "default"
+    model_profile: str = "default"
     dry_run: bool = False
     documents: list[IngestedDocumentResult] = field(default_factory=list)

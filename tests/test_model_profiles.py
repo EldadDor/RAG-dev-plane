@@ -9,6 +9,8 @@ from app.services.model_profiles import (
     ModelProfile,
     embedding_cache_key,
 )
+from app.config import Settings
+from app.services.retrieval_service import RetrievalService
 
 
 def _profile(**overrides) -> ModelProfile:
@@ -68,3 +70,35 @@ async def test_cached_client_rejects_provider_dimension_mismatch():
 
     with pytest.raises(ValueError, match="requires 3"):
         await client.create_document_embedding("text")
+
+
+@pytest.mark.asyncio
+async def test_retrieval_resolves_profile_model_cache_and_storage():
+    profile = _profile(query_prefix="")
+    profile_store = InMemoryModelProfileStore([profile])
+    cache = InMemoryEmbeddingCache()
+    delegate = AsyncMock()
+    delegate.create_embedding.return_value = [0.1, 0.2, 0.3]
+    selected_store = AsyncMock()
+    selected_store.search.return_value = []
+    base_store = AsyncMock()
+    base_store.for_profile.return_value = selected_store
+    settings = Settings(
+        CHAT_BASE_URL="http://localhost:8080/v1",
+        VECTOR_STORE="qdrant",
+        QDRANT_URL="http://localhost:6333",
+        EMBEDDING_MODEL="legacy-model",
+        MODEL_PROFILE="bge-m3",
+        HYBRID_SEARCH_ENABLED=False,
+    )
+    service = RetrievalService(
+        settings, delegate, base_store,
+        model_profile_store=profile_store, embedding_cache=cache,
+    )
+
+    await service.retrieve("question")
+    await service.retrieve("question")
+
+    base_store.for_profile.assert_awaited_with("document_chunks_bge_m3", 3)
+    delegate.create_embedding.assert_awaited_once_with("bge-m3:latest", "question")
+    selected_store.search.assert_awaited()

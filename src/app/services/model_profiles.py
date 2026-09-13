@@ -26,6 +26,10 @@ class ModelProfile:
     status: str = "ready"
 
 
+class ModelProfileUnavailable(ValueError):
+    pass
+
+
 class ModelProfileStore(Protocol):
     async def get(self, profile_name: str) -> ModelProfile | None: ...
 

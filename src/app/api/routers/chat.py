@@ -17,6 +17,7 @@ from app.identity import Principal, get_principal
 from app.services.chat_service import ChatService
 from app.services.conversation_store import SessionScopeError
 from app.services.observability import Observability
+from app.services.model_profiles import ModelProfileUnavailable
 from app.services.workspace_store import WorkspaceStore, require_workspace_access
 
 logger = logging.getLogger(__name__)
@@ -57,10 +58,13 @@ async def chat(
                 session_id=body.session_id,
                 workspace_id=workspace_id,
                 chunking_profile=body.chunking_profile,
+                model_profile=body.model_profile,
                 owner_id=principal.subject,
             )
     except SessionScopeError as exc:
         raise HTTPException(status_code=404, detail="Chat session not found") from exc
+    except ModelProfileUnavailable as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("Chat upstream error: %s", exc)
         raise HTTPException(status_code=502, detail=f"Upstream provider error: {exc}") from exc
@@ -97,6 +101,7 @@ async def chat_stream(
                 session_id=body.session_id,
                 workspace_id=workspace_id,
                 chunking_profile=body.chunking_profile,
+                model_profile=body.model_profile,
                 owner_id=principal.subject,
             ):
                 yield event

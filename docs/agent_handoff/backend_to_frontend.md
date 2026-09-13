@@ -3,20 +3,24 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
-## 2026-09-13 — NP-17 profile support started
+## 2026-09-13 — NP-17 optional model-profile contract implemented
 
 - **From:** Backend
 - **To:** Frontend
-- **Type:** Status
-- **Status:** Active
-- **Affected contract/files:** Future optional model-profile selection on chat
-  and ingestion requests; no current browser contract change.
-- **Message:** NP-17 is implementing model-profile isolation and embedding
-  caching for local and future Azure runs. Existing requests remain valid when
-  they omit a model-profile selector. The local bge-m3/DictaLM evidence does
-  not require an immediate frontend change.
-- **Action requested:** None. Do not add a profile selector until the backend
-  publishes the validated optional field and profile-readiness behavior.
+- **Type:** API change
+- **Status:** Implemented and live-validated
+- **Affected contract/files:** `POST /chat`, `POST /chat/stream`, `POST /ingest`
+- **Message:** Requests may include optional `model_profile`, using the same
+  letters/numbers/underscore/hyphen naming rule as `chunking_profile`. Omission
+  selects the server-configured `MODEL_PROFILE` and preserves the existing UI.
+  A named profile resolves its embedding provider/model, dimension, cache
+  namespace, and isolated vector table. Unknown or non-ready profiles are
+  rejected; `/chat` returns the standard `422 invalid_request` envelope.
+- **Action requested:** None. Continue omitting `model_profile`. A visible
+  selector remains a separately approved product feature.
+- **Validation:** Omitted profile, explicit `bge-m3`, and explicit historical
+  `default` all returned grounded responses; an unknown profile returned the
+  standard `422 invalid_request` envelope.
 
 ## 2026-09-12 — NP-13 through NP-15 live validation complete
 

@@ -83,11 +83,21 @@ def get_vector_store(request: Request, settings: Settings = Depends(get_settings
 
 
 def get_retrieval_service(
+    request: Request,
     settings: Settings = Depends(get_settings),
     embedding_client: EmbeddingClient = Depends(get_embedding_client),
     vector_store: VectorStore = Depends(get_vector_store),
 ) -> RetrievalService:
-    return RetrievalService(settings=settings, embedding_client=embedding_client, vector_store=vector_store)
+    return RetrievalService(
+        settings=settings,
+        embedding_client=embedding_client,
+        vector_store=vector_store,
+        model_profile_store=getattr(request.app.state, "model_profile_store", None),
+        embedding_cache=(
+            getattr(request.app.state, "embedding_cache", None)
+            if settings.embedding_cache_enabled else None
+        ),
+    )
 
 
 def get_chat_service(
@@ -128,4 +138,9 @@ def get_ingestion_service(
         embedding_client=embedding_client,
         vector_store=vector_store,
         asset_store=asset_store,
+        model_profile_store=getattr(request.app.state, "model_profile_store", None),
+        embedding_cache=(
+            getattr(request.app.state, "embedding_cache", None)
+            if settings.embedding_cache_enabled else None
+        ),
     )

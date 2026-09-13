@@ -40,11 +40,13 @@ async def ingest(
             recursive=request.recursive,
             workspace_id=request.workspace_id,
             chunking_profile=request.chunking_profile,
+            model_profile=request.model_profile,
             dry_run=request.dry_run,
         )
         response = IngestResponse(
             indexed=result.chunks_indexed,
             chunking_profile=result.chunking_profile,
+            model_profile=result.model_profile,
             dry_run=result.dry_run,
             documents=[
                 IngestResult(

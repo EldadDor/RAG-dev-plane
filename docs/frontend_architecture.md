@@ -104,9 +104,12 @@ Content-Type: application/json
 server has a configured default workspace. Omit `session_id` to create a new
 chat; pass the `session_id` received in `meta` for the next turn. `top_k` is
 optional (`1`–`20`) and `include_debug` defaults to `false`; production UI
-may optionally send a configured `chunking_profile` to query an isolated
+should leave it false. It may optionally send a configured `chunking_profile`
+to query an isolated
 chunking experiment. Omitting it retains the existing default-profile behavior.
-should leave it false.
+The same requests may optionally send `model_profile` to select a provisioned,
+ready embedding/index profile. Omission selects the backend's configured
+`MODEL_PROFILE`; the current frontend should continue to omit it.
 
 ### Events
 

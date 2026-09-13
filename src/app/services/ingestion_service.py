@@ -14,6 +14,13 @@ from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_
 from app.config import Settings
 from app.services.repository_metadata import get_repository_metadata
 from app.services.asset_store import AssetStore, InMemoryAssetStore
+from app.services.model_profiles import (
+    CachedEmbeddingClient,
+    EmbeddingCache,
+    InMemoryEmbeddingCache,
+    ModelProfileStore,
+    ModelProfileUnavailable,
+)
 
 
 class IngestionService:
@@ -23,11 +30,15 @@ class IngestionService:
             embedding_client: Any,
             vector_store: Any,
             asset_store: AssetStore | None = None,
+            model_profile_store: ModelProfileStore | None = None,
+            embedding_cache: EmbeddingCache | None = None,
     ) -> None:
         self._settings = settings
         self._embedding_client = embedding_client
         self._vector_store = vector_store
         self._asset_store = asset_store or InMemoryAssetStore()
+        self._model_profile_store = model_profile_store
+        self._embedding_cache = embedding_cache
 
     @staticmethod
     def _chunk_id(document_id: str, profile_name: str, chunk_index: int) -> str:
@@ -120,21 +131,24 @@ class IngestionService:
             )
         )
 
-    async def _embed_chunks(self, chunks: list[tuple[int, Any]]) -> list[list[float]]:
+    async def _embed_chunks(self, chunks: list[tuple[int, Any]], embedding_client: Any, model: str) -> list[list[float]]:
         """Embed chunks in bounded batches to avoid exhausting OS socket limits."""
         embeddings: list[list[float]] = []
         batch_size = self._settings.embedding_concurrency
         for start in range(0, len(chunks), batch_size):
             batch = chunks[start:start + batch_size]
             embeddings.extend(await asyncio.gather(*[
-                self._embedding_client.create_embedding(self._settings.embedding_model, chunk.text.strip())
+                embedding_client.create_document_embedding(chunk.text.strip())
+                if isinstance(embedding_client, CachedEmbeddingClient)
+                else embedding_client.create_embedding(model, chunk.text.strip())
                 for _, chunk in batch
             ]))
         return embeddings
 
     async def ingest_path(
         self, source_path: str, recursive: bool = False, workspace_id: str | None = None,
-        chunking_profile: str | None = None, dry_run: bool = False,
+        chunking_profile: str | None = None, model_profile: str | None = None,
+        dry_run: bool = False,
     ) -> IngestionResult:
         """Ingest a single file or all supported files in a directory."""
         path = Path(source_path)
@@ -149,6 +163,29 @@ class IngestionService:
         repository_context = get_repository_metadata(str(path if path.is_dir() else path.parent))
         workspace_id = workspace_id or self._settings.default_workspace_id
         profile_name, profile = self._settings.chunking_profile(chunking_profile)
+        resolved_model_profile = model_profile or self._settings.model_profile
+        embedding_client = self._embedding_client
+        embedding_model = self._settings.embedding_model
+        vector_store = self._vector_store
+        if self._model_profile_store is not None:
+            selected = await self._model_profile_store.get(resolved_model_profile)
+            if selected is None:
+                raise ModelProfileUnavailable(f"Unknown model profile: {resolved_model_profile}")
+            if selected.status != "ready":
+                raise ModelProfileUnavailable(f"Model profile {resolved_model_profile!r} is not ready")
+            if selected.provider != self._settings.embedding_provider:
+                raise ModelProfileUnavailable(
+                    f"Model profile {resolved_model_profile!r} requires provider {selected.provider!r}"
+                )
+            if not hasattr(vector_store, "for_profile"):
+                raise ModelProfileUnavailable("Per-request model profiles require PostgreSQL storage")
+            vector_store = await vector_store.for_profile(selected.storage_target, selected.dimensions)
+            embedding_client = CachedEmbeddingClient(
+                self._embedding_client,
+                self._embedding_cache or InMemoryEmbeddingCache(),
+                selected,
+            )
+            embedding_model = selected.model
         chunker = self._chunker_for(profile_name)
         root_path = str(path.resolve()) if path.is_dir() else None
 
@@ -167,7 +204,7 @@ class IngestionService:
                     assets, _ = await self._prepare_assets(
                         document, [], workspace_id, profile_name, persist=True
                     )
-                    await self._vector_store.replace_document({
+                    await vector_store.replace_document({
                         "doc_id": document.doc_id,
                         "workspace_id": workspace_id,
                         "chunking_profile": profile_name,
@@ -182,7 +219,7 @@ class IngestionService:
                     skipped=True, skip_reason="empty", assets_found=len(document.assets),
                 ))
                 continue
-            if not dry_run and await self._vector_store.get_document_hash(document.doc_id, workspace_id, profile_name) == content_hash:
+            if not dry_run and await vector_store.get_document_hash(document.doc_id, workspace_id, profile_name) == content_hash:
                 document_results.append(IngestedDocumentResult(
                     doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
                     skipped=True, skip_reason="unchanged", assets_found=len(document.assets),
@@ -232,7 +269,7 @@ class IngestionService:
                 continue
 
             # Embed only persistent ingestions; dry runs must not contact a model.
-            embeddings = await self._embed_chunks(valid_chunks)
+            embeddings = await self._embed_chunks(valid_chunks, embedding_client, embedding_model)
             assets, chunk_assets = await self._prepare_assets(
                 document, valid_chunks, workspace_id, profile_name, persist=True
             )
@@ -281,7 +318,7 @@ class IngestionService:
                         },
                     )
                 )
-            await self._vector_store.replace_document(
+            await vector_store.replace_document(
                 {
                     "doc_id": document.doc_id,
                     "workspace_id": workspace_id,
@@ -305,7 +342,7 @@ class IngestionService:
             )
 
         if root_path and not dry_run:
-            await self._vector_store.delete_missing_documents(root_path, workspace_id, present_doc_ids, profile_name)
+            await vector_store.delete_missing_documents(root_path, workspace_id, present_doc_ids, profile_name)
 
         return IngestionResult(
             source_path=str(path),
@@ -313,6 +350,7 @@ class IngestionService:
             chunks_indexed=chunks_indexed,
             chunker_provider=profile.provider,
             chunking_profile=profile_name,
+            model_profile=resolved_model_profile,
             dry_run=dry_run,
             documents=document_results,
         )

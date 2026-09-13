@@ -15,6 +15,7 @@ from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
 from app.services.workspace_store import AuthorizedWorkspace, InMemoryWorkspaceStore, PostgresWorkspaceStore
 from app.services.asset_store import LocalFileAssetStore
+from app.services.model_profiles import PostgresEmbeddingCache, PostgresModelProfileStore
 from app.clients.qdrant_client import QdrantVectorStore
 
 # Configure logging before anything else
@@ -83,6 +84,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             retention_days=settings.memory_retention_days,
         )
         app.state.workspace_store = PostgresWorkspaceStore(app.state.vector_store.pool, settings.pg_schema)
+        app.state.model_profile_store = PostgresModelProfileStore(
+            app.state.vector_store.pool, settings.pg_schema
+        )
+        app.state.embedding_cache = PostgresEmbeddingCache(
+            app.state.vector_store.pool, settings.pg_schema
+        )
         logger.info(
             "📊 PostgreSQL vector store ready | table=%s.%s dim=%d",
             settings.pg_schema,

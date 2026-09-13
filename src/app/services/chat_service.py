@@ -70,6 +70,7 @@ class ChatService:
             session_id: str | None = None,
             workspace_id: str | None = None,
             chunking_profile: str | None = None,
+            model_profile: str | None = None,
             owner_id: str = "local-dev",
     ) -> tuple[ChatResponse, str]:
         session_id = session_id or str(uuid4())
@@ -79,7 +80,10 @@ class ChatService:
         summary = await self._conversation_store.get_summary(session_id)
         rewritten_question = await self._rewrite_question(question, history, summary)
 
-        retrieved = await self._retrieval_service.retrieve(question=rewritten_question, top_k=top_k, workspace_id=workspace_id, chunking_profile=chunking_profile)
+        retrieved = await self._retrieval_service.retrieve(
+            question=rewritten_question, top_k=top_k, workspace_id=workspace_id,
+            chunking_profile=chunking_profile, model_profile=model_profile,
+        )
         if not retrieved:
             answer = "I don't know based on the indexed documents."
             await self._conversation_store.append(session_id, "user", question)
@@ -180,6 +184,7 @@ class ChatService:
             session_id: str | None = None,
             workspace_id: str | None = None,
             chunking_profile: str | None = None,
+            model_profile: str | None = None,
             owner_id: str = "local-dev",
     ) -> ChatResponse:
         response, _ = await self._answer_impl(
@@ -189,6 +194,7 @@ class ChatService:
             session_id=session_id,
             workspace_id=workspace_id,
             chunking_profile=chunking_profile,
+            model_profile=model_profile,
             owner_id=owner_id,
         )
         return response
@@ -201,6 +207,7 @@ class ChatService:
             session_id: str | None = None,
             workspace_id: str | None = None,
             chunking_profile: str | None = None,
+            model_profile: str | None = None,
             owner_id: str = "local-dev",
     ) -> AsyncIterator[str]:
         response, resolved_session_id = await self._answer_impl(
@@ -210,6 +217,7 @@ class ChatService:
             session_id=session_id,
             workspace_id=workspace_id,
             chunking_profile=chunking_profile,
+            model_profile=model_profile,
             owner_id=owner_id,
         )
         meta = {
