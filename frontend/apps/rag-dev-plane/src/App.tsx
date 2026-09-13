@@ -27,6 +27,7 @@ export default function App() {
   const [sources, setSources] = useState<SourceReference[]>([])
   const [grounded, setGrounded] = useState<boolean | null>(null)
   const [streamingTurn, setStreamingTurn] = useState<StreamingTurn | null>(null)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const streamController = useRef<AbortController | null>(null)
   const refreshBeforeNextTurn = useRef<string | null>(null)
 
@@ -106,6 +107,7 @@ export default function App() {
     setSources([])
     setGrounded(null)
     setErrorMessage('')
+    setProfileMenuOpen(false)
     try {
       const loadedSession = await getSession(session.sessionId)
       setActiveSession(loadedSession)
@@ -177,7 +179,7 @@ export default function App() {
     }
   }
 
-  function startNewChat() { cancelStream(); refreshBeforeNextTurn.current = null; setActiveSession(null); setDraft(''); setIsRenaming(false); setStreamingTurn(null); setSources([]); setGrounded(null) }
+  function startNewChat() { cancelStream(); refreshBeforeNextTurn.current = null; setActiveSession(null); setDraft(''); setIsRenaming(false); setStreamingTurn(null); setSources([]); setGrounded(null); setProfileMenuOpen(false) }
 
   async function submitQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -236,15 +238,26 @@ export default function App() {
   return <main className="app-shell">
     <header className="topbar">
       <a className="brand" href="/" aria-label="Developer knowledge home">Developer knowledge</a>
-      <label className="workspace-picker"><span>Workspace</span><select aria-label="Workspace" disabled={workspaceStatus !== 'ready'} value={workspaceId} onChange={(event) => { cancelStream(); refreshBeforeNextTurn.current = null; setStreamingTurn(null); setSources([]); setGrounded(null); setWorkspaceId(event.target.value) }}>
-        <option value="" disabled>{workspaceStatus === 'loading' ? 'Loading workspaces…' : 'Select a workspace'}</option>
-        {workspaces.map((workspace) => <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.displayName}</option>)}
-      </select></label>
+      <div className="topbar-actions">
+        <label className="workspace-picker"><span>Workspace</span><select aria-label="Workspace" disabled={workspaceStatus !== 'ready'} value={workspaceId} onChange={(event) => { cancelStream(); refreshBeforeNextTurn.current = null; setStreamingTurn(null); setSources([]); setGrounded(null); setWorkspaceId(event.target.value) }}>
+          <option value="" disabled>{workspaceStatus === 'loading' ? 'Loading workspaces…' : 'Select a workspace'}</option>
+          {workspaces.map((workspace) => <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.displayName}</option>)}
+        </select></label>
+        <button className="primary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button>
+        <div className="profile-menu">
+          <button className="avatar" type="button" aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-label="User menu" onClick={() => setProfileMenuOpen((open) => !open)}>U</button>
+          {profileMenuOpen && <div className="profile-menu-panel" role="menu" aria-label="User menu">
+            <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Profile</button>
+            <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Settings</button>
+            <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Sign out</button>
+          </div>}
+        </div>
+      </div>
     </header>
     <section className="workspace" aria-label="Chat workspace">
       <aside className="sources-pane" aria-label="Sources"><h2>Sources</h2><p className="muted">Sources appear here when an answer includes grounded citations.</p></aside>
       <section className="chat-pane" aria-label="Chat" aria-busy={Boolean(streamController.current)}>
-        <div className="chat-heading"><div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div><div className="heading-actions">{activeSession && <><button className="secondary" type="button" onClick={() => { setRenameTitle(activeSession.title); setIsRenaming(true) }}>Rename</button><button className="destructive" type="button" onClick={() => void archiveActiveSession()}>Archive chat</button></>}<button className="secondary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button></div></div>
+        <div className="chat-heading"><div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div><div className="heading-actions">{activeSession && <><button className="secondary" type="button" onClick={() => { setRenameTitle(activeSession.title); setIsRenaming(true) }}>Rename</button><button className="destructive" type="button" onClick={() => void archiveActiveSession()}>Archive chat</button></>}</div></div>
         {isRenaming && activeSession && <form className="rename-form" aria-label="Rename chat" onSubmit={(event) => void submitRename(event)}><label htmlFor="session-title">Chat title</label><div><input id="session-title" value={renameTitle} onChange={(event) => setRenameTitle(event.target.value)} maxLength={200} autoFocus /><button type="submit" disabled={!renameTitle.trim()}>Save</button><button className="secondary" type="button" onClick={() => setIsRenaming(false)}>Cancel</button></div></form>}
         <div className={activeSession ? 'conversation-view' : 'empty-state'} aria-live="polite">
           {errorMessage ? <p className="error-message" role="alert">{errorMessage}</p> : null}
