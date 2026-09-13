@@ -1,7 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
+    { "path": "./apps/rag-dev-plane/tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ]
 }
