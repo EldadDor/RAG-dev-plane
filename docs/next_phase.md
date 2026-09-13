@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-13 through NP-15 are active; implementation is complete and live environment validation is pending.
+**Status:** NP-13 through NP-15 are complete. NP-16 remains proposed and requires activation approval.
 **Last reviewed:** 2026-09-11
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -22,9 +22,9 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 10 | NP-10 | Activate retrieval reranking | Optional local cross-encoder reranking is active behind configuration; default enablement was evaluated but declined because the benchmark's precision/recall was saturated and reranking added 50.0% mean latency. | **Complete — default remains off.** 2026-09-10 |
 | 11 | NP-11 | Frontend live validation and phase closure | FP-01 closure and live streaming validation are recorded by the frontend phase records. | Completed 2026-09-05 |
 | 12 | NP-12 | Azure and office deployment | Execute `AZURE_DEPLOYMENT_PLAN.md` once quality tooling exists. | Queued after NP-08 and NP-09 |
-| 13 | NP-13 | Structured Microsoft Word ingestion | Safe `.docx` structure extraction, image anchors and image-aware hashing implemented. | **Implementation complete; live validation pending** |
+| 13 | NP-13 | Structured Microsoft Word ingestion | Safe `.docx` structure extraction, image anchors and image-aware hashing implemented. | **Complete — live validated 2026-09-12** |
 | 14 | NP-14 | Embedded image asset lifecycle | Content-addressed asset storage, migration 004 and profile-scoped chunk associations implemented. | **Implementation and migration complete** |
-| 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Implementation complete; live browser validation pending** |
+| 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Complete — live browser validated 2026-09-12** |
 | 16 | NP-16 | Hebrew and multilingual RAG evaluation | Work documents are largely Hebrew; local models (`nomic-embed-text`, `llama3.2:3b`) are English-centric, and Hebrew failures are retrieval-side before generation-side. | **Proposed after NP-13–15 live validation — activation required** |
 | 17 | NP-17 | Embedding model profiles and embedding cache | Comparing embedding models needs per-model dimensions, isolated storage, and cached embeddings so a model switch is configuration-only; NP-16 benchmarks depend on this plumbing. | **Proposed — enables NP-16; activation required** |
 

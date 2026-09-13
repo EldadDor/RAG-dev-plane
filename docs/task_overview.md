@@ -4,7 +4,8 @@
 - Backend NP-10: complete. The local cross-encoder reranking stage is opt-in;
   the 2026-09-10 A/B result retained `RERANK_ENABLED=false` as the default.
 - NP-13 through NP-15: Word ingestion and cited-image implementation is
-  complete; migration 004 is applied and live browser validation is pending.
+  complete, including PostgreSQL migration 004 and live browser validation on
+  2026-09-12.
 
 # Approved For future
 

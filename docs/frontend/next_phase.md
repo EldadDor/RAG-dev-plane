@@ -41,12 +41,12 @@ and record the applicable approval decision.
 | Priority | ID | Candidate task | Why it matters | Approval required |
 | --- | --- | --- | --- | --- |
 | 1 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
-| 2 | NP-15-FE | Image-bearing source citations | Render authorized images associated with retrieved Word citations in the Sources experience. | **Implemented; live browser validation pending** |
+| 2 | NP-15-FE | Image-bearing source citations | Render authorized images associated with retrieved Word citations in the Sources experience. | **Complete — live browser validated 2026-09-12** |
 
 ## Recommended Next Phase
 
-FP-03 remains the existing delivery candidate. The NP-15 frontend slice is
-implemented and awaits live validation; migration 004 was applied on 2026-09-11.
+FP-03 remains the existing delivery candidate. The NP-15 frontend slice
+completed live browser validation on 2026-09-12.
 
 ## Phase Intake Checklist
 

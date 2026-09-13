@@ -43,4 +43,4 @@ inside either implementation directory, so each side can read and write it.
   NP-10 A/B decision.
 - NP-13 through NP-15 Word ingestion and image-bearing citations were approved
   and implemented on 2026-09-11. Offline validation passes and migration 004
-  is applied; live browser validation remains pending.
+  is applied; live browser validation passed on 2026-09-12.

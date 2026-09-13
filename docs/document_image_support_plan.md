@@ -1,6 +1,6 @@
 # Word Documents and Embedded Images — Review Proposal
 
-**Status:** Approved 2026-09-11; implementation and PostgreSQL migration complete, live browser validation pending
+**Status:** Complete 2026-09-12
 **Prepared:** 2026-09-10
 **Proposed phases:** NP-13, NP-14, NP-15
 
@@ -280,8 +280,9 @@ documents or screenshots containing internal data:
 
 The user approved NP-13 through NP-15 on 2026-09-11. The implementation uses
 the proposed `.docx`-only, preservation-first, private local asset store and
-authorized citation-display design. Migration 004 was applied and verified on
-2026-09-11; live Word/image chat validation remains pending.
+authorized citation-display design. Migration 004 was applied and verified,
+and the live browser path passed on 2026-09-12: a retrieved Hebrew Word chunk
+rendered its associated PNG screenshot in the related-source-images panel.
 
 ## Approval Gates
 

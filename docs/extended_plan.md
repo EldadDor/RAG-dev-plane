@@ -1,6 +1,6 @@
 # Extended Application Plan — Frontend and Backend
 
-**Status:** Approved roadmap. NP-13 through NP-15 are active with live validation pending.
+**Status:** Approved roadmap. NP-13 through NP-15 completed with live validation on 2026-09-12.
 **Prepared:** 2026-09-04
 **Basis:** All documentation under `docs/` (excluding `phase_qa/`), the phase
 history through NP-05, the FP-01 frontend phase records, and the current
@@ -196,9 +196,9 @@ controls rendering. Existing text-only citation payloads remain compatible.
 
 **Detailed review:** [`document_image_support_plan.md`](document_image_support_plan.md)
 
-**Validation state:** 75 backend tests, 7 frontend tests, TypeScript and the
+**Validation state:** 76 backend tests, 7 frontend tests, TypeScript and the
 production build pass. Migration 004 was applied and verified on 2026-09-11;
-live Word/image chat validation remains pending.
+live Word/image chat validation passed on 2026-09-12.
 
 ## Existing NP-06
 

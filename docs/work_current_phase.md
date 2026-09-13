@@ -1,8 +1,8 @@
 # Current Work Phase — NP-13 through NP-15 Word Documents and Images
 
-**Status:** Implementation and PostgreSQL migration complete; live Word/image browser validation pending
+**Status:** Complete
 **Approved:** 2026-09-11
-**Last reviewed:** 2026-09-11
+**Last reviewed:** 2026-09-12
 **Owner:** Project team
 **Plan:** [`document_image_support_plan.md`](document_image_support_plan.md)
 
@@ -34,8 +34,8 @@ and show authorized related images with grounded chat citations.
 | NP15-01 | Add authorized asset delivery. | Complete: membership check, media allowlist, private caching, ETag and `nosniff`. |
 | NP15-02 | Extend citation/SSE contract compatibly. | Complete: optional image asset metadata; old payloads map to an empty array. |
 | NP15-03 | Render cited images in chat. | Complete: lazy previews in Sources and a deduplicated related-images section. |
-| NP15-04 | Run offline validation. | Complete: 74 backend tests, 7 frontend tests, TypeScript and production build pass. |
-| NP15-05 | Apply migration and run live `.docx` ingestion/chat/browser validation. | Blocked 2026-09-11: configured PostgreSQL `10.100.102.12:5432` timed out; no database changes were made. |
+| NP15-04 | Run offline validation. | Complete: 76 backend tests, 7 frontend tests, TypeScript and production build pass. |
+| NP15-05 | Apply migration and run live `.docx` ingestion/chat/browser validation. | Complete 2026-09-12: PostgreSQL migration 004 verified; `general_errors_handling.docx` retrieved an asset-linked chunk, and its embedded screenshot rendered in the local browser. |
 
 ## Acceptance State
 
@@ -48,7 +48,8 @@ and show authorized related images with grounded chat citations.
 - Frontend backward compatibility, asset mapping, type checking and build:
   passed.
 - Real PostgreSQL migration, real Word ingestion and browser image rendering:
-  pending environment availability.
+  passed on 2026-09-12. A targeted Hebrew query returned `10MB` and rendered
+  an associated `image/png` asset in the related-source-images panel.
 
 ## Validation Commands
 
@@ -59,10 +60,8 @@ node node_modules\typescript\bin\tsc -b
 node node_modules\vite\bin\vite.js build
 ```
 
-## Next Operator Step
+## Completion Record
 
-Bring the configured PostgreSQL service online, apply
-`database/migrations/004_document_assets.sql`, restart the API, ingest a safe
-review fixture or approved real `.docx`, and validate that a grounded answer
-shows its related screenshot in the frontend. Do not close the phase until
-this live path passes.
+NP-13 through NP-15 closed on 2026-09-12. The next proposed backend work is
+NP-16 Hebrew and multilingual evaluation; it remains unapproved for
+implementation.

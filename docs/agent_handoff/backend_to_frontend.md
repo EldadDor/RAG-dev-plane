@@ -3,6 +3,24 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-09-12 — NP-13 through NP-15 live validation complete
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Resolved
+- **Affected contract/files:** `POST /chat`, `POST /chat/stream`,
+  `GET /workspaces/{workspace_id}/assets/{asset_id}`,
+  `docs/frontend_architecture.md`
+- **Message:** Migration 004 is applied. The live local browser validated a
+  grounded Hebrew Word result: the `10MB` passage from
+  `general_errors_handling.docx` returned its related PNG screenshot in the
+  Related source images panel. The authorized asset URL served the image and
+  the existing frontend rendering handled it.
+- **Action requested:** None. NP-15-FE is complete.
+- **Supersedes / follow-up:** Supersedes the 2026-09-10 request for the live
+  Word/image browser checklist.
+
 ## 2026-09-10 — Proposed image-bearing source citations
 
 - **From:** Backend

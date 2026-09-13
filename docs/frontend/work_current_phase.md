@@ -68,17 +68,11 @@ refresh workspace discovery for `403`; and remove unavailable sessions for
 was formally closed with the approved unit-focused validation scope on
 2026-09-05.
 
-Status review, 2026-09-11: FP-02 remains complete. The backend's latest
+Status review, 2026-09-12: FP-02 remains complete. The backend's
 image-bearing-citation handoff is contract-aligned with the implemented
-frontend; its only requested follow-up is separately approved live browser
-validation after the updated API is restarted. No frontend code or contract
-change was required by this review. Evidence: reviewed
-`docs/agent_handoff/backend_to_frontend.md`, `docs/frontend_architecture.md`,
-`frontend/src/App.tsx`, `frontend/src/api.ts`, and `frontend/src/api.test.ts`;
-ran `rg` for image-citation implementation and `git diff --check` (passed).
-No type check, test suite, production build, browser automation, or live
-backend/model/database validation ran because this was a read-only status
-review.
+frontend, and the live browser checklist passed: a grounded Hebrew Word result
+rendered its associated PNG in Related source images. No frontend code or
+contract change was required.
 
 Hebrew-ingestion review, 2026-09-12: this is backend-owned work, so no
 frontend task was started. Recorded the benchmark-first and profile-isolation
