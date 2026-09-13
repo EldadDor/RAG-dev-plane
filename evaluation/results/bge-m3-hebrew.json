@@ -1,0 +1,295 @@
+{
+  "cases": [
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-address-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 9584.235399997851,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:3",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:4",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:5",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:0"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "large-file-email",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 5127.428300002066,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:6",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:7",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:1",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:0"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-content-gibberish",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 9380.074500004412,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:5",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:4",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:0",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:1"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-not-received",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 4840.487500005111,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:5",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:4",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:6",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:9",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:3"
+      ]
+    },
+    {
+      "answer": "\"update  M_PERSONAL_MAIL_HEADER\n\nset  CURRENT_HANDLE_USER = 5746\n\nwhere PERSONAL_MAIL_NR in (510403, 510521)\n\ngo\"",
+      "case_id": "email-template-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 7435.825799999293,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:9",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:7",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:12",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:6"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-login-error",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 5618.300200003432,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:5",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:6",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:1",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:0",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "email-transfer-between-users",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 7061.4649999988615,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:7",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:9",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:12",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:5",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2"
+      ]
+    },
+    {
+      "answer": "I don't have enough information in the indexed documents to answer this question.",
+      "case_id": "personal-fax-issue",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 5323.468399998092,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:10",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:11",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:12",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:9",
+        "15c841f2550c313e3ce282ffad63dbdb4c0e2ca0f196cd974a02e250c7a90683:2"
+      ]
+    },
+    {
+      "answer": "\"25%\".",
+      "case_id": "heb_006",
+      "deterministic": true,
+      "failure_message": "Answer did not cover any verified expected fact despite retrieved context.",
+      "failure_stage": "generation",
+      "latency_ms": 4532.873199997994,
+      "metrics": {
+        "answer_relevance": 0.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.0,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:2",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:3",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:47",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:1",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:18"
+      ]
+    },
+    {
+      "answer": "\u05dc\u05e4\u05d9 \u05d3\u05d5\"\u05d7 \u05e9\u05dc \u05d7\u05d1\u05e8\u05ea Andersen, 15,200-6,200=9,000  \u05d3\u05d5\u05dc\u05e8, 15,200-8,000=7,200  \u05d3\u05d5\u05dc\u05e8, 15,200-9,000=6,200  \u05d3\u05d5\u05dc\u05e8, 15,200-12,200=3,000  \u05d3\u05d5\u05dc\u05e8",
+      "case_id": "heb_007",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 17290.211500003352,
+      "metrics": {
+        "answer_relevance": 0.10833333333333334,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.55,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:4",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:5",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:16",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:9",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:6"
+      ]
+    },
+    {
+      "answer": "\"\u05de\u05db\u05e1\u05d9 \u05ea\u05d2\u05de\u05d5\u05dc\"",
+      "case_id": "heb_008",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 6603.963399997156,
+      "metrics": {
+        "answer_relevance": 0.047619047619047616,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.42857142857142855,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:6",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:1",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:5",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:2",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:8"
+      ]
+    },
+    {
+      "answer": "\"\u05d4\u05de\u05d4\u05dc\u05da\"  \u05e9\u05dc \u05de\u05de\u05e9\u05dc \u05d8\u05e8\u05d0\u05de\u05e4  \u05d1-12 \u05dc\u05de\u05e8\u05e5  2025   \u05d4\u05d9\u05d4  \"  25%  \"  (25%)  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"  \"",
+      "case_id": "heb_009",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 35180.77659999835,
+      "metrics": {
+        "answer_relevance": 0.10714285714285714,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.32589285714285715,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:2",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:8",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:6",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:1",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7"
+      ]
+    },
+    {
+      "answer": "\"\u05ea\u05d5\u05db\u05e0\u05d9\u05ea \u05d4\u05de\u05d2\u05d9\u05e8\u05d4\" (Plan B)  \u05d4\u05d5\u05db\u05e0\u05d4 \"\u05de\u05d1\u05e2\u05d5\u05d3\" (from before)  \u05dc\u05d4\u05d8\u05dc\u05ea  \"\u05de\u05db\u05e1\u05d9\u05dd  \u05e0\u05d2\u05d3\u05d9\u05d9\u05dd\" (anti-dumping)  \"\u05e2\u05dc  28  \u05de\u05d9\u05dc\u05d9\u05d0\u05e8\u05d3  \u05d3\u05d5\u05dc\u05e8\" (28 million dollars)  \"  (  )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )  ( )",
+      "case_id": "heb_010",
+      "deterministic": true,
+      "failure_message": null,
+      "failure_stage": null,
+      "latency_ms": 63838.00479999627,
+      "metrics": {
+        "answer_relevance": 0.09677871148459384,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "faithfulness": 0.8137254901960785,
+        "source_mrr": 1.0
+      },
+      "retrieved_chunk_ids": [
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:8",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:9",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:16",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:7",
+        "01284f9ebd40e2241a23df328b8ef4a82ad22b7bc7bd7c8606b7448ab7c14839:17"
+      ]
+    }
+  ],
+  "configuration": {
+    "api_url": "http://127.0.0.1:8001",
+    "top_k": 5,
+    "workspace_id": null
+  }
+}

@@ -40,6 +40,12 @@ The five `israel-vehicle-importers.pdf` cases retrieved their expected source;
 the operational Hebrew Word cases mostly did not. This is a retrieval finding,
 not evidence that a chat-model swap alone will solve the problem.
 
+The approved `bge-m3:latest` profile was warmed into a separate
+`rag.document_chunks_bge_m3` table at 1024 dimensions, leaving the default
+table untouched. Its 13-case artifact, `evaluation/results/bge-m3-hebrew.json`,
+measured 100.0% source precision, source-hint recall, and MRR; median paired
+case latency was 7.06 s. The default profile remains the rollback target.
+
 ## Task Board
 
 | ID | Task | Status |
@@ -48,7 +54,7 @@ not evidence that a chat-model swap alone will solve the problem.
 | NP16-02 | Add rank-aware source metrics so comparison reports include MRR as well as source precision/recall. | Complete: `source_mrr` is included in every benchmark result. |
 | NP16-03 | Add a Hebrew `.docx` extraction regression fixture/test. | Complete: Hebrew text and mixed punctuation are preserved by `WordLoader`. |
 | NP16-04 | Document the baseline diagnosis and a reproducible local comparison command. | Complete: default baseline artifact refreshed 2026-09-13. |
-| NP16-05 | Compare a multilingual embedding profile (`bge-m3`) against the baseline. | Blocked pending explicit approval and NP-17 profile-scoped storage. |
+| NP16-05 | Compare a multilingual embedding profile (`bge-m3`) against the baseline. | Complete: the isolated 1024-dimension profile reached 100.0% source precision, recall, and MRR. |
 | NP16-06 | Compare Hebrew-capable local chat models only after the best embedding profile is known. | Blocked pending NP16-05 evidence and approval of the chosen download. |
 
 ## Completion Criteria

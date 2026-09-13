@@ -107,6 +107,21 @@ def test_registry_and_directory_discovery_support_docx(tmp_path):
     assert skipped == []
 
 
+def test_word_loader_preserves_hebrew_unicode_and_rtl_punctuation(tmp_path):
+    source = tmp_path / "hebrew-guide.docx"
+    document = OpenWordDocument()
+    document.add_heading("מדריך תפעול", level=1)
+    document.add_paragraph("ניתן לצרף קבצים בגודל של עד 10MB במייל אישי.")
+    document.add_paragraph("האם ההרשאה קיימת? כן.")
+    document.save(source)
+
+    loaded = WordLoader().load(str(source))
+
+    assert "# מדריך תפעול" in loaded.content
+    assert "ניתן לצרף קבצים בגודל של עד 10MB במייל אישי." in loaded.content
+    assert "האם ההרשאה קיימת? כן." in loaded.content
+
+
 def test_word_loader_rejects_renamed_non_docx(tmp_path):
     source = tmp_path / "fake.docx"
     source.write_bytes(b"not a Word package")

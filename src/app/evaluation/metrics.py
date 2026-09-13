@@ -51,6 +51,18 @@ def source_hint_metrics(chunks: Iterable[RetrievedChunk], source_hints: Iterable
     return precision, recall
 
 
+def source_hint_mrr(chunks: Iterable[RetrievedChunk], source_hints: Iterable[str]) -> float | None:
+    """Return reciprocal rank of the first result matching a verified source hint."""
+    hints = [_normalise(hint) for hint in source_hints]
+    if not hints:
+        return None
+    for rank, chunk in enumerate(chunks, start=1):
+        location = f"{_normalise(chunk.source_path)} {_normalise(chunk.doc_id)}"
+        if any(hint in location for hint in hints):
+            return 1.0 / rank
+    return 0.0
+
+
 def faithfulness_proxy(answer: str, contexts: Iterable[str], expected_facts: Iterable[str]) -> float:
     """Score expected answer facts that are also present in retrieved context.
 

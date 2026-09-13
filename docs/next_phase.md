@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-13 through NP-15 are complete. NP-16 Phase A is active; NP-17 remains proposed.
+**Status:** NP-13 through NP-15 are complete. NP-16 and NP-17 are active.
 **Last reviewed:** 2026-09-11
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -26,7 +26,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 14 | NP-14 | Embedded image asset lifecycle | Content-addressed asset storage, migration 004 and profile-scoped chunk associations implemented. | **Implementation and migration complete** |
 | 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata and accessible previews implemented. | **Complete — live browser validated 2026-09-12** |
 | 16 | NP-16 | Hebrew and multilingual RAG evaluation | Work documents are largely Hebrew; the 13-case baseline found deterministic but weak default-profile retrieval. | **Active — Phase A, activated 2026-09-13** |
-| 17 | NP-17 | Embedding model profiles and embedding cache | Comparing embedding models needs per-model dimensions, isolated storage, and cached embeddings so a model switch is configuration-only; NP-16 benchmarks depend on this plumbing. | **Proposed — enables NP-16; activation required** |
+| 17 | NP-17 | Embedding model profiles and embedding cache | Comparing embedding models needs per-model dimensions, isolated storage, and cached embeddings so a model switch is configuration-only; NP-16 benchmarks depend on this plumbing. | **Active — approved 2026-09-13** |
 
 ## Current Phase State
 

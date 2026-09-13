@@ -9,6 +9,7 @@ psql $env:DATABASE_URL -v schema=rag -v table=document_chunks -v vector_dim=768 
 psql $env:DATABASE_URL -v schema=rag -f database/migrations/002_workspace_authorization.sql
 psql $env:DATABASE_URL -v schema=rag -v table=document_chunks -f database/migrations/003_chunking_profiles.sql
 psql $env:DATABASE_URL -v schema=rag -f database/migrations/004_document_assets.sql
+psql $env:DATABASE_URL -v schema=rag -v default_model=nomic-embed-text -v default_dimensions=768 -f database/migrations/005_model_profiles.sql
 psql $env:DATABASE_URL -v schema=rag -v default_workspace_id=local -v local_subject=local-dev -f database/seeds/local_workspace.sql
 ```
 

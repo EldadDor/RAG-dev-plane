@@ -5,7 +5,7 @@ import pytest
 
 from app.domain.models import RetrievedChunk
 from app.evaluation.dataset import load_golden_cases
-from app.evaluation.metrics import expected_fact_coverage, faithfulness_proxy, source_hint_metrics
+from app.evaluation.metrics import expected_fact_coverage, faithfulness_proxy, source_hint_metrics, source_hint_mrr
 from app.evaluation.models import GoldenCase
 from app.evaluation.runner import BenchmarkRunner, write_report
 from app.evaluation.live_api import LiveApiBenchmarkClient
@@ -35,6 +35,9 @@ def test_metrics_are_deterministic_and_source_hint_aware():
 
     assert precision == 0.5
     assert recall == 1.0
+    assert source_hint_mrr(chunks, ["release.md"]) == 1.0
+    assert source_hint_mrr(chunks, ["other.md"]) == 0.5
+    assert source_hint_mrr(chunks, ["missing.md"]) == 0.0
     assert expected_fact_coverage("The release guide is in docs/release.md.", ["The release guide is in docs/release.md"]) == 1.0
     assert faithfulness_proxy("The release guide is in docs/release.md.", [chunk.text for chunk in chunks], ["The release guide is in docs/release.md"]) == 1.0
     assert expected_fact_coverage("Water transports minerals.", ["Water transports minerals through the plant."]) > 0.5
@@ -60,6 +63,7 @@ async def test_runner_reports_determinism_metrics_and_generation_failures(tmp_pa
     assert result.metrics == {
         "context_precision": 1.0,
         "context_recall": 1.0,
+        "source_mrr": 1.0,
         "answer_relevance": 1.0,
         "faithfulness": 1.0,
     }

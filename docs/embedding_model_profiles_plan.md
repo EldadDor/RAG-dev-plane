@@ -1,6 +1,6 @@
 # Embedding Model Profiles and Embedding Cache — Review Proposal
 
-**Status:** Proposed for review; not approved for implementation
+**Status:** Active — approved for implementation 2026-09-13
 **Prepared:** 2026-09-11
 **Proposed phase:** NP-17
 **Supports:** NP-16 (Hebrew and multilingual RAG evaluation)
@@ -173,12 +173,12 @@ no-database path keeps working.
 
 | ID | Task |
 | --- | --- |
-| NP17-01 | Add migration `005_model_profiles.sql` (registry + cache) with rollback instructions, and the profile-table provisioning script. |
+| NP17-01 | Add migration `005_model_profiles.sql` (registry + cache) with rollback instructions, and the profile-table provisioning script. | Complete 2026-09-13. |
 | NP17-02 | Add `ModelProfileStore` and `EmbeddingCache` protocols with PostgreSQL and fallback implementations; seed default profile to current table. |
 | NP17-03 | Add `CachedEmbeddingClient` decorator with prefix handling per provider/model. |
 | NP17-04 | Route ingestion and retrieval through model-profile resolution; keep unspecified-request behavior byte-compatible. |
 | NP17-05 | Implement the `warm` operation with dry-run; add focused unit/API tests including dimension-mismatch failures. |
-| NP17-06 | Live validation: provision a second profile for a Hebrew-capable model, warm it, and run the NP-09 harness against both profiles; record artifacts. |
+| NP17-06 | Live validation: provision a second profile for a Hebrew-capable model, warm it, and run the NP-09 harness against both profiles; record artifacts. | Complete for `bge-m3:latest`: 1,150 chunks warmed and a 13-case Hebrew artifact recorded. |
 
 ## Acceptance Checks
 

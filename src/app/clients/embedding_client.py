@@ -37,3 +37,22 @@ class OllamaEmbeddingClient:
             raise
         logger.info("Embedding request completed | provider=ollama model=%s status=%d duration_ms=%d dimensions=%d", model, response.status_code, (time.perf_counter() - started) * 1000, len(embedding))
         return embedding
+
+    async def create_embeddings(self, model: str, texts: list[str]) -> list[list[float]]:
+        """Create a bounded batch of embeddings using Ollama's array input."""
+        if not texts:
+            return []
+        started = time.perf_counter()
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
+            response = await client.post(
+                f"{self._base_url}/api/embed", json={"model": model, "input": texts}
+            )
+            response.raise_for_status()
+            embeddings = response.json().get("embeddings")
+        if not isinstance(embeddings, list) or len(embeddings) != len(texts):
+            raise ValueError("Unexpected Ollama batch embedding response format")
+        logger.info(
+            "Embedding batch completed | provider=ollama model=%s inputs=%d duration_ms=%d dimensions=%d",
+            model, len(texts), (time.perf_counter() - started) * 1000, len(embeddings[0]),
+        )
+        return embeddings

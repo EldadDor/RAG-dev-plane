@@ -7,7 +7,7 @@ from time import perf_counter
 from typing import Protocol
 
 from app.domain.models import RetrievedChunk
-from app.evaluation.metrics import expected_fact_coverage, faithfulness_proxy, source_hint_metrics
+from app.evaluation.metrics import expected_fact_coverage, faithfulness_proxy, source_hint_metrics, source_hint_mrr
 from app.evaluation.models import BenchmarkReport, CaseResult, FailureStage, GoldenCase
 
 
@@ -52,6 +52,7 @@ class BenchmarkRunner:
         chunk_ids = [chunk.chunk_id for chunk in first]
         deterministic = chunk_ids == [chunk.chunk_id for chunk in second]
         precision, recall = source_hint_metrics(first, case.expected_source_hints)
+        source_mrr = source_hint_mrr(first, case.expected_source_hints)
         answer: str | None = None
         failure_stage: FailureStage | None = None
         failure_message: str | None = None
@@ -65,6 +66,7 @@ class BenchmarkRunner:
         metrics: dict[str, float | None] = {
             "context_precision": precision,
             "context_recall": recall,
+            "source_mrr": source_mrr,
             "answer_relevance": expected_fact_coverage(answer, case.expected_facts) if answer is not None else None,
             "faithfulness": faithfulness_proxy(answer, [chunk.text for chunk in first], case.expected_facts) if answer is not None else None,
         }
