@@ -3,6 +3,18 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-09-13 — NP-16 activated: evaluation-only Phase A
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Status
+- **Status:** Active
+- **Message:** NP-16 is active for Hebrew baseline evidence and evaluation
+  hardening. It does not change browser contracts, providers, vector storage,
+  or the current local model configuration. A future `bge-m3` experiment is
+  blocked on separate NP-17 profile-storage approval.
+- **Action requested:** None.
+
 ## 2026-09-12 — Proposed NP-16: Hebrew and multilingual RAG evaluation
 
 - **From:** Frontend

@@ -21,5 +21,12 @@ uv run python scripts/run_benchmark.py `
 ```
 
 The runner makes two chat requests for each case to check retrieval
-determinism. Those requests appear in Recent Chats; they do not ingest, delete,
-or replace document chunks.
+determinism. Reports include source-hint precision, Recall@k, and source MRR
+(reciprocal rank of the first expected source), plus deterministic answer
+coverage and faithfulness proxies. Those requests appear in Recent Chats; they
+do not ingest, delete, or replace document chunks.
+
+For the approved Hebrew baseline, use the same command with
+`evaluation/golden-cases-heb.jsonl` and write to
+`evaluation/results/baseline-hebrew-default.json`. Keep the active default
+model/profile unchanged when producing that comparison artifact.

@@ -1,67 +1,69 @@
-# Current Work Phase — NP-13 through NP-15 Word Documents and Images
+# Current Work Phase — NP-16 Hebrew and Multilingual RAG Evaluation
 
-**Status:** Complete
-**Approved:** 2026-09-11
-**Last reviewed:** 2026-09-12
+**Status:** Active — Phase A: baseline evidence and evaluation hardening
+**Activated:** 2026-09-13
 **Owner:** Project team
-**Plan:** [`document_image_support_plan.md`](document_image_support_plan.md)
+**Prerequisite:** NP-13 through NP-15 completed and live-validated on 2026-09-12
 
 ## Objective
 
-Ingest modern Microsoft Word `.docx` files as structured searchable text,
-preserve embedded image bytes under the existing workspace/profile lifecycle,
-and show authorized related images with grounded chat citations.
+Measure Hebrew extraction, retrieval, and answer quality separately against a
+human-authored local golden set before changing a model, vector dimension, or
+deployment provider.
 
 ## Guardrails
 
-- No legacy `.doc`, Office automation, OCR, visual embeddings or multimodal
-  model calls.
-- Original image bytes remain outside pgvector and outside prompts.
-- Browsers receive only application-issued, workspace-authorized asset URLs.
-- Existing text-only loaders, citations and SSE event order remain compatible.
-- Migration 004 is additive and does not alter existing chunks or embeddings.
+- Keep the active `nomic-embed-text` / `llama3.2:3b` profile unchanged.
+- Do not download a new model, alter `PG_VECTOR_DIM`, create a new vector
+  table, or send workplace documents to Azure during Phase A.
+- Keep the existing default index and chat contract intact.
+- Treat image text as out of scope; Hebrew text embedded in screenshots still
+  requires a separately approved OCR or visual-understanding phase.
+
+## Baseline Evidence
+
+The committed 13-case Hebrew set and
+`evaluation/results/baseline-hebrew-default.json` establish the current local
+baseline:
+
+| Measure | Result |
+| --- | ---: |
+| Retrieval determinism | 13/13 cases |
+| Source-hint recall | 46.2% |
+| Context precision | 40.0% |
+| Source MRR | 40.0% |
+| Answer relevance proxy | 1.2% |
+| Faithfulness proxy | 1.6% |
+| Median two-request case latency | 4.42 s |
+
+The five `israel-vehicle-importers.pdf` cases retrieved their expected source;
+the operational Hebrew Word cases mostly did not. This is a retrieval finding,
+not evidence that a chat-model swap alone will solve the problem.
 
 ## Task Board
 
 | ID | Task | Status |
 | --- | --- | --- |
-| NP13-01 | Add safe `.docx` loader and dependency. | Complete: `python-docx` plus bounded ZIP/OOXML validation. |
-| NP13-02 | Preserve ordered Word structure and stable image anchors. | Complete: headings, paragraphs, lists, tables, page breaks, block offsets, captions and image relationships. |
-| NP13-03 | Make source hashing image-aware. | Complete: loader-supplied package hash detects image-only changes. |
-| NP14-01 | Add binary asset-store boundary and limits. | Complete: content-addressed local/in-memory adapters, safe keys and bounded extraction settings. |
-| NP14-02 | Add profile-scoped metadata and chunk associations. | Complete; `004_document_assets.sql` was applied and verified on 2026-09-11. |
-| NP14-03 | Integrate asset replacement, cleanup and retrieval metadata. | Complete offline for PostgreSQL and Qdrant paths. |
-| NP15-01 | Add authorized asset delivery. | Complete: membership check, media allowlist, private caching, ETag and `nosniff`. |
-| NP15-02 | Extend citation/SSE contract compatibly. | Complete: optional image asset metadata; old payloads map to an empty array. |
-| NP15-03 | Render cited images in chat. | Complete: lazy previews in Sources and a deduplicated related-images section. |
-| NP15-04 | Run offline validation. | Complete: 76 backend tests, 7 frontend tests, TypeScript and production build pass. |
-| NP15-05 | Apply migration and run live `.docx` ingestion/chat/browser validation. | Complete 2026-09-12: PostgreSQL migration 004 verified; `general_errors_handling.docx` retrieved an asset-linked chunk, and its embedded screenshot rendered in the local browser. |
+| NP16-01 | Validate the UTF-8 Hebrew golden set and run the immutable default-profile baseline. | Complete: 13 valid cases and baseline artifact recorded. |
+| NP16-02 | Add rank-aware source metrics so comparison reports include MRR as well as source precision/recall. | Complete: `source_mrr` is included in every benchmark result. |
+| NP16-03 | Add a Hebrew `.docx` extraction regression fixture/test. | Complete: Hebrew text and mixed punctuation are preserved by `WordLoader`. |
+| NP16-04 | Document the baseline diagnosis and a reproducible local comparison command. | Complete: default baseline artifact refreshed 2026-09-13. |
+| NP16-05 | Compare a multilingual embedding profile (`bge-m3`) against the baseline. | Blocked pending explicit approval and NP-17 profile-scoped storage. |
+| NP16-06 | Compare Hebrew-capable local chat models only after the best embedding profile is known. | Blocked pending NP16-05 evidence and approval of the chosen download. |
 
-## Acceptance State
+## Completion Criteria
 
-- Safe deterministic Word parsing: passed with synthetic fixtures.
-- Image-only change detection: passed.
-- Original byte round-trip, storage-key safety and pruning: passed.
-- Chunk association, dry-run no-write behavior and limits: passed.
-- Workspace authorization, safe headers, unsupported-media behavior and ETag:
-  passed through in-process API tests.
-- Frontend backward compatibility, asset mapping, type checking and build:
-  passed.
-- Real PostgreSQL migration, real Word ingestion and browser image rendering:
-  passed on 2026-09-12. A targeted Hebrew query returned `10MB` and rendered
-  an associated `image/png` asset in the related-source-images panel.
+- Golden cases are valid UTF-8, duplicate-free, and cover representative Hebrew
+  Word/PDF material.
+- Reports record source Recall@k, MRR, determinism, latency, answer coverage,
+  and the deterministic faithfulness proxy.
+- The default baseline is preserved as an immutable comparison artifact.
+- Any candidate model experiment is isolated from the default index and has an
+  evidence-backed rollback path.
 
-## Validation Commands
+## Decision Gate for Phase B
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest tests\ --ignore=tests\integration -q
-node node_modules\vitest\vitest.mjs run
-node node_modules\typescript\bin\tsc -b
-node node_modules\vite\bin\vite.js build
-```
-
-## Completion Record
-
-NP-13 through NP-15 closed on 2026-09-12. The next proposed backend work is
-NP-16 Hebrew and multilingual evaluation; it remains unapproved for
-implementation.
+Before comparing `bge-m3`, approve NP-17's additive registry/cache migration,
+profile-specific 1024-dimension storage, and the model download. That approval
+will permit a non-destructive re-embedding experiment while preserving the
+current 768-dimension default profile.
