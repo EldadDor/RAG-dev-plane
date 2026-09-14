@@ -3,13 +3,16 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-13
+**Last reviewed:** 2026-09-14
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
 
 - FP-07 was activated on 2026-09-13 for the user-requested Vite multi-app
   project-layout migration; it is tracked in `work_current_phase.md`.
+- FP-08 was activated on 2026-09-14 for individually collapsible source
+  citations in the frontend Sources panel; it is tracked in
+  `work_current_phase.md`.
 
 - FP-01 received formal closure approval on 2026-09-05 after unit tests, type
   checks, and the production build passed.

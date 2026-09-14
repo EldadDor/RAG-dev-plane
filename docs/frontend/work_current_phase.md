@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-02 Frontend Hardening and UX Refinement
 
 **Status:** Completed
-**Last reviewed:** 2026-09-13
+**Last reviewed:** 2026-09-14
 **Owner:** Frontend team
 
 ## Objective
@@ -30,6 +30,7 @@ limited to the existing frontend and proxy-only API contract.
 | FP2-03 | Extend focused unit regression coverage | Completed | 2026-09-05: Added Node-environment coverage for session-detail mapping, encoded rename/archive requests, incomplete SSE streams, and safe terminal SSE errors. Vitest now passes 6 tests; `tsc -b` and the production build pass. No new dependencies, browser automation, or live services were used. |
 | FP2-04 | Run local validation and prepare phase handoff | Completed | 2026-09-05: Passed Vitest (6 tests), `tsc -b`, Vite production build, and `git diff --check`. The audit found no API-contract discrepancy, so no backend handoff was required. Browser automation and live-stack validation did not run because they are outside the approved scope. Changes are ready for review and commit. |
 | FP-07 | Restructure the Vite frontend for independently buildable applications | Completed | 2026-09-13: Moved the existing SPA to `frontend/apps/rag-dev-plane`, added app-scoped Vite configuration and root `build:all`/`build:rag-dev-plane` scripts, and configured output at `frontend/build/dist/rag-dev-plane`. Passed Vitest (7 tests), `tsc -b`, direct Vite production build, and `git diff --check`; the sandbox runtime provides Node but not npm, so `npm run build:all` itself was not invoked. No live services or browser automation ran. Branch: `codex/multi-app-vite-structure`. |
+| FP-08 | Make source citations individually expandable | Completed | 2026-09-14: Source citations now start collapsed, expose an accessible per-source toggle, and animate their metadata, excerpt, and linked image content independently. The transition disables under reduced-motion preferences; collapsed image links are not keyboard-focusable. Passed Vitest (7 tests), `tsc -b`, direct Vite production build, and `git diff --check`. No live services or browser automation ran. |
 
 ## Acceptance Checks
 
