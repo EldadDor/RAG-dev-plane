@@ -1,7 +1,7 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-13 through NP-17 are complete. No implementation phase is active.
-**Last reviewed:** 2026-09-13
+**Status:** NP-18 documentation handoff is complete. No implementation phase is active.
+**Last reviewed:** 2026-09-17
 
 This is the ordered backlog for the next approved phase. Each item must have a
 defined scope, acceptance checks, and an approval decision before implementation.
@@ -27,6 +27,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 15 | NP-15 | Authorized image citations and chat display | Authorized asset route, compatible citation metadata, and accessible previews implemented. | Complete — live browser validated 2026-09-12 |
 | 16 | NP-16 | Hebrew and multilingual RAG evaluation | Hebrew golden-set evaluation established bge-m3 retrieval and DictaLM chat as the recommended local pairing. | Complete — closed 2026-09-13 |
 | 17 | NP-17 | Embedding model profiles and embedding cache | Registry-backed isolated profile storage, cache, selection plumbing, and local-only dry-run warming are implemented. | Complete — closed 2026-09-13 |
+| 18 | NP-18 | Spring Boot backend handoff | Current backend API/behavior and Kotlin Spring AI 2.0 migration design, retaining the frontend contract. | Complete — closed 2026-09-17 |
 
 ## Latest Completed-Phase Record
 

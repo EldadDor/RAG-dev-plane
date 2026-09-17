@@ -1,11 +1,47 @@
-# Current Work Phase — NP-17 Embedding Model Profiles and Cache
+# Current Work Phase — NP-18 Spring Boot Backend Handoff
 
-**Status:** Complete — closed 2026-09-13
-**Activated:** 2026-09-13
+**Status:** Complete — closed 2026-09-17
+**Activated:** 2026-09-17
 **Owner:** Project team
-**Prerequisite:** NP-16 evaluation completed with bge-m3 retrieval and DictaLM chat.
+**Prerequisite:** User-approved documentation handoff; no application behavior changes.
 
 ## Objective
+
+Produce a backend-only implementation handoff for the parallel Kotlin/Spring Boot
+project. It will preserve the existing frontend HTTP contract while mapping the
+current FastAPI backend's API surface, data model, retrieval/ingestion behavior,
+security boundaries, and operational requirements to Spring AI 2.0, with an
+optional, isolated Embabel-agent future integration path.
+
+## Scope and exclusions
+
+- In scope: repository inspection, current public API and persistence contract,
+  Spring Boot/Kotlin/Spring AI 2.0 design and phased migration plan.
+- Out of scope: editing frontend code, changing the Python runtime, starting live
+  services, modifying database schema, or choosing immutable dependency versions.
+
+## Task Board
+
+| ID | Task | Status |
+| --- | --- | --- |
+| NP18-01 | Create Spring Boot backend handoff document from the current implementation and verified upstream documentation. | Complete |
+
+## Validation and Outcome — NP-18
+
+- Created `docs/spring_boot_backend_handoff.md`, covering the fixed frontend
+  contract, all current backend routes, authorization, storage, ingestion,
+  retrieval, model-profile/cache behavior, Kotlin/Spring AI design, Embabel
+  adoption boundary, migration phases, and acceptance gates.
+- Verified current Spring AI and Embabel recommendations against their upstream
+  documentation on 2026-09-17; the document recommends Boot 4.1.x and Spring
+  AI 2.0.x, with Embabel deferred until behavioral parity is proven.
+- Validation: `git -c safe.directory=E:/Workspace/AI_Stuff/RAG-dev-plane diff --check`
+  completed with no whitespace errors. No application tests were run because
+  this task changes documentation only and live services were not authorized.
+- Files touched: `docs/spring_boot_backend_handoff.md`, this phase record, and
+  `docs/next_phase.md`. No commit created.
+
+## Prior phase record — NP-17 (closed 2026-09-13)
 
 Make embedding-model selection a profile change rather than a re-parsing or
 destructive vector-dimension migration. Keep the historical `default` profile
