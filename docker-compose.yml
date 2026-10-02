@@ -14,6 +14,8 @@ services:
       - ./database/migrations/002_workspace_authorization.sql:/docker-entrypoint-initdb.d/002_workspace_authorization.sql:ro
       - ./database/migrations/003_chunking_profiles.sql:/docker-entrypoint-initdb.d/003_chunking_profiles.sql:ro
       - ./database/migrations/004_document_assets.sql:/docker-entrypoint-initdb.d/004_document_assets.sql:ro
+      - ./database/migrations/005_model_profiles.sql:/docker-entrypoint-initdb.d/005_model_profiles.sql:ro
+      - ./database/migrations/006_document_index_metadata.sql:/docker-entrypoint-initdb.d/006_document_index_metadata.sql:ro
       - ./database/seeds/local_workspace.sql:/docker-entrypoint-initdb.d/900_local_workspace.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rag_app -d ragdb"]

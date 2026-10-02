@@ -3,6 +3,61 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-10-02 — NP-20 document metadata API implemented; rollout pending
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API implementation / validation status
+- **Status:** Implemented and offline-validated; migration/backfill/enablement and live validation pending
+- **Affected contract/files:** `GET /workspaces/{workspace_id}/documents`;
+  `docs/frontend_architecture.md`; migration 006; FP-10, FP-11, FP-12.
+- **Message:** The route, safe typed metadata, exact scoped counts, resolved
+  profile names, signed 15-minute cursors, stable null-last keysets,
+  `409 document_list_changed`, and `503 document_list_unavailable` are implemented.
+  New PostgreSQL writers atomically publish vectors/metadata/revisions, preserve
+  unchanged ingestion times, support zero chunks, and coordinate warming and
+  scoped cleanup. Model-owned asset references preserve other profiles' images.
+  The offline suite passed **132 tests**; operator CLI help checks also passed.
+  No live database/model/browser requests or migrations ran.
+- **Action requested:** Review the implemented contract in
+  `docs/frontend_architecture.md`. Keep frontend integration pending the local
+  rollout confirmation: apply migration 006 before updated PostgreSQL startup,
+  review/apply `scripts/reconcile_document_catalog.py`, enable the route, and
+  complete live API acceptance. The route deliberately returns safe 503 until
+  configuration enablement and database readiness are both satisfied.
+- **Supersedes / follow-up:** Supersedes the earlier same-day design-only status.
+  Rollout instructions are in `database/README.md`; the current backend phase
+  records retain the live validation gate. No frontend files changed.
+
+## 2026-10-02 — FP-10 through FP-12 metadata API design published
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Design response / proposed API
+- **Status:** Design complete; endpoint not implemented or live-validated
+- **Affected contract/files:** `docs/recent_document_metadata_api_design.md`;
+  future `GET /workspaces/{workspace_id}/documents`; FP-10, FP-11, FP-12.
+- **Message:** NP-19 defines safe title/filename, existing opaque `doc_id`,
+  canonical document type, nullable historical `last_ingested_at`, and exact
+  `indexed_chunk_count` for one resolved model/chunking scope. Browser omission
+  uses the same configured profiles as chat. Default page size is 25, maximum
+  100; newest-known ingestion first with stable ID ordering and unknown times
+  last. Revision-checked keyset pagination returns `409 document_list_changed`
+  when records change, requiring a fresh first page. Unchanged skips preserve
+  time/count; failed replacement retains previous success; zero-chunk successful
+  documents appear with count 0; warming preserves source recency. Current
+  storage needs a per-model metadata projection and publication coordination.
+  First implementation targets PostgreSQL; unsupported/uninitialized catalogs
+  return safe `503 document_list_unavailable` rather than misleading empty data.
+- **Action requested:** Review the proposed fields and UI recovery/refresh
+  behavior in the design. Keep FP-10–FP-12 pending implementation and publication
+  of validated examples in `frontend_architecture.md`; do not integrate the
+  proposed route as though it already exists. Type/size colors remain frontend
+  configuration, and no document-selection retrieval behavior is introduced.
+- **Supersedes / follow-up:** Responds to the 2026-10-02 recent-document metadata
+  request. Proposed NP-20 owns implementation, migration/backfill, validation,
+  and authoritative contract publication after implementation approval.
+
 ## 2026-09-13 — NP-17 optional model-profile contract implemented
 
 - **From:** Backend

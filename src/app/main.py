@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import admin, assets, chat, health, ingest, workspaces
+from app.api.routers import admin, assets, chat, documents, health, ingest, workspaces
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
@@ -17,6 +17,7 @@ from app.services.workspace_store import AuthorizedWorkspace, InMemoryWorkspaceS
 from app.services.asset_store import LocalFileAssetStore
 from app.services.model_profiles import PostgresEmbeddingCache, PostgresModelProfileStore
 from app.clients.qdrant_client import QdrantVectorStore
+from app.services.document_catalog import DOCUMENT_HEADERS, DocumentListError, PostgresDocumentCatalog
 
 # Configure logging before anything else
 configure_logging()
@@ -28,6 +29,8 @@ _ERRORS = {
     404: ("resource_not_found", "The requested resource was not found."),
     415: ("unsupported_media_type", "The requested media type cannot be displayed."),
     422: ("invalid_request", "The request is invalid."),
+    409: ("document_list_changed", "The document list changed. Reload it to continue."),
+    503: ("document_list_unavailable", "The document list is temporarily unavailable."),
     502: ("upstream_unavailable", "The answer service is temporarily unavailable."),
     500: ("internal_error", "An unexpected server error occurred."),
 }
@@ -84,6 +87,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             retention_days=settings.memory_retention_days,
         )
         app.state.workspace_store = PostgresWorkspaceStore(app.state.vector_store.pool, settings.pg_schema)
+        app.state.document_catalog = PostgresDocumentCatalog(app.state.vector_store.pool, settings.pg_schema)
         app.state.model_profile_store = PostgresModelProfileStore(
             app.state.vector_store.pool, settings.pg_schema
         )
@@ -136,6 +140,19 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    @app.middleware("http")
+    async def document_privacy_headers(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/workspaces/") and request.url.path.endswith("/documents"):
+            response.headers.update(DOCUMENT_HEADERS)
+        return response
+
+    @app.exception_handler(DocumentListError)
+    async def document_list_exception_handler(_: Request, exc: DocumentListError) -> JSONResponse:
+        response = _error_response(exc.status)
+        response.headers.update(DOCUMENT_HEADERS)
+        return response
+
     @app.exception_handler(HTTPException)
     async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
         return _error_response(exc.status_code)
@@ -147,7 +164,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, _: Exception) -> JSONResponse:
         logger.exception("Unhandled API error | path=%s", request.url.path)
-        return _error_response(500)
+        response = _error_response(500)
+        if request.url.path.startswith("/workspaces/") and request.url.path.endswith("/documents"):
+            response.headers.update(DOCUMENT_HEADERS)
+        return response
 
     app.add_middleware(
         CORSMiddleware,
@@ -160,6 +180,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(workspaces.router)
+    app.include_router(documents.router)
     app.include_router(ingest.router)
     app.include_router(assets.router)
     app.include_router(admin.router)

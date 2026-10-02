@@ -75,6 +75,120 @@ All non-streaming API failures use this safe JSON envelope; clients must not ren
 
 The envelope is also the `data` payload of a post-start SSE `error` event. A failure that is detected before SSE headers are sent uses the ordinary HTTP status/envelope instead.
 
+## Recent Document Metadata Contract (NP-20)
+
+Implemented in backend source on 2026-10-02 and covered by isolated offline
+checks. Migration 006, operator reconciliation, enablement, and live acceptance
+remain rollout requirements; frontend integration stays pending that validation.
+See `recent_document_metadata_api_design.md` for the design rationale and
+`../database/README.md` for rollout commands.
+
+```http
+GET /workspaces/local/documents?limit=25
+Accept: application/json
+```
+
+This is a relative proxy route with gateway-derived identity and membership
+checks on every request/page. Owner and member see the same workspace corpus.
+There are no provider calls or source-filesystem reads on this route.
+
+Query fields: `limit` defaults to 25 (integer 1–100), optional `cursor` is an
+opaque non-empty token up to 4096 characters, and optional `model_profile` and
+`chunking_profile` use the same configured-name rule as chat. Frontend initially
+omits both profile fields; omission resolves through the same configured model
+and chunking defaults as chat. The response always names the resolved scope.
+Counts cover exactly that scope, never a sum of profiles or retrieved citations.
+
+```json
+{
+  "workspace_id": "local",
+  "scope": { "model_profile": "bge-m3", "chunking_profile": "default" },
+  "items": [
+    {
+      "doc_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "title": "טיפול בשגיאות כלליות",
+      "file_name": "general_errors_handling.docx",
+      "document_type": "word",
+      "last_ingested_at": "2026-10-02T08:30:15.123456Z",
+      "indexed_chunk_count": 42
+    }
+  ],
+  "page": {
+    "limit": 25,
+    "has_more": false,
+    "next_cursor": null,
+    "list_revision": "18",
+    "generated_at": "2026-10-02T08:31:00.000000Z"
+  }
+}
+```
+
+Values above are illustrative. Authorized empty scopes return 200 with
+`items: []`, `has_more: false`, and `next_cursor: null`.
+
+- `doc_id` is the existing opaque citation document ID, scoped to its workspace.
+  Re-ingestion of that identity keeps one item; a renamed or differently spelled
+  source path can have a new ID. It is not a download or retrieval-filter token.
+- `title` and basename-only `file_name` are non-empty sanitized display text
+  limited to 300 and 255 Unicode code points respectively. No path, content,
+  raw metadata, source hash, provider detail, or storage identifier is exposed.
+- Canonical `document_type` values are `word`, `pdf`, `markdown`, `html`, `text`,
+  `code`, and `unknown`. Code includes supported configuration files such as
+  JSON/YAML/TOML/SQL. Frontend supplies text labels and configurable type colors
+  and tolerates future types with an Unknown/Other fallback.
+- `indexed_chunk_count` is an exact non-negative integer, including 0. It is
+  bounded by JavaScript's safe-integer maximum. Zero-chunk successful documents
+  are visible. Size thresholds/colors are frontend configuration; no size/color
+  field is returned. Missing/invalid counts in a malformed response are Unknown,
+  never interpreted as 0 or Small.
+- `last_ingested_at` is a UTC RFC 3339 timestamp for this scope's last successful
+  changed ingestion, or null when historical provenance is unavailable. Show
+  null as "Ingestion time unavailable". Unchanged skips keep the prior count and
+  time. Warming preserves source recency rather than making old content new.
+  Pending/failed first ingestions are absent; failed replacement retains the
+  previous successful version. Dry runs do not affect the list.
+- Order is newest known `last_ingested_at` first, unknown times last, with
+  bytewise `doc_id` ascending as the tie-breaker. All current documents are
+  reachable; there is no hidden time window or total-record cap.
+
+Follow `page.next_cursor` while `has_more` is true, retaining the same effective
+workspace/profile scope and limit. Tokens expire after 15 minutes and are bound
+to the current principal. `list_revision` is an opaque decimal string. Pagination
+is revision-checked: a list mutation between pages returns safe 409 rather than
+silently skipping/duplicating rows. `generated_at` is response time, not an
+ingestion timestamp or historical snapshot guarantee.
+
+Errors use the existing `{ code, message }` envelope. Existing 401/403/422/500
+handling applies. Unknown/non-ready explicit profiles and malformed, tampered,
+cross-subject or mismatched-scope cursors return 422. New cases:
+
+| Status | Code | Frontend recovery |
+| --- | --- | --- |
+| 409 | `document_list_changed` | Restart page one and replace accumulated records; allow one automatic restart for the action, then offer Refresh if changes continue. Also used for expired valid tokens or changed omitted-profile defaults. |
+| 503 | `document_list_unavailable` | Catalog disabled, not reconciled, unsupported (including Qdrant-only), configured profile unavailable, or database unavailable. Show retry while keeping chat usable. |
+
+```json
+{ "code": "document_list_changed", "message": "The document list changed. Reload it to continue." }
+```
+
+```json
+{ "code": "document_list_unavailable", "message": "The document list is temporarily unavailable." }
+```
+
+Success and errors have `Cache-Control: private, no-store` and
+`Vary: Cookie, Authorization`. The gateway must prevent caching by its trusted
+identity mechanism too. Render application copy based on code, never raw server
+detail. Clear protected records on 401/403; refresh workspace discovery on 403.
+
+Load page one on valid workspace selection. Clear old workspace records
+immediately and abort/ignore stale responses. Offer Refresh and refresh on
+returning to the documents panel; initial delivery requires no polling. Append
+only pages of the same scope/revision. If refresh/load-more fails, existing
+authorized records may remain visibly stale with retry controls. Support
+loading/empty/error, Hebrew/RTL, long names, narrow layouts, keyboard access,
+screen-reader labels, and separate text badges for type and size. Document
+selection must not silently restrict retrieval or invent a content-download URL.
+
 ## Streaming Wire Contract
 
 Use `fetch`, not `EventSource`: the endpoint is a `POST` with a JSON body.

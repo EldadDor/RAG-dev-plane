@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models as qdrant_models
 
@@ -124,8 +126,13 @@ class QdrantVectorStore:
                 "doc_id": document["doc_id"],
             }
 
-    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
-        stale = [key for key, document in self._documents.items() if document.get("root_path") == root_path and key[0] == workspace_id and key[1] == chunking_profile and key[2] not in present_doc_ids]
+    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default", *, recursive: bool = True, scan_started_at=None) -> int:
+        root = Path(root_path).resolve()
+        stale = [key for key, document in self._documents.items()
+                 if document.get("root_path") == root_path and key[0] == workspace_id
+                 and key[1] == chunking_profile and key[2] not in present_doc_ids
+                 and Path(document["source_path"]).resolve().is_relative_to(root)
+                 and (recursive or Path(document["source_path"]).resolve().parent == root)]
         for key in stale:
             document = self._documents.pop(key)
             await self._client.delete(

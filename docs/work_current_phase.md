@@ -1,4 +1,100 @@
-# Current Work Phase — NP-18 Spring Boot Backend Handoff
+# Current Work Phase — NP-20 Recent Document Metadata API
+
+**Status:** Implementation complete — offline validated; live rollout pending
+**Activated:** 2026-10-02
+**Owner:** Backend team
+**Approval:** User approved NP-19 design and requested implementation on 2026-10-02.
+
+## Objective and scope — NP-20
+
+Implement the approved design in `recent_document_metadata_api_design.md`:
+additive PostgreSQL metadata/revision storage, publication lifecycle integration,
+authorized listing and signed keyset cursors, offline backfill/reconciliation
+tooling, regression coverage, and authoritative frontend documentation.
+No frontend changes, production deployment, model calls, live database access,
+or migration execution are included in this implementation turn.
+
+## Task Board — NP-20
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| NP20-01 | Metadata migration and catalog store | Complete | NP-20: Added migration 006, per-model metadata/revisions, model-owned asset references, readiness state, consistent scoped reads and PostgreSQL startup validation. Fresh Docker initialization includes migrations 005/006. Migration not executed. |
+| NP20-02 | Coordinate ingestion, warming, and directory publication | Complete | NP-20: Atomic vector/catalog publication; per-model hashes and concurrent unchanged guards; zero-chunk replacement; failed-file/scan-coverage protection; workspace-scoped internal UUIDs; immutable asset version IDs and shared lifecycle; profile locks with pinned connections for warm/backfill pool safety. |
+| NP20-03 | Authorized list route, schemas, signed cursors and safe errors | Complete | NP-20: GET documents uses principal/membership checks, profile defaults, HMAC cursors, keyset/revision checks, typed safe payloads, private/no-store headers and 409/503 recovery. No model/client/source-loader dependency on GET. |
+| NP20-04 | Backfill/reconciliation tooling and offline validation | Offline complete; live pending | NP-20: Read-only default reconciliation and explicit atomic apply/certification; malformed/duplicate/orphan/historical data reporting; updated local workspace-scoped warming CLI. Full offline suite: 132 passed. Migration, real-data reconciliation, and live acceptance not run. |
+| NP20-05 | Publish implemented frontend contract and handoff | Complete | NP-20: Updated docs/frontend_architecture.md, database/README.md and backend_to_frontend.md with implemented wire examples, errors/recovery, rollout commands and the remaining live gate. Frontend integration remains pending rollout confirmation. |
+| NP20-LIVE | Apply migration/backfill, enable listing, and validate the approved local stack | Pending separate live authorization | NP-20: Required before live phase closure and FP-10 integration. Review read-only backfill report first; no model calls needed for metadata rollout. |
+
+## Validation and Outcome — NP-20
+
+- Full offline command:
+  `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np20-test-tmp --ignore=tests/integration`
+  passed **132 tests** (2026-10-02). Coverage includes safe API authorization,
+  configured scopes, normal/unknown-time pagination, cursor tampering/expiry,
+  revoked membership, profile/default changes, transaction boundaries/failures,
+  concurrent unchanged publication, zero chunks, protected scan failures,
+  warming failure/retry, pinned lock adapters, shared image identity, metadata
+  sanitization and read-only reconciliation.
+- Both operator scripts' `--help` commands passed. Reviewed SQL migration and
+  catalog query/write paths; PostgreSQL execution itself is unverified. Scoped
+  diff whitespace checks passed. Test temporary files were removed after use.
+- The first targeted run hit an existing Windows temp/cache permission issue;
+  rerunning with workspace-local `--basetemp` and disabled pytest cache resolved
+  it. No application failure remained.
+- No frontend changes, browser automation, live database/model/service calls,
+  migration application, backfill against real data, enablement, or deployment
+  ran. The catalog stays gated until reviewed reconciliation certifies it.
+- Files: migration 006; PostgreSQL/Qdrant/protocol adapters; catalog service,
+  documents router/schemas; config/dependencies/startup; ingestion/model-profile
+  stores/warmer; two operator scripts; .env.example and Docker initialization;
+  three focused test modules; API/database/handoff/phase documentation.
+- No commit requested or created. NP20-LIVE remains pending as required by the
+  approved design's separately authorized live-validation step.
+
+---
+
+# Prior phase — NP-19 Recent Document Metadata API Design
+
+**Status:** Complete — design only, closed 2026-10-02
+**Activated:** 2026-10-02
+**Owner:** Backend team
+**Approval:** User requested full API design on 2026-10-02.
+
+## Objective and scope — NP-19
+
+Design the workspace-authorized recent-document metadata API requested by
+frontend FP-10 through FP-12. Resolve identity, display metadata, profile-specific
+counts, successful ingestion timestamps, pagination, lifecycle, safe errors,
+storage changes, rollout, and acceptance checks from the current implementation.
+Deliver a proposal and backend handoff; implementation, schema application,
+frontend changes, and live services are outside this design task.
+
+## Task Board — NP-19
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| NP19-01 | Inspect current storage and publish the full recent-document API design and frontend response. | Complete | NP-19: 2026-10-02: Reviewed ingestion, PostgreSQL/Qdrant storage, source/asset/profile lifecycle, loaders, identity and workspace authorization. Published docs/recent_document_metadata_api_design.md and a backend-to-frontend design response; added NP-20 implementation backlog. |
+
+## Validation and Outcome — NP-19
+
+- Published the detailed proposed route/schema, profile semantics, stable
+  identity limits, ingestion/warming/empty/failure/deletion lifecycle, exact
+  counts, revision-checked keyset pagination, safe error/recovery contract,
+  PostgreSQL metadata projection, Qdrant support boundary, migration/backfill,
+  rollout/rollback, frontend acceptance, and implementation task plan.
+- Validation: reviewed document consistency against the current source and ran
+  scoped `git diff --check` for the changed tracked documentation. Checked the
+  new design file separately for trailing whitespace/conflict markers. No
+  application tests, browser automation, services, model calls, database access,
+  or migration execution ran; this task produces a design only.
+- Files touched: `docs/recent_document_metadata_api_design.md`,
+  `docs/agent_handoff/backend_to_frontend.md`, this record, `docs/next_phase.md`.
+  Planned commit boundary: `NP-19: design recent document metadata API`; no
+  commit requested or created. NP-20 implementation is proposed in the backlog.
+
+---
+
+# Prior phase — NP-18 Spring Boot Backend Handoff
 
 **Status:** Complete — closed 2026-09-17
 **Activated:** 2026-09-17

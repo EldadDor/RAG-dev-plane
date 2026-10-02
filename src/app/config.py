@@ -94,6 +94,8 @@ class Settings(BaseSettings):
     embedding_concurrency: int = Field(default=8, alias="EMBEDDING_CONCURRENCY", ge=1)
     model_profile: str = Field(default="default", alias="MODEL_PROFILE", min_length=1)
     embedding_cache_enabled: bool = Field(default=True, alias="EMBEDDING_CACHE_ENABLED")
+    document_list_enabled: bool = Field(default=False, alias="DOCUMENT_LIST_ENABLED")
+    document_list_cursor_secret: str | None = Field(default=None, alias="DOCUMENT_LIST_CURSOR_SECRET", repr=False, exclude=True)
 
     # ---- Azure OpenAI (shared by chat + embeddings when using azure_openai provider) ----
     azure_openai_endpoint: str | None = Field(default=None, alias="AZURE_OPENAI_ENDPOINT")
@@ -134,6 +136,10 @@ class Settings(BaseSettings):
             raise ValueError("AUTH_MODE must be 'local' or 'gateway'")
         if self.app_env != "local" and self.auth_mode != "gateway":
             raise ValueError("AUTH_MODE=gateway is required outside APP_ENV=local")
+        if self.document_list_cursor_secret is not None and len(self.document_list_cursor_secret.encode()) < 32:
+            raise ValueError("DOCUMENT_LIST_CURSOR_SECRET must contain at least 32 bytes")
+        if self.document_list_enabled and (self.app_env != "local" or self.auth_mode == "gateway") and not self.document_list_cursor_secret:
+            raise ValueError("DOCUMENT_LIST_CURSOR_SECRET is required for enabled gateway document listing")
         if self.langfuse_enabled and (not self.langfuse_public_key or not self.langfuse_secret_key):
             raise ValueError("LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required when LANGFUSE_ENABLED=true")
         if self.chat_provider == "openai_compatible" and not self.chat_base_url:

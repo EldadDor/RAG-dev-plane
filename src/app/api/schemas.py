@@ -67,6 +67,35 @@ class ApiErrorResponse(BaseModel):
     message: str
 
 
+class DocumentScope(BaseModel):
+    model_profile: str
+    chunking_profile: str
+
+
+class DocumentSummary(BaseModel):
+    doc_id: str
+    title: str = Field(min_length=1, max_length=300)
+    file_name: str = Field(min_length=1, max_length=255)
+    document_type: Literal["word", "pdf", "markdown", "html", "text", "code", "unknown"]
+    last_ingested_at: datetime | None
+    indexed_chunk_count: int = Field(ge=0, le=9007199254740991)
+
+
+class DocumentPage(BaseModel):
+    limit: int = Field(ge=1, le=100)
+    has_more: bool
+    next_cursor: str | None
+    list_revision: str
+    generated_at: datetime
+
+
+class DocumentListResponse(BaseModel):
+    workspace_id: str
+    scope: DocumentScope
+    items: list[DocumentSummary]
+    page: DocumentPage
+
+
 class SourceAssetReference(BaseModel):
     asset_id: str
     media_type: str

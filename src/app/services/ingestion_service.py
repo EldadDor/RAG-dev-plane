@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from app.domain.models import Document, IngestedChunk, IngestedDocumentResult, I
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
 from app.config import Settings
 from app.services.repository_metadata import get_repository_metadata
+from app.chunkers.ids import make_doc_id
 from app.services.asset_store import AssetStore, InMemoryAssetStore
 from app.services.model_profiles import (
     CachedEmbeddingClient,
@@ -68,10 +70,12 @@ class IngestionService:
         for asset in document.assets:
             if len(asset.content) > self._settings.asset_max_image_bytes:
                 raise ValueError(f"Embedded image exceeds ASSET_MAX_IMAGE_BYTES: {asset.original_name or asset.anchor_id}")
-            asset_id = hashlib.sha256(
-                f"{workspace_id}:{profile_name}:{document.doc_id}:{asset.anchor_id}".encode("utf-8")
-            ).hexdigest()
             storage_key = asset.content_hash or hashlib.sha256(asset.content).hexdigest()
+            asset_id = hashlib.sha256(json.dumps([
+                workspace_id, profile_name, document.doc_id,
+                document.content_hash or hashlib.sha256(document.content.encode("utf-8")).hexdigest(),
+                storage_key, asset.anchor_id, asset.alt_text, asset.caption,
+            ], ensure_ascii=False).encode("utf-8")).hexdigest()
 
             related_index: int | None = None
             if valid_chunks:
@@ -152,9 +156,14 @@ class IngestionService:
     ) -> IngestionResult:
         """Ingest a single file or all supported files in a directory."""
         path = Path(source_path)
+        scan_started_at = None
+        if getattr(type(self._vector_store), "supports_document_catalog", False):
+            scan_started_at = await self._vector_store.scan_clock()
+        protected_doc_ids: list[str] = []
 
         if path.is_dir():
-            documents, _skipped = load_directory(source_path, recursive=recursive)
+            documents, skipped = load_directory(source_path, recursive=recursive)
+            protected_doc_ids = [make_doc_id(item["path"]) for item in skipped]
         else:
             try:
                 documents = [load_document(source_path)]
@@ -192,13 +201,19 @@ class IngestionService:
         chunks_indexed = 0
         document_results: list[IngestedDocumentResult] = []
         total_documents = 0
-        present_doc_ids: list[str] = []
+        present_doc_ids: list[str] = list(protected_doc_ids)
 
         for document in documents:
             total_documents += 1
             present_doc_ids.append(document.doc_id)
             text = (document.content or "").strip()
             content_hash = document.content_hash or hashlib.sha256(text.encode("utf-8")).hexdigest()
+            if not dry_run and await vector_store.get_document_hash(document.doc_id, workspace_id, profile_name) == content_hash:
+                document_results.append(IngestedDocumentResult(
+                    doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
+                    skipped=True, skip_reason="unchanged", assets_found=len(document.assets),
+                ))
+                continue
             if not text:
                 if not dry_run:
                     assets, _ = await self._prepare_assets(
@@ -211,18 +226,13 @@ class IngestionService:
                         "root_path": root_path,
                         "source_path": document.source_path,
                         "source_type": document.source_type.value,
+                        "title": document.title,
                         "content_hash": content_hash,
                         "metadata": {**document.metadata, **repository_context},
                     }, [], assets)
                 document_results.append(IngestedDocumentResult(
                     doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
                     skipped=True, skip_reason="empty", assets_found=len(document.assets),
-                ))
-                continue
-            if not dry_run and await vector_store.get_document_hash(document.doc_id, workspace_id, profile_name) == content_hash:
-                document_results.append(IngestedDocumentResult(
-                    doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
-                    skipped=True, skip_reason="unchanged", assets_found=len(document.assets),
                 ))
                 continue
 
@@ -250,6 +260,15 @@ class IngestionService:
             ]
 
             if not valid_chunks:
+                if not dry_run:
+                    assets, _ = await self._prepare_assets(document, [], workspace_id, profile_name, persist=True)
+                    await vector_store.replace_document({
+                        "doc_id": document.doc_id, "workspace_id": workspace_id,
+                        "chunking_profile": profile_name, "root_path": root_path,
+                        "source_path": document.source_path, "source_type": document.source_type.value,
+                        "title": document.title, "content_hash": content_hash,
+                        "metadata": {**document.metadata, **repository_metadata},
+                    }, [], assets)
                 document_results.append(
                     IngestedDocumentResult(
                         doc_id=document.doc_id,
@@ -303,6 +322,8 @@ class IngestionService:
                             "workspace_id": workspace_id,
                             "chunking_profile": profile_name,
                             "source_type": document.source_type.value,
+                            "content_hash": content_hash,
+                            "root_path": root_path,
                             "chunk_index": chunk_index,
                             "chunker_provider": chunker_provider,
                             "token_count": chunk.token_count,
@@ -326,6 +347,7 @@ class IngestionService:
                     "root_path": root_path,
                     "source_path": document.source_path,
                     "source_type": document.source_type.value,
+                    "title": document.title,
                     "content_hash": content_hash,
                     "metadata": {**document.metadata, **repository_metadata},
                 },
@@ -342,7 +364,9 @@ class IngestionService:
             )
 
         if root_path and not dry_run:
-            await vector_store.delete_missing_documents(root_path, workspace_id, present_doc_ids, profile_name)
+            await vector_store.delete_missing_documents(
+                root_path, workspace_id, present_doc_ids, profile_name,
+                recursive=recursive, scan_started_at=scan_started_at)
 
         return IngestionResult(
             source_path=str(path),

@@ -3,6 +3,16 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-10-02 — FP-10 through FP-12: recent document metadata
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Proposed capability / contract request
+- **Status:** Needs backend design and contract publication; frontend features remain backlog candidates
+- **Affected contract/files:** `docs/frontend_architecture.md`; frontend backlog FP-10, FP-11, FP-12.
+- **Message:** The user requested a read-only left-panel list of recently ingested documents, exact chunk counts with configurable Small/Medium/Big/Extra-Large size colors, and separate configurable document-type colors. The current browser contract supplies retrieved citations but no document inventory, successful ingestion timestamps, document types, or total chunk counts.
+- **Action requested:** Propose a workspace-authorized, bounded/paginated document-list API with stable document ID, display title/name, canonical type, successful ingestion timestamp, and indexed chunk count. Define newest-first ordering and tie-breaker, pagination/recent-window semantics, refresh behavior, safe errors, and visibility of failed/pending/deleted/re-ingested documents. Define which active index/model/chunking profile a chunk count represents and prevent double counting across profiles. Preserve gateway-derived identity, membership checks, relative proxy routes, and safe metadata exposure; do not expose internal filesystem paths or document content unnecessarily. Publish implemented examples in the authoritative contract and respond through the handoff before frontend integration starts.
+- **Scope:** Discovery only; no ingestion/admin controls or document-scoped retrieval change requested. No backend code or API contract edited during intake.
 ## 2026-09-13 — NP-16 activated: evaluation-only Phase A
 
 - **From:** Backend

@@ -105,6 +105,10 @@ class InMemoryEmbeddingCache:
 
 
 class PostgresModelProfileStore:
+    def with_connection(self, connection):
+        from app.services.document_catalog import PinnedConnectionPool
+        return type(self)(PinnedConnectionPool(connection), self._schema)
+
     def __init__(self, pool: asyncpg.Pool, schema: str) -> None:
         if not _IDENTIFIER.fullmatch(schema):
             raise ValueError(f"Invalid PostgreSQL schema: {schema!r}")
@@ -135,6 +139,10 @@ class PostgresModelProfileStore:
 
 
 class PostgresEmbeddingCache:
+    def with_connection(self, connection):
+        from app.services.document_catalog import PinnedConnectionPool
+        return type(self)(PinnedConnectionPool(connection), self._schema)
+
     def __init__(self, pool: asyncpg.Pool, schema: str) -> None:
         if not _IDENTIFIER.fullmatch(schema):
             raise ValueError(f"Invalid PostgreSQL schema: {schema!r}")

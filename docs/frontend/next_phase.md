@@ -3,7 +3,7 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-09-14
+**Last reviewed:** 2026-10-02
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -32,7 +32,7 @@ tracks work after FP-02; authoritative current-task status remains in
 - The 2026-09-10 backend handoff confirms image-bearing source citations are
   implemented and contract-authoritative. The frontend implementation and
   focused parser coverage are present; only the separately approved live
-  Word/image browser checklist remains before NP-15-FE can close.
+  Word/image browser checklist passed on 2026-09-12; NP-15-FE is complete.
 - Hebrew and multilingual RAG evaluation is a backend-owned proposed NP-16
   requirement. Its requested evaluation and profile-isolation design were
   recorded in `../agent_handoff/frontend_to_backend.md` on 2026-09-12; it does
@@ -48,6 +48,9 @@ and record the applicable approval decision.
 | --- | --- | --- | --- | --- |
 | 1 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
 | 2 | NP-15-FE | Image-bearing source citations | Render authorized images associated with retrieved Word citations in the Sources experience. | **Complete — live browser validated 2026-09-12** |
+| 3 | FP-10 | Recent ingested documents in the left panel | Help users discover newly available information in the selected workspace. | Requested for backlog on 2026-10-02; implementation awaits published document metadata contract. |
+| 4 | FP-11 | Configurable chunk-count size indicators | Display exact chunk totals plus Small, Medium, Big, and Extra-Large labels with configurable thresholds and colors. | Requested for backlog on 2026-10-02; depends on FP-10 and backend chunk-count semantics. |
+| 5 | FP-12 | Configurable document-type colors | Distinguish document types using a separate type badge with text and a configurable color mapping. | Requested for backlog on 2026-10-02; depends on FP-10 and canonical document types. |
 
 ## Recommended Next Phase
 
@@ -72,3 +75,39 @@ completed live browser validation on 2026-09-12.
 - Ingestion, administration, provider, database, or backend contract changes.
 - Image-bearing citation UI until NP-13 through NP-15 and the contract in
   `../document_image_support_plan.md` are approved.
+
+## UI Enhancement Intake — 2026-10-02
+
+FP-09 intake: record the requested recent-document panel, configurable chunk-size indicators, and document-type colors. Intake moved to the current task board; feature implementation remains proposed.
+
+### FP-10 — Recent ingested documents panel
+
+- Repurpose the left panel for a read-only recent-document list scoped to the selected authorized workspace. Preserve workspace selection and existing chat navigation.
+- Show document title/name, document type, successful ingestion timestamp, and chunk count; order newest successful ingestion first with a stable tie-breaker.
+- Make all recent documents reachable through bounded pagination or load-more behavior; define the time window/page size with the backend contract rather than silently truncating the list.
+- Include loading, empty, error/retry, and refresh states. Clear stale records immediately on workspace changes; handle long names, Hebrew/RTL content, narrow layouts, keyboard access, and screen-reader labels.
+- Completion: authorized metadata renders correctly, pagination and workspace switching work, and the list makes new information easy to identify. Selecting a document must not silently restrict retrieval; document-scoped querying requires a separately agreed contract and interaction.
+- Dependency: backend publishes a workspace-authorized document-list route and metadata schema in `../frontend_architecture.md`. This is discovery of ingested content, not an ingestion/admin UI.
+
+### FP-11 — Chunk counts and size colors
+
+- Display the exact indexed chunk count alongside one of: Small, Medium, Big, Extra-Large.
+- Keep ordered numeric thresholds and category colors in a single typed frontend configuration; no settings screen or new dependency is required for initial delivery.
+- Choose and record default thresholds during implementation after backend count semantics are defined. Cover boundary counts, zero, and missing/unknown counts; unknown counts must not appear as zero or Small.
+- Use readable text labels and accessible contrast so category meaning does not depend on color. Keep the size badge separate from the document-type badge.
+- Completion: threshold/color edits need no component changes; focused unit checks verify classification boundaries and missing values.
+
+### FP-12 — Document-type colors
+
+- Display a text type label and separate type badge; map canonical types to colors in one typed frontend configuration.
+- Provide a neutral Unknown/Other fallback for absent or unrecognized types. Do not infer canonical type solely from a filename extension unless the approved contract specifies that behavior.
+- Use consistent mappings across the list, readable contrast, and a compact legend or equivalent explanation when needed.
+- Completion: different supported types have distinguishable configured badges; fallback and size/type coexistence are verified.
+
+### Delivery and validation
+
+- Scope: existing frontend application components, styles, API adapter/types, and focused unit coverage. Identify exact files when activating each task; no application files changed during intake.
+- Order: backend metadata contract, FP-10, FP-11, then FP-12. Move each candidate to `work_current_phase.md` before implementation.
+- Planned commit boundaries: one reviewable commit per feature, prefixed with its task ID.
+- On implementation, run permitted frontend type checks, focused tests, production build, and diff whitespace checks. Browser automation, new dependencies, and live model/database services retain their separate approval gates.
+- Intake completed on 2026-10-02. No type checks, tests, builds, browser automation, or live services ran for this documentation-only task.

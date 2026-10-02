@@ -25,11 +25,14 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 import asyncpg
 
 from app.domain.models import RetrievedChunk
+from app.services.document_catalog import PinnedConnectionPool, lock_publication, lock_document, profile_lock_key, publish_metadata, bump_revision
 
 
 _IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]*$")
@@ -98,17 +101,31 @@ async def _init_connection(conn: asyncpg.Connection) -> None:
 
 
 class PgVectorStore:
+    supports_document_catalog = True
+
+    async def scan_clock(self):
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval("SELECT clock_timestamp()")
+
     def __init__(self, pool: asyncpg.Pool, schema: str, table: str, vector_dim: int) -> None:
+        if not _IDENTIFIER.fullmatch(schema) or not _IDENTIFIER.fullmatch(table):
+            raise ValueError("Invalid PostgreSQL schema/table identifier")
         self._pool = pool
         self._schema = schema
         self._table = table
         self._vector_dim = vector_dim
         self._ensured = False
+        self._profile_name: str | None = None
 
     @property
     def pool(self) -> asyncpg.Pool:
         """Pool shared with first-party persistence components."""
         return self._pool
+
+    def bound_to(self, connection):
+        store = type(self)(PinnedConnectionPool(connection), self._schema, self._table, self._vector_dim)
+        store._ensured, store._profile_name = self._ensured, self._profile_name
+        return store
 
     async def for_profile(self, storage_target: str, vector_dim: int) -> "PgVectorStore":
         """Return a validated view over a provisioned profile table."""
@@ -201,6 +218,10 @@ class PgVectorStore:
                 f"{self._schema}.chunk_assets",
                 f"{self._schema}.model_profiles",
                 f"{self._schema}.embedding_cache",
+                f"{self._schema}.document_index_metadata",
+                f"{self._schema}.document_index_assets",
+                f"{self._schema}.document_list_revisions",
+                f"{self._schema}.document_catalog_state",
             ]
             missing = [name for name in required if await conn.fetchval("SELECT to_regclass($1)", name) is None]
             if missing:
@@ -210,10 +231,10 @@ class PgVectorStore:
                 )
             applied_versions = await conn.fetch(
                 f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
-                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles"],
+                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata"],
             )
             applied_version_names = {row["version"] for row in applied_versions}
-            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles"}
+            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata"}
             if applied_version_names != required_versions:
                 missing_versions = sorted(required_versions - applied_version_names)
                 raise RuntimeError(
@@ -236,13 +257,14 @@ class PgVectorStore:
                     f"PostgreSQL embedding column is {actual_type!r}; expected {expected_type!r}. "
                     "Apply the correct migration or update PG_VECTOR_DIM."
                 )
+            self._profile_name = await conn.fetchval(
+                f"SELECT profile_name FROM {self._schema}.model_profiles WHERE storage_target=$1", self._table)
+            if self._profile_name is None:
+                raise RuntimeError("Vector table must have a registered model profile")
         self._ensured = True
 
     async def upsert(self, chunks: list[dict]) -> None:
-        if not self._ensured:
-            await self.ensure_collection()
-        async with self._pool.acquire() as conn:
-            await self._upsert_on_connection(conn, chunks)
+        raise RuntimeError("PostgreSQL writes require atomic replace_document publication")
 
     async def list_warmable_chunks(self, workspace_id: str) -> list[dict[str, Any]]:
         """Return one workspace's text and provenance for profile-to-profile warming."""
@@ -269,6 +291,62 @@ class PgVectorStore:
             result.append({"chunk_id": metadata.get("chunk_id", str(row["id"])), "payload": payload})
         return result
 
+    async def list_warmable_documents(self, workspace_id: str, connection) -> list[dict]:
+        """Source snapshot under publication_session, including zero-chunk rows."""
+        rows = await connection.fetch(
+            f"""SELECT * FROM {self._schema}.document_index_metadata
+                WHERE workspace_id=$1 AND model_profile=$2 ORDER BY chunking_profile,doc_id""",
+            workspace_id, self._profile_name)
+        documents = {(r["chunking_profile"], r["doc_id"]): {**dict(r), "chunks": [], "assets": [], "metadata": {}}
+                     for r in rows}
+        chunks = await connection.fetch(
+            f"""SELECT id,content,metadata,source,page_number,chunk_index FROM {self._schema}.{self._table}
+                WHERE metadata->>'workspace_id'=$1 ORDER BY id""", workspace_id)
+        for row in chunks:
+            payload = row["metadata"] or {}
+            if isinstance(payload, str):
+                payload = json.loads(payload)
+            payload = dict(payload)
+            doc_id = payload.get("doc_id")
+            if not doc_id:
+                raise ValueError("Source chunk has no document identity")
+            chunking = payload.get("chunking_profile") or "default"
+            key = (chunking, doc_id)
+            if key not in documents:
+                documents[key] = {
+                    "doc_id": doc_id, "workspace_id": workspace_id, "chunking_profile": chunking,
+                    "source_path": row["source"] or payload.get("source_path") or "Untitled document",
+                    "source_type": payload.get("source_type", "unknown"), "title": payload.get("title"),
+                    "root_path": payload.get("root_path"), "content_hash": None,
+                    "last_ingested_at": None, "chunks": [], "assets": [], "metadata": {},
+                }
+            document = documents[key]
+            document.setdefault("source_type", document.get("document_type", "unknown"))
+            payload.update(text=row["content"], source_path=row["source"] or payload.get("source_path", ""),
+                           page=row["page_number"], chunk_index=row["chunk_index"])
+            document["chunks"].append({"chunk_id": payload.get("chunk_id", str(row["id"])), "payload": payload})
+        for document in documents.values():
+            # Include assets from a certified publication (even zero chunks),
+            # plus historical chunk references not yet backfilled.
+            asset_ids = {asset_id for item in document["chunks"]
+                         for asset_id in item["payload"].get("related_asset_ids", [])}
+            refs = await connection.fetch(
+                f"""SELECT asset_id FROM {self._schema}.document_index_assets
+                    WHERE workspace_id=$1 AND model_profile=$2 AND chunking_profile=$3 AND doc_id=$4""",
+                workspace_id, self._profile_name, document["chunking_profile"], document["doc_id"])
+            asset_ids.update(row["asset_id"] for row in refs)
+            assets = await connection.fetch(
+                f"""SELECT * FROM {self._schema}.document_assets
+                    WHERE asset_id=ANY($1::text[]) AND workspace_id=$2 AND chunking_profile=$3 AND doc_id=$4""",
+                sorted(asset_ids), workspace_id, document["chunking_profile"], document["doc_id"])
+            if len(assets) != len(asset_ids):
+                raise ValueError("Source publication has unavailable asset metadata")
+            document["assets"] = [{**dict(asset), "related_chunk_ids": [
+                item["chunk_id"] for item in document["chunks"]
+                if asset["asset_id"] in item["payload"].get("related_asset_ids", [])]} for asset in assets]
+            document.setdefault("source_type", document.get("document_type", "unknown"))
+        return list(documents.values())
+
     async def _upsert_on_connection(self, conn: asyncpg.Connection, chunks: list[dict]) -> None:
         sql = _UPSERT_SQL.format(schema=self._schema, table=self._table)
         records: list[tuple[Any, ...]] = []
@@ -281,7 +359,7 @@ class PgVectorStore:
             metadata["chunk_id"] = chunk_id
             records.append(
                 (
-                    _chunk_id_to_uuid(chunk_id),
+                    _chunk_id_to_uuid(f"{payload.get('workspace_id', 'local')}:{chunk_id}"),
                     payload.get("text", ""),
                     metadata,
                     _vec_str(item["vector"]),
@@ -315,88 +393,176 @@ class PgVectorStore:
         return [_row_to_retrieved_chunk(row) for row in rows]
 
     async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:
+        if not self._ensured:
+            await self.ensure_collection()
         async with self._pool.acquire() as conn:
             return await conn.fetchval(
-                f"""SELECT source.content_hash
-                    FROM {self._schema}.source_documents source
-                    WHERE source.doc_id=$1 AND source.workspace_id=$2 AND source.chunking_profile=$3
-                      AND EXISTS (
-                        SELECT 1 FROM {self._schema}.{self._table} chunks
-                        WHERE chunks.metadata->>'doc_id'=$1
-                          AND chunks.metadata->>'workspace_id'=$2
-                          AND COALESCE(chunks.metadata->>'chunking_profile', 'default')=$3
-                      )""",
-                doc_id, workspace_id, chunking_profile,
+                f"""SELECT content_hash FROM {self._schema}.document_index_metadata
+                    WHERE doc_id=$1 AND workspace_id=$2 AND chunking_profile=$3 AND model_profile=$4""",
+                doc_id, workspace_id, chunking_profile, self._profile_name,
             )
 
-    async def replace_document(self, document: dict, chunks: list[dict], assets: list[dict] | None = None) -> None:
-        """Atomically replace a document's chunks only after embeddings are ready."""
-        async with self._pool.acquire() as conn:
-            async with conn.transaction():
-                await conn.execute(
-                    f"""DELETE FROM {self._schema}.{self._table}
-                    WHERE metadata->>'doc_id' = $1
-                      AND metadata->>'workspace_id' = $2
-                      AND COALESCE(metadata->>'chunking_profile', 'default') = $3""",
-                    document["doc_id"], document["workspace_id"], document["chunking_profile"],
-                )
-                await conn.execute(
-                    f"""INSERT INTO {self._schema}.source_documents
-                    (doc_id, workspace_id, chunking_profile, root_path, source_path, source_type, content_hash, metadata)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                    ON CONFLICT (workspace_id, chunking_profile, doc_id) DO UPDATE SET
-                      root_path=EXCLUDED.root_path, source_path=EXCLUDED.source_path, source_type=EXCLUDED.source_type,
-                      content_hash=EXCLUDED.content_hash, metadata=EXCLUDED.metadata, updated_at=now()""",
-                    document["doc_id"], document["workspace_id"], document["chunking_profile"], document.get("root_path"), document["source_path"],
-                    document["source_type"], document["content_hash"], document.get("metadata", {}),
-                )
-                await self._upsert_on_connection(conn, chunks)
-                await conn.execute(
-                    f"""DELETE FROM {self._schema}.document_assets
-                    WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3""",
-                    document["workspace_id"], document["chunking_profile"], document["doc_id"],
-                )
-                for asset in assets or []:
-                    await conn.execute(
-                        f"""INSERT INTO {self._schema}.document_assets
-                        (asset_id, workspace_id, chunking_profile, doc_id, storage_key,
-                         content_hash, media_type, byte_size, original_name,
-                         relationship_id, ordinal, width, height, alt_text, caption,
-                         anchor_block_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-                                $12, $13, $14, $15, $16)""",
-                        asset["asset_id"], document["workspace_id"],
-                        document["chunking_profile"], document["doc_id"],
-                        asset["storage_key"], asset["content_hash"],
-                        asset["media_type"], asset["byte_size"],
-                        asset.get("original_name"), asset.get("relationship_id"),
-                        asset["ordinal"], asset.get("width"), asset.get("height"),
-                        asset.get("alt_text"), asset.get("caption"),
-                        asset.get("anchor_block_id"),
-                    )
-                    for display_order, chunk_id in enumerate(asset.get("related_chunk_ids", [])):
-                        await conn.execute(
-                            f"""INSERT INTO {self._schema}.chunk_assets
-                            (workspace_id, chunking_profile, doc_id, chunk_id,
-                             asset_id, display_order)
-                            VALUES ($1, $2, $3, $4, $5, $6)""",
-                            document["workspace_id"], document["chunking_profile"],
-                            document["doc_id"], chunk_id, asset["asset_id"],
-                            display_order,
-                        )
+    @asynccontextmanager
+    async def publication_session(self, *profiles: str):
+        """Serialize warming/backfill against all commits in the affected profiles.
 
-    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str], chunking_profile: str = "default") -> int:
+        Caller passes this same connection to document publication, avoiding
+        self-deadlock while embeddings are prepared outside SQL transactions.
+        """
+        async with self._pool.acquire() as conn:
+            locked = []
+            try:
+                for profile in sorted(set(profiles)):
+                    key = profile_lock_key(self._schema, profile)
+                    await conn.execute("SELECT pg_advisory_lock(hashtextextended($1,0))", key)
+                    locked.append(key)
+                yield conn
+            finally:
+                for key in reversed(locked):
+                    await conn.execute("SELECT pg_advisory_unlock(hashtextextended($1,0))", key)
+
+    async def replace_document(self, document: dict, chunks: list[dict], assets: list[dict] | None = None,
+                               *, connection=None, preserve_time: bool = False) -> None:
+        """Atomically replace a document's chunks only after embeddings are ready."""
+        if not self._ensured:
+            await self.ensure_collection()
+        if connection is not None:
+            await self._replace_on_connection(connection, document, chunks, assets, preserve_time)
+            return
+        async with self._pool.acquire() as conn:
+            await self._replace_on_connection(conn, document, chunks, assets, preserve_time)
+
+    async def _replace_on_connection(self, conn, document, chunks, assets, preserve_time):
+        async with conn.transaction():
+            await lock_publication(conn, self._schema, self._profile_name)
+            await lock_document(conn, self._schema, document["workspace_id"], document["chunking_profile"], document["doc_id"])
+            # A pending warm must not race a regular ingestion publication.
+            if not preserve_time and await conn.fetchval(
+                f"SELECT status FROM {self._schema}.model_profiles WHERE profile_name=$1",
+                self._profile_name) != "ready":
+                raise ValueError("Target model profile is not ready")
+            if not preserve_time and document.get("content_hash") is not None:
+                current_hash = await conn.fetchval(
+                    f"""SELECT content_hash FROM {self._schema}.document_index_metadata
+                        WHERE workspace_id=$1 AND model_profile=$2 AND chunking_profile=$3 AND doc_id=$4""",
+                    document["workspace_id"], self._profile_name, document["chunking_profile"], document["doc_id"])
+                if current_hash == document["content_hash"]:
+                    # Another concurrent ingestion already published this
+                    # version while this caller prepared embeddings.
+                    return
+            await conn.execute(
+                f"""DELETE FROM {self._schema}.{self._table}
+                WHERE metadata->>'doc_id' = $1
+                  AND metadata->>'workspace_id' = $2
+                  AND COALESCE(metadata->>'chunking_profile', 'default') = $3""",
+                document["doc_id"], document["workspace_id"], document["chunking_profile"],
+            )
+            conflict = ("ON CONFLICT (workspace_id, chunking_profile, doc_id) DO NOTHING" if preserve_time else
+                        """ON CONFLICT (workspace_id, chunking_profile, doc_id) DO UPDATE SET
+                        root_path=EXCLUDED.root_path, source_path=EXCLUDED.source_path, source_type=EXCLUDED.source_type,
+                        content_hash=EXCLUDED.content_hash, metadata=EXCLUDED.metadata, updated_at=now()""")
+            await conn.execute(
+                f"""INSERT INTO {self._schema}.source_documents
+                (doc_id, workspace_id, chunking_profile, root_path, source_path, source_type, content_hash, metadata)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                {conflict}""",
+                document["doc_id"], document["workspace_id"], document["chunking_profile"], document.get("root_path"), document["source_path"],
+                document["source_type"], document.get("content_hash") or "", document.get("metadata", {}),
+            )
+            await self._upsert_on_connection(conn, chunks)
+            await publish_metadata(conn, self._schema, self._table, self._profile_name,
+                                   document, preserve_time=preserve_time)
+            await conn.execute(
+                f"""DELETE FROM {self._schema}.document_index_assets
+                    WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3 AND model_profile=$4""",
+                document["workspace_id"], document["chunking_profile"], document["doc_id"], self._profile_name)
+            for asset in assets or []:
+                await conn.execute(
+                    f"""INSERT INTO {self._schema}.document_assets
+                    (asset_id, workspace_id, chunking_profile, doc_id, storage_key,
+                     content_hash, media_type, byte_size, original_name,
+                     relationship_id, ordinal, width, height, alt_text, caption,
+                     anchor_block_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+                            $12, $13, $14, $15, $16) ON CONFLICT (asset_id) DO NOTHING""",
+                    asset["asset_id"], document["workspace_id"],
+                    document["chunking_profile"], document["doc_id"],
+                    asset["storage_key"], asset["content_hash"],
+                    asset["media_type"], asset["byte_size"],
+                    asset.get("original_name"), asset.get("relationship_id"),
+                    asset["ordinal"], asset.get("width"), asset.get("height"),
+                    asset.get("alt_text"), asset.get("caption"),
+                    asset.get("anchor_block_id"),
+                )
+                await conn.execute(
+                    f"""INSERT INTO {self._schema}.document_index_assets
+                        (workspace_id,model_profile,chunking_profile,doc_id,asset_id)
+                        VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING""",
+                    document["workspace_id"], self._profile_name, document["chunking_profile"],
+                    document["doc_id"], asset["asset_id"])
+                for display_order, chunk_id in enumerate(asset.get("related_chunk_ids", [])):
+                    await conn.execute(
+                        f"""INSERT INTO {self._schema}.chunk_assets
+                        (workspace_id, chunking_profile, doc_id, chunk_id,
+                         asset_id, display_order)
+                        VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING""",
+                        document["workspace_id"], document["chunking_profile"],
+                        document["doc_id"], chunk_id, asset["asset_id"],
+                        display_order,
+                    )
+            await self._prune_shared_document(conn, document["workspace_id"], document["chunking_profile"], document["doc_id"])
+
+    async def _prune_shared_document(self, conn, workspace, chunking, doc_id):
+        # Before backfill certifies historical references, never delete shared
+        # rows solely because the new projection has not seen another model.
+        if not await conn.fetchval(f"SELECT ready FROM {self._schema}.document_catalog_state WHERE singleton=TRUE"):
+            return
+        await conn.execute(
+            f"""DELETE FROM {self._schema}.document_assets assets
+                WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3
+                AND NOT EXISTS (SELECT 1 FROM {self._schema}.document_index_assets refs
+                                WHERE refs.asset_id=assets.asset_id)""", workspace, chunking, doc_id)
+        await conn.execute(
+            f"""DELETE FROM {self._schema}.source_documents source
+                WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3
+                AND NOT EXISTS (SELECT 1 FROM {self._schema}.document_index_metadata publications
+                    WHERE publications.workspace_id=source.workspace_id
+                      AND publications.chunking_profile=source.chunking_profile
+                      AND publications.doc_id=source.doc_id)""", workspace, chunking, doc_id)
+
+    async def delete_missing_documents(self, root_path: str, workspace_id: str, present_doc_ids: list[str],
+                                       chunking_profile: str = "default", *, recursive: bool = True,
+                                       scan_started_at=None) -> int:
+        if not self._ensured:
+            await self.ensure_collection()
         async with self._pool.acquire() as conn:
             async with conn.transaction():
+                await lock_publication(conn, self._schema, self._profile_name)
                 rows = await conn.fetch(
-                    f"SELECT doc_id FROM {self._schema}.source_documents WHERE root_path=$1 AND workspace_id=$2 AND chunking_profile=$3 AND NOT (doc_id = ANY($4::text[]))",
-                    root_path, workspace_id, chunking_profile, present_doc_ids,
+                    f"""SELECT doc_id,source_path FROM {self._schema}.document_index_metadata
+                        WHERE root_path=$1 AND workspace_id=$2 AND chunking_profile=$3 AND model_profile=$5
+                        AND NOT (doc_id = ANY($4::text[]))
+                        AND ($6::timestamptz IS NULL OR updated_at<=$6)""",
+                    root_path, workspace_id, chunking_profile, present_doc_ids, self._profile_name, scan_started_at,
                 )
-                doc_ids = [row["doc_id"] for row in rows]
+                # Limit cleanup to the actual scan coverage. A top-level scan
+                # cannot prove that descendants disappeared.
+                root = Path(root_path).resolve()
+                doc_ids = [row["doc_id"] for row in rows
+                           if Path(row["source_path"]).resolve().is_relative_to(root)
+                           and (recursive or Path(row["source_path"]).resolve().parent == root)]
                 if not doc_ids:
                     return 0
+                for doc_id in sorted(doc_ids):
+                    await lock_document(conn, self._schema, workspace_id, chunking_profile, doc_id)
                 await conn.execute(f"DELETE FROM {self._schema}.{self._table} WHERE metadata->>'doc_id' = ANY($1::text[]) AND metadata->>'workspace_id' = $2 AND COALESCE(metadata->>'chunking_profile', 'default') = $3", doc_ids, workspace_id, chunking_profile)
-                await conn.execute(f"DELETE FROM {self._schema}.source_documents WHERE doc_id = ANY($1::text[]) AND workspace_id = $2 AND chunking_profile = $3", doc_ids, workspace_id, chunking_profile)
+                await conn.execute(
+                    f"""DELETE FROM {self._schema}.document_index_metadata
+                        WHERE doc_id=ANY($1::text[]) AND workspace_id=$2 AND chunking_profile=$3 AND model_profile=$4""",
+                    doc_ids, workspace_id, chunking_profile, self._profile_name)
+                await bump_revision(conn, self._schema, workspace_id, self._profile_name, chunking_profile)
+                for doc_id in doc_ids:
+                    await self._prune_shared_document(conn, workspace_id, chunking_profile, doc_id)
                 return len(doc_ids)
 
     async def health_check(self) -> bool:

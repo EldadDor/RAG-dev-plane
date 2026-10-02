@@ -16,6 +16,19 @@ from app.services.workspace_store import (
     WorkspaceStore,
 )
 from app.services.asset_store import AssetStore, LocalFileAssetStore
+from app.services.document_catalog import DocumentCatalogService, DocumentCursor
+import secrets
+
+# Local single-process fallback; never regenerated between requests.
+_local_document_cursor_secret = secrets.token_urlsafe(48)
+
+
+def get_document_catalog_service(request: Request, settings: Settings = Depends(get_settings)) -> DocumentCatalogService:
+    return DocumentCatalogService(
+        settings, getattr(request.app.state, "document_catalog", None),
+        getattr(request.app.state, "model_profile_store", None),
+        DocumentCursor(settings.document_list_cursor_secret or _local_document_cursor_secret),
+    )
 
 
 def get_chat_client(settings: Settings = Depends(get_settings)) -> ChatClient:
@@ -149,6 +162,7 @@ def get_ingestion_service(
 
 def get_model_profile_warmer(
     request: Request,
+    settings: Settings = Depends(get_settings),
     embedding_client: EmbeddingClient = Depends(get_embedding_client),
     vector_store: VectorStore = Depends(get_vector_store),
 ) -> ModelProfileWarmer:
@@ -156,4 +170,5 @@ def get_model_profile_warmer(
     cache = getattr(request.app.state, "embedding_cache", None)
     if profile_store is None or cache is None:
         raise RuntimeError("Model-profile warming requires PostgreSQL model-profile storage")
-    return ModelProfileWarmer(vector_store, embedding_client, profile_store, cache)
+    return ModelProfileWarmer(vector_store, embedding_client, profile_store, cache,
+                              embedding_provider=settings.embedding_provider)
