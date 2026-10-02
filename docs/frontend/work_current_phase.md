@@ -1,6 +1,6 @@
 # Current Frontend Work Phase — FP-02 Frontend Hardening and UX Refinement
 
-**Status:** Completed
+**Status:** FP-02 completed; FP-10–FP-12 implemented and locally validated
 **Last reviewed:** 2026-10-02
 **Owner:** Frontend team
 
@@ -33,6 +33,9 @@ limited to the existing frontend and proxy-only API contract.
 | FP-08 | Make source citations individually expandable | Completed | 2026-09-14: Source citations now start collapsed, expose an accessible per-source toggle, and animate their metadata, excerpt, and linked image content independently. The transition disables under reduced-motion preferences; collapsed image links are not keyboard-focusable. Passed Vitest (7 tests), `tsc -b`, direct Vite production build, and `git diff --check`. No live services or browser automation ran. |
 | FP-09 | Record UI enhancement tasks and document metadata dependency | Completed | FP-09: 2026-10-02: Added FP-10 recent documents, FP-11 configurable chunk-size indicators, and FP-12 document-type colors with acceptance criteria, dependencies, validation, and commit boundaries in next_phase.md. Recorded missing metadata contract in docs/agent_handoff/frontend_to_backend.md. Verified written records with targeted reads; no application code changed. Type checks, tests, builds, browser automation, and live services were not run (documentation-only intake). |
 
+| FP-10 | Recent ingested documents in the left panel | Completed | FP-10: 2026-10-02: Implemented api.ts, documentCatalog.ts, DocumentsPanel.tsx, App.tsx and styles.css: relative scoped API, newest-first server ordering, refresh/load-more, no polling, abort/stale guards, one 409 restart, scope/revision checking, 401/403 clearing and 403 discovery, 503 retry, null ingestion history, valid zero counts, Hebrew/long-name and narrow-layout handling. Passed 34 Vitest tests including pagination/restart/abort regressions, tsc -b, Vite build and git diff --check. No browser automation or live services ran; manual browser integration remains unverified. |
+| FP-11 | Configurable chunk-count size indicators | Completed | FP-11: 2026-10-02: documentBadges.ts centralizes inclusive upper bounds 25/100/500 and size colors; Small/Medium/Big/Extra-Large text badges, exact chunk totals and expandable guide render in DocumentsPanel.tsx. Zero is Small; invalid/missing counts are Unknown. Boundary/invalid-value unit coverage passed in 34-test suite; tsc -b and production build passed. |
+| FP-12 | Configurable document-type colors | Completed | FP-12: 2026-10-02: documentBadges.ts maps word/pdf/markdown/html/text/code/unknown to configurable color pairs and explicit text labels; separate type/size badges in DocumentsPanel.tsx with future-type fallback. Unit tests cover canonical, future and inherited object keys. Passed 34 Vitest tests, tsc -b, Vite production build and git diff --check; no dependencies, browser automation or live services added. |
 ## Acceptance Checks
 
 - Keyboard and screen-reader behavior is verified for workspace, session,
@@ -83,3 +86,13 @@ requirements in `docs/agent_handoff/frontend_to_backend.md`. Evidence: reviewed
 the supplied Perplexity thread, official DICTA and Ollama model documentation,
 and official OpenAI embedding documentation. No application code, service,
 model, database, or frontend validation command ran.
+
+UI enhancement validation, 2026-10-02: user authorized proceeding after the
+NP-20 rollout handoff. Local commands passed:
+`node node_modules/typescript/bin/tsc -b`,
+`node node_modules/vitest/vitest.mjs run` (34 tests),
+`node node_modules/vite/bin/vite.js build --config apps/rag-dev-plane/vite.config.ts`,
+and scoped `git diff --check` with a per-command safe.directory override.
+Direct Node entry points were used because npm is not available in the sandbox.
+No Uvicorn, model/database calls, live API traffic, browser automation, or
+manual browser integration ran. No commit created. Backend contract unchanged.

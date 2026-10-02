@@ -62,6 +62,46 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await request(path, init)
   return response.json() as Promise<T>
 }
+export type IngestedDocument = {
+  docId: string; title: string; fileName: string; documentType: string
+  lastIngestedAt: string | null; indexedChunkCount: number | null
+}
+export type DocumentPage = {
+  workspaceId: string
+  scope: { modelProfile: string; chunkingProfile: string }
+  items: IngestedDocument[]
+  page: { limit: number; hasMore: boolean; nextCursor: string | null; listRevision: string }
+}
+
+export async function getDocuments(workspaceId: string, cursor?: string, signal?: AbortSignal): Promise<DocumentPage> {
+  const query = new URLSearchParams({ limit: '25', ...(cursor ? { cursor } : {}) })
+  const response = await requestJson<{
+    workspace_id: string; scope: { model_profile: string; chunking_profile: string }
+    items: Array<{ doc_id: string; title: string; file_name: string; document_type: string; last_ingested_at: string | null; indexed_chunk_count?: unknown }>
+    page: { limit: number; has_more: boolean; next_cursor: string | null; list_revision: string }
+  }>(`/workspaces/${encodeURIComponent(workspaceId)}/documents?${query}`, { signal, headers: { Accept: 'application/json' }, cache: 'no-store' })
+  if (response.workspace_id !== workspaceId || !response.scope || !Array.isArray(response.items) || !response.page
+    || typeof response.scope.model_profile !== 'string' || typeof response.scope.chunking_profile !== 'string'
+    || typeof response.page.has_more !== 'boolean' || typeof response.page.list_revision !== 'string'
+    || response.page.limit !== 25
+    || (response.page.has_more ? typeof response.page.next_cursor !== 'string' || !response.page.next_cursor : response.page.next_cursor !== null)) {
+    throw new ApiError(500, 'document_protocol_error')
+  }
+  return {
+    workspaceId: response.workspace_id,
+    scope: { modelProfile: response.scope.model_profile, chunkingProfile: response.scope.chunking_profile },
+    items: response.items.map((item) => {
+      if (!item || typeof item.doc_id !== 'string' || !item.doc_id || typeof item.title !== 'string' || typeof item.file_name !== 'string') throw new ApiError(500, 'document_protocol_error')
+      return {
+        docId: item.doc_id, title: item.title, fileName: item.file_name,
+        documentType: typeof item.document_type === 'string' ? item.document_type : 'unknown',
+        lastIngestedAt: typeof item.last_ingested_at === 'string' && Number.isFinite(Date.parse(item.last_ingested_at)) ? item.last_ingested_at : null,
+        indexedChunkCount: typeof item.indexed_chunk_count === 'number' && Number.isSafeInteger(item.indexed_chunk_count) && item.indexed_chunk_count >= 0 ? item.indexed_chunk_count : null,
+      }
+    }),
+    page: { limit: response.page.limit, hasMore: response.page.has_more, nextCursor: response.page.next_cursor, listRevision: response.page.list_revision },
+  }
+}
 export async function getWorkspaces(signal?: AbortSignal): Promise<WorkspaceDiscovery> {
   const response = await requestJson<ApiWorkspaceDiscovery>('/workspaces', { signal })
   return {

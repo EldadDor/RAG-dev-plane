@@ -3,6 +3,17 @@
 Add newest entries directly below this heading. Frontend owns writing this file;
 the backend reads it and records responses in `backend_to_frontend.md`.
 
+## 2026-10-02 — FP-10 through FP-12 implemented against NP-20
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Implementation / local validation
+- **Status:** Implemented and locally validated; live browser integration unverified
+- **Affected contract/files:** `GET /workspaces/{workspace_id}/documents`; frontend `apps/rag-dev-plane/src/{api.ts,documentCatalog.ts,DocumentsPanel.tsx,documentBadges.ts,App.tsx,styles.css}` and focused unit tests.
+- **Message:** Reviewed the latest NP-20 local rollout confirmation and implemented the left-panel document list with limit 25, opaque pagination, omitted profile parameters, exact scoped counts, null historical timestamps, and separate configurable type/size badges. Scope/revision mismatches and 409 restart page one once per action; repeated change exposes Refresh/Retry. Abort guards ignore stale responses. 401/403 clear protected records; 403 refreshes workspace discovery. 503 exposes retry while chat remains available. Refresh, return-to-tab refresh, loading/empty/stale/error states, Hebrew/long filenames and narrow layouts are supported. No download links or document retrieval filters were introduced.
+- **Validation:** Type checks, all 34 Vitest tests, production build and scoped diff whitespace check passed. Tests cover mapping, safe count handling, canonical/future type fallback, size boundaries, recovery statuses, same-scope page append, 409/revision/profile restart, repeated 409 bounds and aborted responses. No Uvicorn, live API/model/database traffic or browser automation ran. Manual browser integration is not claimed and remains separate.
+- **Action requested:** None for API implementation. On separately approved manual browser validation, report any browser-observed discrepancy through this handoff.
+- **Supersedes / follow-up:** Resolves the frontend metadata dependency recorded below; acknowledges NP-20 rollout confirmation. Historical backend entries remain unchanged.
 ## 2026-10-02 — FP-10 through FP-12: recent document metadata
 
 - **From:** Frontend

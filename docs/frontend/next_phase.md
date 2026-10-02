@@ -31,7 +31,7 @@ tracks work after FP-02; authoritative current-task status remains in
   are complete; NP-05 is closed.
 - The 2026-09-10 backend handoff confirms image-bearing source citations are
   implemented and contract-authoritative. The frontend implementation and
-  focused parser coverage are present; only the separately approved live
+  focused parser coverage are present. The separately approved live
   Word/image browser checklist passed on 2026-09-12; NP-15-FE is complete.
 - Hebrew and multilingual RAG evaluation is a backend-owned proposed NP-16
   requirement. Its requested evaluation and profile-isolation design were
@@ -48,9 +48,6 @@ and record the applicable approval decision.
 | --- | --- | --- | --- | --- |
 | 1 | FP-03 | Office delivery integration | Configure the approved static deployment, proxy, identity handling, and SSE behavior with the infrastructure owner. | Gateway identity, Nginx/CI-CD/TLS/CORS, and deployment plan. |
 | 2 | NP-15-FE | Image-bearing source citations | Render authorized images associated with retrieved Word citations in the Sources experience. | **Complete — live browser validated 2026-09-12** |
-| 3 | FP-10 | Recent ingested documents in the left panel | Help users discover newly available information in the selected workspace. | Requested for backlog on 2026-10-02; implementation awaits published document metadata contract. |
-| 4 | FP-11 | Configurable chunk-count size indicators | Display exact chunk totals plus Small, Medium, Big, and Extra-Large labels with configurable thresholds and colors. | Requested for backlog on 2026-10-02; depends on FP-10 and backend chunk-count semantics. |
-| 5 | FP-12 | Configurable document-type colors | Distinguish document types using a separate type badge with text and a configurable color mapping. | Requested for backlog on 2026-10-02; depends on FP-10 and canonical document types. |
 
 ## Recommended Next Phase
 
@@ -78,7 +75,7 @@ completed live browser validation on 2026-09-12.
 
 ## UI Enhancement Intake — 2026-10-02
 
-FP-09 intake: record the requested recent-document panel, configurable chunk-size indicators, and document-type colors. Intake moved to the current task board; feature implementation remains proposed.
+FP-09 intake: record the requested recent-document panel, configurable chunk-size indicators, and document-type colors. Intake moved to the current task board; FP-10 through FP-12 are now implemented and locally validated in the current task board.
 
 ### FP-10 — Recent ingested documents panel
 
@@ -111,3 +108,17 @@ FP-09 intake: record the requested recent-document panel, configurable chunk-siz
 - Planned commit boundaries: one reviewable commit per feature, prefixed with its task ID.
 - On implementation, run permitted frontend type checks, focused tests, production build, and diff whitespace checks. Browser automation, new dependencies, and live model/database services retain their separate approval gates.
 - Intake completed on 2026-10-02. No type checks, tests, builds, browser automation, or live services ran for this documentation-only task.
+
+## UI Enhancement Activation — 2026-10-02
+
+FP-10 through FP-12 moved to work_current_phase.md on user instruction to proceed after reviewing the implemented and live-validated NP-20 handoff. Acceptance criteria above remain applicable. Local unit/type/build checks are in scope; live browser validation remains separate.
+
+## UI Enhancement Completion — 2026-10-02
+
+FP-10, FP-11 and FP-12 completed implementation and local validation (34 unit
+tests, type checks, production build, whitespace check). Metadata dependency
+resolved by the newest NP-20 handoff. Defaults: Small 0–25, Medium 26–100,
+Big 101–500, Extra-Large 501+ chunks; thresholds and type/size color pairs live
+in `frontend/apps/rag-dev-plane/src/documentBadges.ts`.
+Manual browser integration is unverified and requires the separately approved
+live validation scope; no live services or browser automation ran.

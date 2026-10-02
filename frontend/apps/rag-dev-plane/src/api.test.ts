@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { archiveSession, getSession, getSessions, getWorkspaces, renameSession, streamChat } from './api'
+import { archiveSession, getDocuments, getSession, getSessions, getWorkspaces, renameSession, streamChat } from './api'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -17,6 +17,37 @@ function streamResponse(...chunks: string[]): Response {
 }
 
 describe('API client', () => {
+  it('maps scoped documents, preserves zero and unknown counts, and encodes opaque pagination', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({
+      workspace_id: 'team / א', scope: { model_profile: 'bge-m3', chunking_profile: 'default' },
+      items: [0, null, -1, 1.5, Number.MAX_SAFE_INTEGER + 1].map((count, index) => ({
+        doc_id: `doc-${index}`, title: 'מדריך', file_name: 'guide.docx', document_type: 'word', last_ingested_at: null, indexed_chunk_count: count,
+      })),
+      page: { limit: 25, has_more: true, next_cursor: 'opaque-next', list_revision: '18' },
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    const signal = new AbortController().signal
+    const result = await getDocuments('team / א', 'cursor+/=?', signal)
+    expect(result.scope).toEqual({ modelProfile: 'bge-m3', chunkingProfile: 'default' })
+    expect(result.items.map((item) => item.indexedChunkCount)).toEqual([0, null, null, null, null])
+    expect(result.items[0]).toMatchObject({ title: 'מדריך', lastIngestedAt: null, fileName: 'guide.docx' })
+    expect(result.page).toMatchObject({ hasMore: true, nextCursor: 'opaque-next', listRevision: '18' })
+    expect(fetchMock).toHaveBeenCalledWith('/workspaces/team%20%2F%20%D7%90/documents?limit=25&cursor=cursor%2B%2F%3D%3F', expect.objectContaining({ signal, cache: 'no-store' }))
+  })
+
+  it('rejects a different workspace and incomplete pagination rather than displaying protected or partial records', async () => {
+    const payload = { workspace_id: 'other', scope: { model_profile: 'default', chunking_profile: 'default' }, items: [], page: { limit: 25, has_more: false, next_cursor: null, list_revision: '1' } }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(payload)))
+    await expect(getDocuments('local')).rejects.toMatchObject({ code: 'document_protocol_error' })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ ...payload, workspace_id: 'local', page: { ...payload.page, has_more: true } })))
+    await expect(getDocuments('local')).rejects.toMatchObject({ code: 'document_protocol_error' })
+  })
+
+  it.each([[401, 'authentication_required'], [403, 'workspace_access_denied'], [409, 'document_list_changed'], [503, 'document_list_unavailable']])('preserves document recovery status %s', async (status, code) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ code, message: 'Safe message' }, { status: status as number })))
+    await expect(getDocuments('local')).rejects.toMatchObject({ status, code })
+  })
+
   it('maps workspace and session payloads from the proxy contract', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(Response.json({

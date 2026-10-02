@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState, type FormEvent} from 'react'
+import DocumentsPanel from './DocumentsPanel'
 import {ApiError, archiveSession, getSession, getSessions, getWorkspaces, renameSession, streamChat, type ChatSession, type ChatSessionDetail, type SourceReference, type Workspace} from './api'
 
 type Pane = 'sources' | 'sessions'
@@ -301,7 +302,19 @@ export default function App() {
             </div>
         </header>
         <section className="workspace" aria-label="Chat workspace">
-            <aside className="sources-pane" aria-label="Sources"><h2>Sources</h2><p className="muted">Sources appear here when an answer includes grounded citations.</p></aside>
+            <DocumentsPanel key={workspaceId} workspaceId={workspaceId} onAccessDenied={(unauthenticated) => {
+                cancelStream()
+                setSources([])
+                setGrounded(null)
+                setStreamingTurn(null)
+                if (unauthenticated) {
+                    setWorkspaceId('')
+                    setWorkspaces([])
+                    setSessions([])
+                    setActiveSession(null)
+                    setErrorMessage('Sign in again, then reload to continue.')
+                } else void recoverWorkspaceAccess()
+            }}/>
             <section className="chat-pane" aria-label="Chat" aria-busy={Boolean(streamController.current)}>
                 <div className="chat-heading">
                     <div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div>
