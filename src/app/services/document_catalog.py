@@ -19,7 +19,7 @@ import asyncpg
 from app.api.schemas import DocumentListResponse, DocumentScope, DocumentPage, DocumentSummary
 
 
-DOCUMENT_TYPES = frozenset({"word", "pdf", "markdown", "html", "text", "code", "unknown"})
+DOCUMENT_TYPES = frozenset({"word", "powerpoint", "pdf", "markdown", "html", "text", "code", "unknown"})
 DOCUMENT_HEADERS = {"Cache-Control": "private, no-store", "Vary": "Cookie, Authorization"}
 _IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]*$")
 

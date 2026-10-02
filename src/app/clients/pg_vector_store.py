@@ -231,10 +231,10 @@ class PgVectorStore:
                 )
             applied_versions = await conn.fetch(
                 f"SELECT version FROM {self._schema}.schema_migrations WHERE version = ANY($1::text[])",
-                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata"],
+                ["001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata", "007_powerpoint_document_type"],
             )
             applied_version_names = {row["version"] for row in applied_versions}
-            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata"}
+            required_versions = {"001_baseline", "002_workspace_authorization", "003_chunking_profiles", "004_document_assets", "005_model_profiles", "006_document_index_metadata", "007_powerpoint_document_type"}
             if applied_version_names != required_versions:
                 missing_versions = sorted(required_versions - applied_version_names)
                 raise RuntimeError(

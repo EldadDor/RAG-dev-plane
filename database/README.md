@@ -11,12 +11,18 @@ psql $env:DATABASE_URL -v schema=rag -v table=document_chunks -f database/migrat
 psql $env:DATABASE_URL -v schema=rag -f database/migrations/004_document_assets.sql
 psql $env:DATABASE_URL -v schema=rag -v default_model=nomic-embed-text -v default_dimensions=768 -f database/migrations/005_model_profiles.sql
 psql $env:DATABASE_URL -v schema=rag -f database/migrations/006_document_index_metadata.sql
+psql $env:DATABASE_URL -v schema=rag -f database/migrations/007_powerpoint_document_type.sql
 psql $env:DATABASE_URL -v schema=rag -v default_workspace_id=local -v local_subject=local-dev -f database/seeds/local_workspace.sql
 ```
 
 For an existing database, these migrations adopt the current tables and workspace values without dropping data. Migration `003_chunking_profiles.sql` marks every existing source and chunk as the `default` profile; it does not re-embed or delete indexed data. Migration `004_document_assets.sql` adds metadata and chunk-link tables for embedded source images; image bytes remain in the configured private asset store. The local seed is idempotent. Production identity memberships must be provisioned separately by an approved administrative process.
 
 Docker's entrypoint scripts run only when its PostgreSQL data volume is first created. Apply migrations explicitly whenever an existing database is upgraded.
+
+Migration 007 widens the catalog's canonical type constraint to include
+`powerpoint`; it changes no vectors/source records. Apply it before restarting
+the PowerPoint-enabled writer. PostgreSQL startup requires the migration ledger
+entry. The configured local stack applied it on 2026-10-02.
 
 ## Recent document catalog rollout (NP-20)
 

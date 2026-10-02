@@ -92,6 +92,21 @@ Apply `004_document_assets.sql` before starting the updated API with
 PostgreSQL. Keep the asset directory private and persistent; browsers fetch
 bytes only through `GET /workspaces/{workspace_id}/assets/{asset_id}`.
 
+## PowerPoint presentations
+
+Modern `.pptx` decks use the same ingestion API and directory scans. Extracted
+content includes slide text, grouped shapes, tables, cached chart data, speaker
+notes and embedded images. Chunks stay within a slide, and citation `page`
+contains its one-based slide number. Package hashing detects image-only edits.
+SmartArt retains available node text; embedded files/media retain exposed
+text/previews and are recorded as unsupported objects. There is no slide
+rendering, OCR or visual interpretation. Legacy `.ppt` is unsupported.
+
+Apply `007_powerpoint_document_type.sql` before restarting updated PostgreSQL
+writers. Document discovery identifies these decks as `powerpoint`.
+See [PowerPoint ingestion](docs/powerpoint_ingestion.md) for extraction limits,
+rollout, usage and validation.
+
 PostgreSQL retrieval uses hybrid search by default: pgvector semantic search
 plus PostgreSQL full-text search, fused with reciprocal-rank fusion. This is
 especially useful for file paths, code symbols, configuration names, and error

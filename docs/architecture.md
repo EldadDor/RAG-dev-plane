@@ -59,7 +59,7 @@ flowchart LR
     Delete --> Store
 ```
 
-The loader registry supports Markdown, HTML, plain text, PDF, modern Word `.docx`, Python, Java, Kotlin, and common configuration/code extensions. Loaders preserve source path, title, type, and relevant metadata.
+The loader registry supports Markdown, HTML, plain text, PDF, modern Word `.docx`, PowerPoint `.pptx`, Python, Java, Kotlin, and common configuration/code extensions. Loaders preserve source path, title, type, and relevant metadata.
 
 - Python files are chunked by module, class, and function using the Python AST.
 - Java files use Tree-sitter to preserve package/type/member symbols and line ranges; malformed Java falls back to generic text chunking.
@@ -68,6 +68,11 @@ The loader registry supports Markdown, HTML, plain text, PDF, modern Word `.docx
 - Word files preserve ordered headings, paragraphs, lists, tables, page-break
   hints and embedded-image anchors. Text is embedded normally; original image
   bytes go to the private asset store and related asset IDs travel with chunks.
+- PowerPoint preserves slide text/grouped shapes, tables, cached chart data,
+  speaker notes and image anchors. It chunks within slides and uses one-based
+  slide numbers in citation `page`. SmartArt text and unsupported-object previews
+  are best effort; private metadata records extraction limits. See
+  [PowerPoint ingestion](powerpoint_ingestion.md).
 
 For PostgreSQL, `rag.source_documents` records a content hash per `(workspace_id, doc_id)`. During rescans, unchanged files are skipped, changed files replace their old chunks, and documents missing from the scanned root are removed. This prevents stale chunks from remaining retrievable.
 

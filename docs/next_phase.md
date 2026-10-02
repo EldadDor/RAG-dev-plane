@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-20 is complete and locally live-validated; frontend FP-10–FP-12 integration is unblocked.
+**Status:** NP-21 PowerPoint ingestion is implemented and locally validated; frontend FP-12 may add the powerpoint type.
 **Last reviewed:** 2026-10-02
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -30,8 +30,19 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 18 | NP-18 | Spring Boot backend handoff | Current backend API/behavior and Kotlin Spring AI 2.0 migration design, retaining the frontend contract. | Complete — closed 2026-09-17 |
 | 19 | NP-19 | Recent document metadata API design | Full proposed contract and publication/lifecycle implementation plan in recent_document_metadata_api_design.md. | Design complete 2026-10-02. |
 | 20 | NP-20 | Implement recent document metadata API | Catalog storage, lifecycle integration, authorized listing, reconciliation tooling and frontend contract implemented. | Complete 2026-10-02: 134 offline tests; migration/backfill, enablement and live acceptance validated. |
+| 21 | NP-21 | PowerPoint ingestion | Slide text, images, tables, cached charts, notes, scoped chunking and catalog type implemented. | Complete 2026-10-02: 149 offline tests, migration 007 and provider-free local SQL validation. |
 
 ## Latest Completed-Phase Record
+
+### NP-21 — PowerPoint Ingestion
+
+Implemented and locally validated 2026-10-02. See `powerpoint_ingestion.md` for
+content coverage, explicit object limits and normal ingestion usage. Migration
+007 is applied; the updated local API is healthy. Real SQL synthetic ingestion
+fixtures validated publication/count/type, slide citations, images, unchanged,
+failed/changed and blank-deck behavior, with fixture rollback and no real model
+calls. Evidence: `phase_qa/NP21-live-powerpoint-ingestion.json`. Changes remain
+uncommitted for review. Frontend handoff requests the new powerpoint label/color.
 
 ### NP-20 — Recent Document Metadata API
 

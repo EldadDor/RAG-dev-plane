@@ -135,10 +135,12 @@ Values above are illustrative. Authorized empty scopes return 200 with
 - `title` and basename-only `file_name` are non-empty sanitized display text
   limited to 300 and 255 Unicode code points respectively. No path, content,
   raw metadata, source hash, provider detail, or storage identifier is exposed.
-- Canonical `document_type` values are `word`, `pdf`, `markdown`, `html`, `text`,
+- Canonical `document_type` values are `word`, `powerpoint`, `pdf`, `markdown`, `html`, `text`,
   `code`, and `unknown`. Code includes supported configuration files such as
   JSON/YAML/TOML/SQL. Frontend supplies text labels and configurable type colors
   and tolerates future types with an Unknown/Other fallback.
+  PowerPoint `.pptx` citations use `page` for the one-based slide number; source
+  images use the existing authorized asset response. See `powerpoint_ingestion.md`.
 - `indexed_chunk_count` is an exact non-negative integer, including 0. It is
   bounded by JavaScript's safe-integer maximum. Zero-chunk successful documents
   are visible. Size thresholds/colors are frontend configuration; no size/color

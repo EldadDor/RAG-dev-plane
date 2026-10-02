@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "mixed_deck_real_sql_publication",
+    "slide_citation_numbers",
+    "catalog_powerpoint_type_count",
+    "image_asset_ownership",
+    "unchanged_skip_preserves_time",
+    "failed_reingestion_preserves_publication",
+    "changed_reingestion",
+    "blank_deck_removes_chunks_assets",
+    "updated_http_health_readiness_schema",
+    "live_http_pptx_ingest_dry_run"
+  ],
+  "fixtures_rolled_back": true,
+  "initial_chunks": 2,
+  "real_provider_calls": 0,
+  "validated_at": "2026-10-02T20:55:19.702207+00:00"
+}

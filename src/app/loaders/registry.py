@@ -10,6 +10,7 @@ from app.loaders.markdown_loader import MarkdownLoader
 from app.loaders.pdf_loader import PDFLoader
 from app.loaders.text_loader import TextLoader
 from app.loaders.word_loader import WordLoader
+from app.loaders.powerpoint_loader import PowerPointLoader
 
 _LOADER_MAP = {
     ".md": MarkdownLoader,
@@ -18,6 +19,7 @@ _LOADER_MAP = {
     ".htm": HTMLLoader,
     ".pdf": PDFLoader,
     ".docx": WordLoader,
+    ".pptx": PowerPointLoader,
     ".txt": TextLoader,
     ".py": CodeLoader,
     ".js": CodeLoader,

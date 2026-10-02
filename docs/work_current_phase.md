@@ -1,4 +1,48 @@
-# Current Work Phase — NP-20 Recent Document Metadata API
+# Current Work Phase — NP-21 PowerPoint Ingestion
+
+**Status:** Complete — implemented and locally validated 2026-10-02
+**Owner:** Backend team
+**Approval:** User requested `.pptx` ingestion with text, images, tables, charts
+and PowerPoint object handling, integrated with the existing parser behavior.
+
+## Task Board — NP-21
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| NP21-01 | Add safe `.pptx` loader and dependency | Complete | python-pptx 1.0.2, locked dependencies, bounded OOXML validation, registry/directory discovery. |
+| NP21-02 | Extract slide content and assets | Complete | Slide/group text, Unicode, tables, cached category/XY/bubble charts, speaker notes, hidden slides, image/preview assets, SmartArt text and explicit unsupported-object metadata. |
+| NP21-03 | Preserve slide provenance through normal ingestion | Complete | Slide-local configured chunking with global offsets, citation page/section, package hashing and normal scoped publication/skip/cleanup. |
+| NP21-04 | Catalog type and local rollout | Complete | Canonical powerpoint type; migration 007 applied, startup ledger check, Docker initialization, updated API healthy. |
+| NP21-05 | Regression/live validation and frontend handoff | Complete | 149 offline tests; real SQL ingestion with synthetic vectors and fixture rollback; usage/extraction limits and frontend type handoff documented. |
+
+## Validation and Outcome — NP-21
+
+- Offline command:
+  `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np21-test-tmp --ignore=tests/integration`.
+  Covers mixed slides, tables, charts/caches, groups, notes, hidden/blank slides,
+  SmartArt, OLE previews, Hebrew, source offsets, image-only hash changes,
+  external/unavailable content, unsafe packages and normal dry-run/skip/assets.
+- Applied the additive catalog constraint migration 007 to the configured local
+  PostgreSQL stack and restarted only the project API. Existing data/vectors
+  were not re-embedded or rebuilt.
+- `scripts/validate_powerpoint_ingestion.py` verified real PostgreSQL publication,
+  slide numbers, exact catalog count/type, asset ownership, unchanged timestamp,
+  failed/changed replacement and blank-deck cleanup. Temporary SQL records always
+  roll back; generated presentation files and in-memory image bytes are removed.
+  No real embedding/chat calls or user-deck ingestion ran.
+- Evidence: `phase_qa/NP21-live-powerpoint-ingestion.json`. Actual HTTP health,
+  readiness and OpenAPI confirm the updated local API and `powerpoint` enum.
+- Extraction reads cached text/data and original embedded bytes. It does not
+  render slides, perform OCR/visual reasoning, fetch linked resources, interpret
+  SmartArt topology, or open embedded files/media. Limits are explicit in
+  `powerpoint_ingestion.md`.
+- Canonical frontend contract/handoff now advertises `powerpoint` and slide
+  citation semantics. No frontend code changed. New feature changes remain
+  uncommitted for review; no additional commit was requested in this feature turn.
+
+---
+
+# Prior phase — NP-20 Recent Document Metadata API
 
 **Status:** Complete — local rollout validated, closed 2026-10-02
 **Activated:** 2026-10-02

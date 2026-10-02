@@ -3,6 +3,33 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-10-02 — NP-21 PowerPoint ingestion and document type
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API extension / parser feature
+- **Status:** Implemented and locally validated
+- **Affected contract/files:** Existing `POST /ingest`, document discovery and
+  source citations; `docs/frontend_architecture.md`; `docs/powerpoint_ingestion.md`.
+- **Message:** `.pptx` files now use the normal ingestion lifecycle. Extract
+  text/grouped shapes, tables, cached charts, speaker notes and image assets;
+  chunk within slides. Catalog `document_type` adds `powerpoint`; citation `page`
+  represents a one-based slide number. Image assets keep the existing response
+  and authorization flow. SmartArt text and object previews are best effort;
+  unavailable/unsupported content is recorded in private metadata. No OCR or
+  slide rendering is performed. Migration 007 is applied locally and the API
+  exposes the new type. Real SQL fixtures passed with synthetic embeddings and
+  complete fixture rollback; no real model calls ran.
+- **Action requested:** Add `powerpoint` to FP-12 type label/color configuration,
+  retaining Unknown/Other fallback. Use slide-number wording where `.pptx`
+  citations are identifiable. No new upload/ingestion frontend workflow is
+  requested. Browser validation remains frontend-owned.
+- **Evidence:** `docs/phase_qa/NP21-live-powerpoint-ingestion.json` and
+  `tests/test_powerpoint_loader.py`; full behavior/limits documented in
+  `docs/powerpoint_ingestion.md`.
+- **Supersedes / follow-up:** Extends NP-20's canonical type list; existing
+  response shapes and other parser behavior remain compatible.
+
 ## 2026-10-02 — NP-20 local rollout validated; FP-10–FP-12 unblocked
 
 - **From:** Backend

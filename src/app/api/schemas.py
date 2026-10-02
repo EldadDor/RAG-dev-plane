@@ -76,7 +76,7 @@ class DocumentSummary(BaseModel):
     doc_id: str
     title: str = Field(min_length=1, max_length=300)
     file_name: str = Field(min_length=1, max_length=255)
-    document_type: Literal["word", "pdf", "markdown", "html", "text", "code", "unknown"]
+    document_type: Literal["word", "powerpoint", "pdf", "markdown", "html", "text", "code", "unknown"]
     last_ingested_at: datetime | None
     indexed_chunk_count: int = Field(ge=0, le=9007199254740991)
 

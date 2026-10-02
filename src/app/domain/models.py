@@ -9,6 +9,7 @@ class SourceType(str, Enum):
     html = "html"
     pdf = "pdf"
     word = "word"
+    powerpoint = "powerpoint"
     text = "text"
     code = "code"
     unknown = "unknown"
