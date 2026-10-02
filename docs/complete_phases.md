@@ -3,6 +3,30 @@
 **Purpose:** Immutable-style record of completed, validated work. Add a new
 entry only after its phase is approved, verified, and committed.
 
+## Phase: NP-20 Recent Document Metadata API
+
+**Status:** Complete — locally live-validated 2026-10-02  
+**Evidence:** `afee99c` (approved-state snapshot), `25ea33b` (local rollout,
+recovery fixes, repeatable acceptance and frontend handoff).
+
+**Delivered:**
+
+- Workspace-authorized, profile-scoped document metadata with exact chunk
+  counts, safe titles/types, nullable historical times and revision-checked
+  signed pagination.
+- Migration 006, atomic ingestion/warming/cleanup publication, shared image
+  ownership, deployment-wide readiness and operator reconciliation.
+- Configured local rollout certified 132 document publications / 2,886 scoped
+  chunks across two model profiles. Preserved 32 unscoped legacy vectors,
+  excluded with warnings; recovered 568 exact legacy identity aliases.
+- Full offline suite: 134 passed. Live HTTP and real PostgreSQL fixtures
+  verified count parity, pagination, access/cursors, rollback, zero chunks,
+  synthetic warming and scoped cleanup. Fixtures rolled back; no real model
+  calls ran. Local health/readiness/listing return 200.
+- FP-10–FP-12 frontend integration unblocked in the canonical contract and
+  backend handoff. Evidence: `phase_qa/NP20-live-document-catalog.json` and
+  `phase_qa/NP20-reconciliation.json`. Browser integration remains frontend-owned.
+
 ## Phase: Core RAG Foundation
 
 **Status:** Complete  
