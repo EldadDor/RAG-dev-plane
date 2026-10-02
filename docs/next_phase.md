@@ -104,3 +104,7 @@ Before a candidate becomes active, record:
 - Making live model/database tests mandatory in CI.
 - Production deployment changes.
 - Replacing the dual chat/embedding provider architecture.
+
+## Cross-runtime cursor configuration follow-up — 2026-10-03
+
+User-approved shared persistent DOCUMENT_LIST_CURSOR_SECRET is installed in Python and Kotlin local .env files; Kotlin listing is enabled. Configuration checks passed without printing the secret. On the next operator-started backend processes, refresh prior document cursors and verify the UI catalog response. No startup, live acceptance, provider calls or migrations were performed by this configuration task.

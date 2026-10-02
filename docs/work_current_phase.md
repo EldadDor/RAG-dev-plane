@@ -1,3 +1,11 @@
+## Approved cross-runtime configuration follow-up — 2026-10-03
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| RDP20-CONFIG | Persist the shared document-list cursor secret for Python/Kotlin | Completed | User explicitly approved matching secrets and enabling Kotlin listing. Generated a cryptographically random 32-byte secret encoded as 64 ASCII hex characters; securely verified both .env values match and unrelated settings are preserved. Python listing flag remains unchanged. Files: local ignored .env and phase records; commit: none. Not run: tests, live HTTP/browser, providers, database, migrations or service restart. Record was added after the configuration edit; Kotlin intake was recorded before editing. |
+
+Existing NP phase records below are preserved. The updated secret is loaded on the next Python process start; prior process-local cursor tokens must be refreshed.
+
 # Current Work Phase — NP-21 PowerPoint Ingestion
 
 **Status:** Complete — implemented and locally validated 2026-10-02
