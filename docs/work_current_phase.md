@@ -1,55 +1,62 @@
 # Current Work Phase — NP-20 Recent Document Metadata API
 
-**Status:** Implementation complete — offline validated; live rollout pending
+**Status:** Complete — local rollout validated, closed 2026-10-02
 **Activated:** 2026-10-02
 **Owner:** Backend team
-**Approval:** User approved NP-19 design and requested implementation on 2026-10-02.
+**Approval:** User approved NP-19 implementation and the local live rollout.
+Current state committed as `afee99c` before migration/backfill/enablement.
 
 ## Objective and scope — NP-20
 
-Implement the approved design in `recent_document_metadata_api_design.md`:
-additive PostgreSQL metadata/revision storage, publication lifecycle integration,
-authorized listing and signed keyset cursors, offline backfill/reconciliation
-tooling, regression coverage, and authoritative frontend documentation.
-No frontend changes, production deployment, model calls, live database access,
-or migration execution are included in this implementation turn.
+Deliver the approved recent-document API: additive PostgreSQL catalog/revisions,
+atomic publication across ingestion/warming/cleanup, authorized discovery,
+revision-checked cursors, safe display metadata, reconciliation and frontend
+contract. The local rollout is complete. Frontend integration/browser validation
+belongs to FP-10–FP-12; other environments require their own rollout.
 
 ## Task Board — NP-20
 
 | ID | Task | Status | Evidence / outcome |
 | --- | --- | --- | --- |
-| NP20-01 | Metadata migration and catalog store | Complete | NP-20: Added migration 006, per-model metadata/revisions, model-owned asset references, readiness state, consistent scoped reads and PostgreSQL startup validation. Fresh Docker initialization includes migrations 005/006. Migration not executed. |
-| NP20-02 | Coordinate ingestion, warming, and directory publication | Complete | NP-20: Atomic vector/catalog publication; per-model hashes and concurrent unchanged guards; zero-chunk replacement; failed-file/scan-coverage protection; workspace-scoped internal UUIDs; immutable asset version IDs and shared lifecycle; profile locks with pinned connections for warm/backfill pool safety. |
-| NP20-03 | Authorized list route, schemas, signed cursors and safe errors | Complete | NP-20: GET documents uses principal/membership checks, profile defaults, HMAC cursors, keyset/revision checks, typed safe payloads, private/no-store headers and 409/503 recovery. No model/client/source-loader dependency on GET. |
-| NP20-04 | Backfill/reconciliation tooling and offline validation | Offline complete; live pending | NP-20: Read-only default reconciliation and explicit atomic apply/certification; malformed/duplicate/orphan/historical data reporting; updated local workspace-scoped warming CLI. Full offline suite: 132 passed. Migration, real-data reconciliation, and live acceptance not run. |
-| NP20-05 | Publish implemented frontend contract and handoff | Complete | NP-20: Updated docs/frontend_architecture.md, database/README.md and backend_to_frontend.md with implemented wire examples, errors/recovery, rollout commands and the remaining live gate. Frontend integration remains pending rollout confirmation. |
-| NP20-LIVE | Apply migration/backfill, enable listing, and validate the approved local stack | Pending separate live authorization | NP-20: Required before live phase closure and FP-10 integration. Review read-only backfill report first; no model calls needed for metadata rollout. |
+| NP20-01 | Metadata migration and catalog store | Complete | Migration 006 applied locally; per-model metadata/revisions, model-owned assets, readiness, scoped snapshot reads and startup checks. |
+| NP20-02 | Coordinate ingestion, warming and directory publication | Complete | Atomic publication, per-model unchanged guards, zero chunks, scan protection, workspace-safe internal IDs, shared asset ownership and pinned publication locks. |
+| NP20-03 | Authorized route, schemas, cursors and safe errors | Complete | Principal/membership on every page; configured scopes; HMAC cursors, revision/keyset pagination, safe typed fields, private/no-store headers. |
+| NP20-04 | Reconciliation and regression validation | Complete | 134 offline tests passed; reviewed/applied backfill, exact legacy alias recovery, idempotent final report and zero all-scope SQL count mismatches. |
+| NP20-05 | Frontend contract and handoff | Complete | frontend_architecture.md and backend_to_frontend.md publish validated contract; FP-10–FP-12 unblocked. |
+| NP20-LIVE | Local rollout and live acceptance | Complete | 132 publications across 2 profiles; 2,886 scoped chunks, 32 unscoped preserved/excluded. Listing enabled, API healthy; acceptance evidence saved. |
 
 ## Validation and Outcome — NP-20
 
-- Full offline command:
-  `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np20-test-tmp --ignore=tests/integration`
-  passed **132 tests** (2026-10-02). Coverage includes safe API authorization,
-  configured scopes, normal/unknown-time pagination, cursor tampering/expiry,
-  revoked membership, profile/default changes, transaction boundaries/failures,
-  concurrent unchanged publication, zero chunks, protected scan failures,
-  warming failure/retry, pinned lock adapters, shared image identity, metadata
-  sanitization and read-only reconciliation.
-- Both operator scripts' `--help` commands passed. Reviewed SQL migration and
-  catalog query/write paths; PostgreSQL execution itself is unverified. Scoped
-  diff whitespace checks passed. Test temporary files were removed after use.
-- The first targeted run hit an existing Windows temp/cache permission issue;
-  rerunning with workspace-local `--basetemp` and disabled pytest cache resolved
-  it. No application failure remained.
-- No frontend changes, browser automation, live database/model/service calls,
-  migration application, backfill against real data, enablement, or deployment
-  ran. The catalog stays gated until reviewed reconciliation certifies it.
-- Files: migration 006; PostgreSQL/Qdrant/protocol adapters; catalog service,
-  documents router/schemas; config/dependencies/startup; ingestion/model-profile
-  stores/warmer; two operator scripts; .env.example and Docker initialization;
-  three focused test modules; API/database/handoff/phase documentation.
-- No commit requested or created. NP20-LIVE remains pending as required by the
-  approved design's separately authorized live-validation step.
+- Full offline suite: **134 passed** using
+  `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np20-test-tmp --ignore=tests/integration`.
+  Workspace-local temp/cache handling avoids the existing Windows permissions issue.
+- Stopped this project's older API writer, applied additive migration 006,
+  reviewed read-only reconciliation, backfilled and certified, enabled the
+  local `.env` flag, and restarted the updated API on port 8000.
+- Exact source identity/path matches recovered 568 scoped `document_id` aliases
+  as canonical metadata without re-embedding or changing vector/chunk IDs.
+  Thirty-two pre-authorization vectors without workspace identity remain
+  untouched and excluded; unknown historical times/hashes were not fabricated.
+- Live validation exposed a JSON codec bug in the recovery write. Corrected
+  native-object encoding and repaired those rows; final verification found
+  zero non-object metadata rows and zero publication/count mismatches.
+- Live HTTP health/readiness and enabled listing passed. Limits 1/25/100 fully
+  traversed both local default-chunking model scopes with stable ordering,
+  safe field allowlists, cache headers and exact SQL counts. Local bge-m3:
+  62 documents / 1,347 chunks; default: 59 documents / 1,134 chunks. The global
+  catalog includes other authorized workspace/chunking scopes as well.
+- Production ASGI routes with real PostgreSQL fixtures validated two principals,
+  two workspaces, cursor subject binding, revoked membership, zero chunks,
+  unchanged/failed/changed replacement, revision 409, synthetic warming with
+  count/time parity, and scoped cleanup preserving other model/workspace data.
+  Fixture transaction always rolled back. No real embedding/chat calls ran.
+- Final read-only reconciliation is idempotent: no aliases remain to recover,
+  no errors/orphans/unassigned historical zero rows; database readiness true.
+- Evidence: `phase_qa/NP20-live-document-catalog.json` and
+  `phase_qa/NP20-reconciliation.json`. Operator rollout/rollback and repeatable
+  provider-free acceptance commands are in `../database/README.md`.
+- No frontend code or production deployment changed. Frontend browser checks
+  may now proceed through the canonical contract and shared handoff.
 
 ---
 

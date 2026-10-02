@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-20 implementation is complete and offline-validated; local migration/backfill/live rollout remains pending.
+**Status:** NP-20 is complete and locally live-validated; frontend FP-10–FP-12 integration is unblocked.
 **Last reviewed:** 2026-10-02
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -29,17 +29,20 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 17 | NP-17 | Embedding model profiles and embedding cache | Registry-backed isolated profile storage, cache, selection plumbing, and local-only dry-run warming are implemented. | Complete — closed 2026-09-13 |
 | 18 | NP-18 | Spring Boot backend handoff | Current backend API/behavior and Kotlin Spring AI 2.0 migration design, retaining the frontend contract. | Complete — closed 2026-09-17 |
 | 19 | NP-19 | Recent document metadata API design | Full proposed contract and publication/lifecycle implementation plan in recent_document_metadata_api_design.md. | Design complete 2026-10-02. |
-| 20 | NP-20 | Implement recent document metadata API | Catalog storage, lifecycle integration, authorized listing, reconciliation tooling and frontend contract implemented. | 132 offline tests passed 2026-10-02; migration/backfill/enablement and live acceptance pending in NP20-LIVE. |
+| 20 | NP-20 | Implement recent document metadata API | Catalog storage, lifecycle integration, authorized listing, reconciliation tooling and frontend contract implemented. | Complete 2026-10-02: 134 offline tests; migration/backfill, enablement and live acceptance validated. |
 
 ## Latest Completed-Phase Record
 
-### NP-20 — Implementation checkpoint (live phase closure pending)
+### NP-20 — Recent Document Metadata API
 
-Implemented 2026-10-02 with 132 passing offline tests. The source contract is
-documented in `frontend_architecture.md`; migration 006 and reviewed catalog
-reconciliation must precede enablement. See `../database/README.md` for rollout
-commands. NP20-LIVE remains in the current task board until separate live
-authorization and evidence are recorded; frontend integration stays pending.
+Complete and locally live-validated 2026-10-02. Snapshot: `afee99c`.
+Migration 006 is applied, the catalog is certified, and listing is enabled.
+All 132 document publications reconcile to 2,886 scoped chunks across two
+profiles; 32 unscoped legacy chunks remain untouched/excluded. The offline
+suite passes 134 tests. Live HTTP and real SQL fixture checks passed with no
+real model calls and fixture rollback. Evidence: `phase_qa/NP20-live-document-catalog.json`
+and `phase_qa/NP20-reconciliation.json`. FP-10–FP-12 may proceed against
+`frontend_architecture.md`.
 
 ### NP-19 — Recent Document Metadata API Design
 

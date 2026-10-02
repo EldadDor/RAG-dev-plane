@@ -1,0 +1,20 @@
+{
+  "all_scope_count_mismatches": 0,
+  "chunks": 2918,
+  "database_ready": true,
+  "documents": 132,
+  "dry_run": true,
+  "errors": [],
+  "historical_zero_chunk_rows_unassigned": 0,
+  "legacy_alias_chunks_recovered": 0,
+  "non_object_chunk_metadata": 0,
+  "orphan_groups": 0,
+  "profiles": 2,
+  "published_chunks": 2886,
+  "ready": false,
+  "unscoped_chunks_excluded": 32,
+  "warnings": [
+    "unscoped_chunks_excluded:bge-m3:16",
+    "unscoped_chunks_excluded:default:16"
+  ]
+}

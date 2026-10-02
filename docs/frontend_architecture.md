@@ -77,9 +77,12 @@ The envelope is also the `data` payload of a post-start SSE `error` event. A fai
 
 ## Recent Document Metadata Contract (NP-20)
 
-Implemented in backend source on 2026-10-02 and covered by isolated offline
-checks. Migration 006, operator reconciliation, enablement, and live acceptance
-remain rollout requirements; frontend integration stays pending that validation.
+Implemented and locally live-validated on 2026-10-02. Migration 006 is applied,
+the catalog is reconciled/certified, and the local API has listing enabled.
+Frontend FP-10 integration and FP-11/FP-12 badges may proceed against this
+contract. Acceptance evidence is in `phase_qa/NP20-live-document-catalog.json`
+and `phase_qa/NP20-reconciliation.json`; the offline suite passes 134 tests.
+Historical ingestion timestamps remain null when their provenance is unknown.
 See `recent_document_metadata_api_design.md` for the design rationale and
 `../database/README.md` for rollout commands.
 

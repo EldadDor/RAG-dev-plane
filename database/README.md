@@ -20,6 +20,12 @@ Docker's entrypoint scripts run only when its PostgreSQL data volume is first cr
 
 ## Recent document catalog rollout (NP-20)
 
+The configured local stack completed rollout on 2026-10-02: migration 006,
+catalog certification, endpoint enablement, and live acceptance. Evidence is in
+`../docs/phase_qa/NP20-reconciliation.json` and
+`../docs/phase_qa/NP20-live-document-catalog.json`. Other environments still
+require the rollout below.
+
 Migration 006 is required by the updated PostgreSQL writer, even while document
 listing is disabled. It adds per-model document metadata, revision counters,
 model-owned image references, and a deployment-wide readiness gate. It performs
@@ -39,6 +45,12 @@ no vector replacement or model calls. Apply it before starting the new backend.
    cataloged to retain their asset ownership. Historical
    source records without chunks cannot establish a model scope; the report
    counts them for operator re-ingestion. Their timestamp is not invented.
+   Legacy `document_id` aliases are recovered only when workspace, chunking
+   profile, ID and source path exactly match an existing source record. Apply
+   adds canonical `doc_id`/type metadata without changing vectors or chunk IDs.
+   Chunks with no workspace are excluded and reported as warnings; they remain
+   untouched and are unreachable through workspace-filtered retrieval/listing.
+   Malformed scoped identities continue to block certification.
 4. Apply the reviewed metadata backfill:
 
    ```powershell
@@ -54,6 +66,14 @@ no vector replacement or model calls. Apply it before starting the new backend.
    same server-only `DOCUMENT_LIST_CURSOR_SECRET` (at least 32 bytes) in every
    replica. Local single-process mode may use an ephemeral key. Run the
    separately approved live acceptance checks before frontend integration.
+
+The local acceptance runner checks real HTTP pagination/counts and real SQL
+authorization/publication fixtures. Its outer transaction always rolls back;
+warming uses synthetic vectors and makes no real model calls:
+
+```powershell
+.venv/Scripts/python.exe scripts/validate_document_catalog.py --output docs/phase_qa/NP20-live-document-catalog.json
+```
 
 New ingestion preserves unknown historical timestamps until a real changed
 ingestion establishes them. Reconciliation resets hash/time provenance when it

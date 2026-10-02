@@ -19,6 +19,53 @@ from app.config import get_settings
 from app.services.document_catalog import publish_metadata, bump_revision
 
 
+async def recover_legacy_rows(conn, schema: str, rows: list[dict]):
+    """Recover scoped aliases only from an exact catalog identity/path match.
+
+    Unscoped pre-authorization vectors are unreachable through workspace search
+    and remain untouched. Malformed scoped records still fail certification.
+    """
+    scoped, recovered, excluded = [], [], 0
+    for row in rows:
+        payload = row["metadata"]
+        encoded_object = isinstance(payload, str)
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except ValueError:
+                scoped.append(row)
+                continue
+        if not isinstance(payload, dict):
+            scoped.append(row)
+            continue
+        if payload.get("workspace_id") is None:
+            excluded += 1
+            continue
+        payload = dict(payload)
+        alias = payload.get("document_id")
+        if not payload.get("doc_id") and isinstance(alias, str) and alias:
+            source = await conn.fetchrow(
+                f"SELECT * FROM {schema}.source_documents WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3",
+                payload["workspace_id"], payload.get("chunking_profile") or "default", alias)
+            if source and source["source_path"] == (row.get("source") or payload.get("source_path")):
+                payload["doc_id"] = alias
+                payload.setdefault("source_type", source["source_type"])
+                recovered.append({"id": row["id"], "metadata": payload})
+        elif encoded_object and isinstance(payload.get("doc_id"), str):
+            source = await conn.fetchrow(
+                f"SELECT * FROM {schema}.source_documents WHERE workspace_id=$1 AND chunking_profile=$2 AND doc_id=$3",
+                payload["workspace_id"], payload.get("chunking_profile") or "default", payload["doc_id"])
+            if source and source["source_path"] == (row.get("source") or payload.get("source_path")):
+                recovered.append({"id": row["id"], "metadata": payload})
+            else:
+                # A decoded object cannot be counted by SQL until normalized;
+                # without matching provenance, certification must fail.
+                scoped.append({**row, "metadata": None})
+                continue
+        scoped.append({**row, "metadata": payload})
+    return scoped, recovered, excluded
+
+
 def analyze_chunks(rows: list[dict]) -> tuple[list[dict], list[str]]:
     """Pure analysis keeps malformed identities from silently entering a catalog."""
     groups = defaultdict(list)
@@ -80,6 +127,7 @@ async def reconcile(apply: bool = False) -> dict:
     store = await _init_pg_vector_store(settings)
     schema = settings.pg_schema
     report = {"dry_run": not apply, "profiles": 0, "documents": 0, "chunks": 0,
+              "legacy_alias_chunks_recovered": 0, "unscoped_chunks_excluded": 0,
               "historical_zero_chunk_rows_unassigned": 0, "orphan_groups": 0,
               "errors": [], "warnings": [], "ready": False}
     try:
@@ -108,7 +156,16 @@ async def reconcile(apply: bool = False) -> dict:
                         diagnostics.append(f"unprovisioned_profile:{profile['profile_name']}")
                         continue
                     rows = await conn.fetch(f"SELECT id,content,metadata,source FROM {schema}.{target} ORDER BY id")
-                    documents, errors = analyze_chunks([dict(row) for row in rows])
+                    scoped, recovered, excluded = await recover_legacy_rows(conn, schema, [dict(row) for row in rows])
+                    documents, errors = analyze_chunks(scoped)
+                    report["legacy_alias_chunks_recovered"] += len(recovered)
+                    report["unscoped_chunks_excluded"] += excluded
+                    if excluded:
+                        report["warnings"].append(f"unscoped_chunks_excluded:{profile['profile_name']}:{excluded}")
+                    if apply:
+                        for recovered_row in recovered:
+                            await conn.execute(f"UPDATE {schema}.{target} SET metadata=$1::jsonb WHERE id=$2",
+                                               recovered_row["metadata"], recovered_row["id"])
                     report["errors"].extend(errors)
                     report["profiles"] += 1
                     report["documents"] += len(documents)

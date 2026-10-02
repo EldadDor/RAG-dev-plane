@@ -1,4 +1,5 @@
 import hashlib
+import json
 import importlib.util
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -201,6 +202,43 @@ def test_backfill_reports_duplicates_and_conflicting_document_metadata():
     assert documents == []
     assert any("duplicate_chunk_identity" in error for error in errors)
     assert any("conflicting_document_metadata" in error for error in errors)
+
+
+@pytest.mark.asyncio
+async def test_legacy_alias_recovery_requires_exact_source_and_excludes_only_unscoped():
+    module = load_reconciliation()
+    conn = AsyncMock()
+    conn.fetchrow.return_value = {"source_path": "guide.txt", "source_type": "text"}
+    rows = [
+        {"id": "good", "source": "guide.txt", "metadata": {"workspace_id": "ws", "document_id": "doc"}},
+        {"id": "mismatch", "source": "other.txt", "metadata": {"workspace_id": "ws", "document_id": "doc"}},
+        {"id": "unscoped", "source": "guide.txt", "metadata": {"doc_id": "doc"}},
+        {"id": "malformed", "source": "guide.txt", "metadata": {"workspace_id": "", "doc_id": "doc"}},
+    ]
+    scoped, recovered, excluded = await module.recover_legacy_rows(conn, "rag", rows)
+    assert [r["id"] for r in recovered] == ["good"] and excluded == 1
+    assert scoped[0]["metadata"]["doc_id"] == "doc"
+    assert scoped[0]["metadata"]["source_type"] == "text"
+    assert "doc_id" not in rows[0]["metadata"]
+    _, errors = module.analyze_chunks(scoped)
+    assert errors.count("chunk_missing_identity") == 2
+    conn.execute.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_encoded_legacy_metadata_is_recovered_as_native_object():
+    module = load_reconciliation()
+    conn = AsyncMock()
+    conn.fetchrow.return_value = {"source_path": "guide.txt", "source_type": "text"}
+    row = {"id": "row", "source": "guide.txt", "metadata": json.dumps({
+        "workspace_id": "ws", "doc_id": "doc", "document_id": "doc"})}
+    scoped, recovered, excluded = await module.recover_legacy_rows(conn, "rag", [row])
+    assert excluded == 0 and isinstance(recovered[0]["metadata"], dict)
+    assert module.analyze_chunks(scoped)[1] == []
+    conn.fetchrow.return_value = None
+    scoped, recovered, _ = await module.recover_legacy_rows(conn, "rag", [row])
+    assert recovered == []
+    assert module.analyze_chunks(scoped)[1] == ["malformed_chunk_metadata"]
 
 
 @pytest.mark.asyncio

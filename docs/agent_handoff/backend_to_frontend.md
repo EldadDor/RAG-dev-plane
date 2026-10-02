@@ -3,6 +3,36 @@
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.
 
+## 2026-10-02 — NP-20 local rollout validated; FP-10–FP-12 unblocked
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API validation / integration handoff
+- **Status:** Implemented, enabled and live-validated on the configured local stack
+- **Affected contract/files:** `GET /workspaces/{workspace_id}/documents`;
+  `docs/frontend_architecture.md`; FP-10, FP-11, FP-12.
+- **Message:** Migration 006 is applied and metadata is certified for 132
+  document publications across two model profiles, with 2,886 scoped chunks
+  and zero SQL count mismatches. Recovered 568 legacy ID aliases from exact
+  source-record matches. Preserved 32 unscoped legacy vectors, excluded with
+  warnings. Unknown historical ingestion times remain null. Local listing is
+  enabled; health/readiness and documents return 200. Full offline suite:
+  **134 passed**. Live HTTP validated limits 1/25/100, stable traversal, counts,
+  safe fields/headers and invalid requests. Real PostgreSQL fixtures validated
+  two principals/workspaces, revoked access, cursor binding and changed-list
+  409, zero chunks, unchanged/failed/changed replacement, synthetic warming and
+  scoped directory cleanup. Fixtures rolled back; no real model calls ran.
+- **Action requested:** Proceed with FP-10 against the canonical contract, then
+  FP-11/FP-12 badges. Omit profile parameters initially to match chat defaults.
+  Show null ingestion time as unavailable history; treat exact count 0 as valid.
+  Restart page one on 409, clear protected data on 401/403, and expose retry on
+  503. Record browser integration results in the frontend-owned handoff.
+- **Evidence:** `docs/phase_qa/NP20-live-document-catalog.json` and
+  `docs/phase_qa/NP20-reconciliation.json`; repeatable local validation runner
+  `scripts/validate_document_catalog.py`. Current-state snapshot: `afee99c`.
+- **Supersedes / follow-up:** Resolves the implementation checkpoint's local
+  rollout gate below. Frontend browser validation remains frontend-owned.
+
 ## 2026-10-02 — NP-20 document metadata API implemented; rollout pending
 
 - **From:** Backend

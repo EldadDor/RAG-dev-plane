@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "live_health_readiness",
+    "http_pagination_order_count_parity",
+    "public_field_allowlist",
+    "cache_headers",
+    "invalid_queries",
+    "workspace_denial",
+    "two_principal_workspace_isolation",
+    "cross_user_cursor_binding",
+    "membership_revocation",
+    "zero_chunk_publication",
+    "unchanged_skip",
+    "failed_replace_rollback",
+    "changed_revision_409",
+    "synthetic_warm_count_time_parity",
+    "scoped_directory_cleanup",
+    "other_profile_workspace_preserved"
+  ],
+  "fixtures_rolled_back": true,
+  "http_scopes": [
+    {
+      "chunks": 1347,
+      "documents": 62,
+      "model_profile": "bge-m3",
+      "page_limits": [
+        1,
+        25,
+        100
+      ],
+      "workspace_id": "local"
+    },
+    {
+      "chunks": 1134,
+      "documents": 59,
+      "model_profile": "default",
+      "page_limits": [
+        1,
+        25,
+        100
+      ],
+      "workspace_id": "local"
+    }
+  ],
+  "provider_calls": 0,
+  "validated_at": "2026-10-02T16:32:44.914181+00:00"
+}
