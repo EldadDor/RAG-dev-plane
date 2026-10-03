@@ -108,16 +108,6 @@ handoff entries > other docs.
 
 ---
 
-## `phase-sync`
-On `phase-sync`, touch no source files:
-1. `git log --oneline <last Last-reviewed date>..HEAD` — list commits not yet
-   reflected in the current board or completed ledger for the relevant area.
-2. Correct current-phase task rows (status, evidence, commit hash); reconcile
-   existing historical entries in `docs/complete_phases.md`. New phase closures
-   still require G4; do not restore completed history to the current board.
-3. Report a diff summary only.
-
-
 # Backend rules (ignore in `frontend/`)
 
 ## Stack
