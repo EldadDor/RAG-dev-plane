@@ -1,7 +1,7 @@
 # Next Phase — Approval Backlog
 
 **Status:** NP-21 PowerPoint ingestion is implemented and locally validated; frontend FP-12 may add the powerpoint type.
-**Last reviewed:** 2026-10-02
+**Last reviewed:** 2026-10-03
 
 This is the ordered backlog for the next approved phase. Each item must have a
 defined scope, acceptance checks, and an approval decision before implementation.
@@ -31,6 +31,137 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 19 | NP-19 | Recent document metadata API design | Full proposed contract and publication/lifecycle implementation plan in recent_document_metadata_api_design.md. | Design complete 2026-10-02. |
 | 20 | NP-20 | Implement recent document metadata API | Catalog storage, lifecycle integration, authorized listing, reconciliation tooling and frontend contract implemented. | Complete 2026-10-02: 134 offline tests; migration/backfill, enablement and live acceptance validated. |
 | 21 | NP-21 | PowerPoint ingestion | Slide text, images, tables, cached charts, notes, scoped chunking and catalog type implemented. | Complete 2026-10-02: 149 offline tests, migration 007 and provider-free local SQL validation. |
+| 22 | NP-22 | Recent-chat uniqueness, ordering and retrieval contract | Backend prerequisite/clarification for FP-15; audit duplicates and deterministic ordering, then decide bounded retrieval. | Intake complete; implementation not activated. |
+| 23 | NP-23 | Authenticated profile and user preferences | Define and deliver approved account capabilities for FP-16. | Contract/product scope and persistence design before implementation. |
+| 24 | NP-24 | Logout ownership and signed-out contract | Resolve gateway/identity-provider ownership for FP-16. | Infrastructure owner decision; separate from NP-12/FP-03 deployment. |
+| 25 | NP-25 | Whole-document overview capability | Define and deliver authorized, revision-scoped overview actions for FP-17. | Design first; model processing and persistence require phase approval. |
+| 26 | NP-26 | Trustworthy page counts and single-page previews | Define and deliver complete one-page PDF/DOCX and one-slide PowerPoint previews for FP-17. | Rendering/source storage design and dependencies require phase approval. |
+
+## Frontend handoff task breakdown — 2026-10-03
+
+Source: [FP-15–FP-17 handoff](agent_handoff/frontend_to_backend.md).
+This intake authorizes task creation only. Tasks below are backend-owned backlog
+items, not implemented endpoints or approved migrations. FP-14 uses the existing
+new-session/SSE contract and needs no backend task. FP-15 can implement its local
+display cap against the current uncapped session list while NP-22 is reviewed.
+
+### NP-22 — Recent chats (FP-15)
+
+- **NP22-01, audit:** Trace session creation, list/load, refresh and archive paths;
+  distinguish duplicate IDs from valid similarly titled sessions. Current route
+  returns an uncapped bare array of owned, non-archived workspace sessions.
+  PostgreSQL and in-memory stores sort by updated_at but lack an explicit ID
+  tie-breaker. In-memory rename/archive mutate a copied detail object rather than
+  stored metadata; include that confirmed parity defect in the approved fix scope.
+- **NP22-02, contract and correction:** Specify newest-first ordering with a
+  stable session-ID tie-breaker and null timestamp handling for both stores.
+  Preserve the bare-array response unless a separately published extension is
+  approved. Decide whether optional limit/pagination is needed; if so define
+  bounds, cursor scope, refresh and ordering under concurrent updates. Defaults
+  10 and choices 10/20/50/100 are display preferences, not raw-turn retention.
+- **NP22-03, acceptance/publication:** Offline checks for ownership/workspace
+  isolation, unique IDs, equal timestamps, archive/rename persistence, similar
+  titles, more than 100 sessions and any approved pagination. Publish examples
+  and cap semantics in frontend_architecture.md and respond through the handoff.
+- **Affected:** chat router/schemas, conversation_store.py, focused session/API
+  tests and shared contract. No data deletion, retention change or live calls.
+  Planned commit: `NP-22: stabilize recent chat listing`.
+
+### NP-23 — Profile and preferences (FP-16)
+
+- **NP23-01, design:** Inventory trustworthy principal fields and approved
+  workspace details; define read-only versus explicitly editable fields and
+  unsupported capabilities. Propose recent_chat_limit only: 10/20/50/100,
+  default 10; decide local versus per-principal persistent preferences and
+  cross-login behavior. Never accept a browser-selected identity.
+- **NP23-02, approved implementation:** Add agreed read/update schemas and
+  operations with validation, defaults, persistence and safe errors. Any durable
+  storage uses a reviewed versioned migration with rollout/rollback; identity,
+  account administration and provider/database configuration remain outside scope.
+- **NP23-03, acceptance/publication:** Offline tests cover supported/unsupported
+  fields, invalid values, unknown fields, default/read/update/reload, independent
+  principals and auth failures. Publish request/response/error examples before
+  frontend integration. Depends on product approval of NP23-01; logout is NP-24.
+- **Affected:** identity/dependencies, new account route/service/schemas, approved
+  storage/migration, tests, contract. Planned commit: `NP-23: add approved account preferences`.
+
+### NP-24 — Logout (FP-16)
+
+- **NP24-01, ownership decision:** With the trusted gateway/infrastructure owner,
+  establish whether gateway, identity provider or backend invalidates sessions.
+  Current identity.py resolves a fixed local principal or trusted request headers;
+  there is no backend logout capability. Local mode must explicitly report
+  unavailable logout rather than simulate authentication termination.
+- **NP24-02, contract then approved integration:** Define method/route or approved
+  redirect, CSRF protection where applicable, cookie/session invalidation, safe
+  redirects, success/failure and signed-out/reauthentication behavior. Do not
+  invent an identity provider or silently expand office deployment scope.
+- **NP24-03, acceptance/publication:** Offline mocks verify unavailable local
+  behavior, failed invalidation, supported success and unsafe redirect rejection;
+  coordinate separately approved gateway/browser validation. Specify when the
+  frontend clears protected data and suppresses late responses. Draft/stream
+  interruption confirmation belongs to FP-16.
+- **Affected:** identity/auth integration, approved gateway configuration and
+  contract/tests. Depends on NP24-01 and relevant FP-03 infrastructure decisions.
+  Planned commit: `NP-24: publish and integrate approved logout flow`.
+
+### NP-25 — Whole-document overview (FP-17)
+
+- **NP25-01, design:** Define supported actions keyed by doc_id and authorized
+  workspace/model/chunking scope. Choose precomputed versus on-demand generation;
+  establish a trustworthy whole-document input, coverage/truncation disclosure,
+  revision/hash identity, provenance, freshness, cost/latency/output/input limits,
+  timeout/retry and concurrency semantics. An arbitrary retrieved chunk cannot
+  stand in for a whole-document overview.
+- **NP25-02, approved implementation:** Add agreed authorized capability/overview
+  routes, source resolution and any scoped cache. Revalidate membership each
+  request; invalidate on changed/deleted/re-ingested source and profile changes.
+  Preserve safe errors and private cache policy; avoid paths/provider error leaks.
+  Do not write turns to active chat or alter retrieval scope.
+- **NP25-03, acceptance/publication:** Provider-free tests with mocked generation
+  cover scope isolation, source identity, unsupported/missing/deleted content,
+  revision invalidation, limits, retries, failure and auth loss. Publish concrete
+  examples and availability in the contract/handoff before FP-17 integration.
+- **Affected:** document catalog/routes/schemas, source lifecycle, approved
+  overview service/cache, tests and contract. Depends on NP25-01 approval and
+  approved model-processing/storage scope. Planned commit: `NP-25: add authorized document overviews`.
+
+### NP-26 — Counts and full single-page preview (FP-17)
+
+- **NP26-01, feasibility/design:** Define canonical type, nullable page/slide count
+  and provenance; exact one-page PDF/DOCX or one-slide PowerPoint is eligible.
+  DOCX requires a chosen renderer/pagination definition. Determine source-byte
+  availability, safe rendering, supported formats, dependencies/resource limits
+  and storage lifecycle. Chunk counts and citation images prove neither page
+  count nor availability of a complete page/slide preview.
+- **NP26-02, approved implementation:** Publish supported actions and count data
+  compatibly with NP-20; implement agreed browser-safe media and authorized
+  relative content routes. Bind previews to document revision/profile, enforce
+  membership on every request, and invalidate assets on replacement/deletion.
+  Define unsupported, multipage, unknown-count, oversized and failed rendering
+  responses plus private cache policy; no internal paths or public source URLs.
+- **NP26-03, acceptance/publication:** Offline synthetic fixtures cover full
+  one-page PDF/DOCX and one-slide preview, multipage/unknown/unsupported input,
+  deleted/replaced revisions, hostile packages, limits and denied access.
+  Publish media/route/error examples and rendering limitations. Live/rendering
+  tool installation or service validation requires its separately approved scope.
+- **Affected:** loaders/ingestion, catalog metadata and reviewed migration if
+  needed, private source/asset storage, document/asset routes, tests and contract.
+  Depends on NP26-01 approval; coordinate capability shape with NP-25. Multipage
+  navigation/download, OCR and visual interpretation remain separate scope.
+  Planned commit: `NP-26: add authorized single-page document previews`.
+
+### Delivery order and completion gate
+
+Review NP-22 first. NP-23 and NP-24 can be designed independently; FP-16 needs
+both readiness responses. Design NP-25 and NP-26 together so FP-17 receives a
+consistent capability/revision contract, then implement each approved slice.
+Before activation, move the selected phase to work_current_phase.md, record
+approval, exact files, offline checks, data impact/rollback and any live gate.
+Each phase closes with contract examples and a backend-to-frontend readiness
+entry stating supported capabilities and remaining limitations. Kotlin runtime
+parity is a follow-up for its owner once contracts are approved, not an implicit
+change to the parallel repository.
 
 ## Latest Completed-Phase Record
 

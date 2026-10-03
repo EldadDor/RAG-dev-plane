@@ -1,7 +1,7 @@
 # Current Frontend Work Phase — FP-02 Frontend Hardening and UX Refinement
 
 **Status:** FP-02 completed; FP-10–FP-12 implemented and locally validated
-**Last reviewed:** 2026-10-02
+**Last reviewed:** 2026-10-03
 **Owner:** Frontend team
 
 ## Objective
@@ -35,6 +35,8 @@ limited to the existing frontend and proxy-only API contract.
 | FP-10 | Recent ingested documents in the left panel | Completed | FP-10: 2026-10-02: Implemented api.ts, documentCatalog.ts, DocumentsPanel.tsx, App.tsx and styles.css: relative scoped API, newest-first server ordering, refresh/load-more, no polling, abort/stale guards, one 409 restart, scope/revision checking, 401/403 clearing and 403 discovery, 503 retry, null ingestion history, valid zero counts, Hebrew/long-name and narrow-layout handling. Passed 34 Vitest tests including pagination/restart/abort regressions, tsc -b, Vite build and git diff --check. No browser automation or live services ran; manual browser integration remains unverified. Commit: c58e667. |
 | FP-11 | Configurable chunk-count size indicators | Completed | FP-11: 2026-10-02: documentBadges.ts centralizes inclusive upper bounds 25/100/500 and size colors; Small/Medium/Big/Extra-Large text badges, exact chunk totals and expandable guide render in DocumentsPanel.tsx. Zero is Small; invalid/missing counts are Unknown. Boundary/invalid-value unit coverage passed in 34-test suite; tsc -b and production build passed. Commit: c58e667. |
 | FP-12 | Configurable document-type colors | Completed | FP-12: 2026-10-02: documentBadges.ts maps word/pdf/markdown/html/text/code/unknown to configurable color pairs and explicit text labels; separate type/size badges in DocumentsPanel.tsx with future-type fallback. Unit tests cover canonical, future and inherited object keys. Passed 34 Vitest tests, tsc -b, Vite production build and git diff --check; no dependencies, browser automation or live services added. Commit: c58e667. |
+| FP-13 | Record UI behavior requirements and backend API handoff | Completed | FP-13: 2026-10-03: Added FP-14 through FP-17 requirements, acceptance criteria, ordering, dependencies and validation in next_phase.md; recorded account/preferences/logout, document overview/preview and session-list clarification in docs/agent_handoff/frontend_to_backend.md. Evidence: read frontend_architecture.md first; rtk read next_phase.md and targeted handoff/phase rereads verified records. Documentation only; no application code, API contract edits or commit. Type checks, tests, builds, browser automation and live services not run. |
+
 ## Acceptance Checks
 
 - Keyboard and screen-reader behavior is verified for workspace, session,

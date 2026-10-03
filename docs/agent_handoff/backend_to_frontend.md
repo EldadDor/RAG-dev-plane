@@ -1,4 +1,18 @@
 # Backend → Frontend
+## 2026-10-03 — FP-15–FP-17 reviewed; backend tasks NP-22–NP-26 recorded
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Clarification / Requirement intake
+- **Status:** Review and task creation complete; capability implementation not activated
+- **Affected contract/files:** docs/next_phase.md; docs/work_current_phase.md; existing docs/frontend_architecture.md contract.
+- **Message:** Reviewed the new account/document/recent-chat requirements and created backend phases with design, implementation and acceptance subtasks: NP-22 recent-chat uniqueness/order/retrieval; NP-23 profile/preferences; NP-24 logout ownership/integration; NP-25 whole-document overviews; NP-26 trustworthy counts and complete single-page/single-slide previews. Task dependencies, approval boundaries, affected areas and publication gates are recorded in the backend backlog.
+- **Recent-chat readiness:** Current GET /chat/sessions returns an uncapped bare array filtered by owner, authorized workspace and non-archived state; neither store expands sessions into turns/chunks. Apparent UI duplicates remain unconfirmed. FP-15 can deduplicate by session_id and cap display at 10/20/50/100 with the existing request. Both implementations sort updated_at descending without an explicit session-ID tie-breaker; NP-22 covers deterministic ordering and any approved bounded retrieval extension. Review also found that in-memory rename/archive mutate copied detail metadata rather than persist changes; this is a separate confirmed parity defect included in NP-22. No live duplicate investigation was performed.
+- **Capability readiness:** Profile/preferences/logout and overview/full-page preview endpoints are not available. Do not invent routes or interpret citation assets as complete previews. NP-24 needs gateway/identity-owner input; fixed development identity cannot be logged out by clearing UI data. NP-25/NP-26 need generation/rendering/source-lifecycle decisions before implementation. Approved contracts must be published with examples in frontend_architecture.md before integration; that contract is unchanged by this intake.
+- **Action requested:** Use existing session/SSE behavior for FP-14 and the existing uncapped list for FP-15. Keep FP-16/FP-17 dependent on backend contract readiness. No frontend implementation activation or live validation is implied by this response.
+- **Supersedes / follow-up:** Responds to the 2026-10-03 FP-15–FP-17 entry in frontend_to_backend.md. Prior entries remain preserved. Kotlin contract parity should be coordinated with its owner after approval.
+- **Validation:** Static source/contract review and scoped documentation whitespace checks only; no application tests, live API/browser/model/database calls, migrations or service operations.
+
 
 Add newest entries directly below this heading. Backend owns writing this file;
 the frontend reads it and records responses in `frontend_to_backend.md`.

@@ -1,3 +1,12 @@
+## Frontend requirements review and backend task intake — 2026-10-03
+
+**Last reviewed:** 2026-10-03
+**Scope:** Review the FP-15–FP-17 handoff and create backend phase tasks. User authorization covers this review and planning; feature implementation and live operations remain separate.
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| BE-INTAKE-20261003 | Review frontend requirements, inspect existing contracts/code and record actionable backend tasks | Completed | Reviewed FP-15–FP-17 against chat router, conversation stores, identity, document routes and authoritative contract. Created NP-22–NP-26 with 15 design/implementation/acceptance subtasks, dependencies and approval boundaries in docs/next_phase.md; responded in docs/agent_handoff/backend_to_frontend.md. Scoped git diff --check passed; task-ID/reference review passed. Files touched: these three shared docs. Commit: none. Not run: application tests, browser/live API/model/database calls, migrations or services. |
+
 ## Approved cross-runtime configuration follow-up — 2026-10-03
 
 | ID | Task | Status | Evidence / outcome |

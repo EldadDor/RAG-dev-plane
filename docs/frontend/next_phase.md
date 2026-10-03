@@ -3,7 +3,7 @@
 **Status:** FP-02 Frontend Hardening and UX Refinement is complete. This file
 tracks work after FP-02; authoritative current-task status remains in
 `work_current_phase.md`.
-**Last reviewed:** 2026-10-02
+**Last reviewed:** 2026-10-03
 **Owner:** Frontend team
 
 ## Current Phase Checkpoint
@@ -122,3 +122,121 @@ Big 101–500, Extra-Large 501+ chunks; thresholds and type/size color pairs liv
 in `frontend/apps/rag-dev-plane/src/documentBadges.ts`.
 Manual browser integration is unverified and requires the separately approved
 live validation scope; no live services or browser automation ran.
+
+## UI behavior intake activation — 2026-10-03
+
+FP-13 (record UI behavior requirements and backend API handoff) moved to the current task board before intake work. This request authorizes planning and handoff only; FP-14 through FP-17 implementation remains backlog work.
+
+## UI Behavior Requirements — 2026-10-03
+
+Planning authorized by the user; implementation has not started. FP-13 records
+this intake and its backend handoff. Move each candidate to the current board
+before implementation. Existing FP-03 delivery work remains separate.
+
+| Priority | ID | Candidate task | Dependency / readiness |
+| --- | --- | --- | --- |
+| 1 | FP-14 | Reliable New chat action with active-chat confirmation | Existing session/SSE contract; define active-chat predicate below in implementation. |
+| 2 | FP-15 | Unique recent chats with selectable display limit | Existing session list; backend clarification requested if bounded server retrieval is needed. |
+| 3 | FP-16 | Profile, Settings, and Logout actions | Backend account/preferences/authentication contract and product scope required. |
+| 4 | FP-17 | Recent-document action menu, overview, and single-page preview | Backend authorized overview/preview capability contract required. |
+
+### FP-14 — New chat always starts a fresh conversation
+
+- Keep New chat actionable in every UI state: existing or empty chat, loading,
+  streaming, interrupted/error states, and open rename/dialog/panel states.
+- Prompt for approval only when in the middle of a chat. Proposed operational
+  definition: an in-flight answer or unsent non-empty draft; merely viewing a
+  completed conversation does not require confirmation. Record this definition
+  when activating; clarify if product intent also includes completed sessions.
+- Confirm continues to a fresh empty composer; Cancel preserves the draft,
+  conversation, and running request. Prevent duplicate confirmation dialogs.
+- On continuation, abort pending chat/detail requests and ignore stale results;
+  clear active session, draft, turns, summary, citations, partial answer, errors,
+  and transient chat actions. Preserve workspace and recent-chat navigation.
+  Omit session_id on the first submitted turn; do not create empty server chats
+  merely by clicking New chat. With no authorized workspace, still show the
+  fresh-chat state and normal workspace selection requirement for submission.
+- Do not delete/archive existing chats; honor documented cancellation persistence.
+  Focus the composer and support keyboard/dialog focus behavior.
+- Acceptance: state-matrix checks cover empty/completed/draft/loading/streaming/
+  failed chat, confirm/cancel, repeated clicks, and late response suppression.
+
+### FP-15 — Unique, bounded recent-chat list
+
+- Investigate the reported duplicates before assigning a cause. Each item must
+  represent a session, not a retrieved chunk, turn, or prompt-query result.
+- Deduplicate by stable session_id within the authorized workspace; merge
+  refreshed/session-completion data consistently and keep the newest updated_at
+  record. Similar titles/previews with different IDs remain distinct chats.
+- Default to the 10 most recently updated unique sessions. Place a labelled
+  selector above the list with exactly 10, 20, 50, and 100 options; cap visible
+  rows at the selected value after deduplication and newest-first sorting, with
+  a stable session-ID tie-breaker. Keep the selected count during the current
+  UI session; cross-login persistence depends on FP-16's settings contract.
+- Changing the cap must not delete history or disrupt the active conversation;
+  an active chat outside the cap remains open. Clear old workspace records,
+  ignore stale responses, and preserve loading/empty/error/retry behavior.
+- Acceptance: duplicate IDs, legitimately similar chats, refreshed records,
+  timestamp ties, each cap, fewer-than-cap records, and workspace switching.
+  If the server list is bounded, obtain enough unique sessions through an
+  agreed limit/pagination contract; do not invent query parameters.
+
+### FP-16 — Profile / Settings / Logout
+
+- Proposed product scope: Profile shows the authenticated display name and
+  backend-approved account/workspace details; Settings exposes supported user
+  preferences (initial candidate: recent-chat cap); Logout ends the applicable
+  authenticated session and returns to the documented signed-out experience.
+- Treat this as a proposal requiring backend capability definitions, not a
+  promise of editable identity, account administration, or provider settings.
+  Publish which fields are read-only/editable and which preferences are local
+  versus server-persisted before implementing controls.
+- Menus/dialogs need keyboard access, focus return, save/cancel/error/loading
+  states, and explicit unsupported capability handling. Never simulate successful
+  logout by just hiding the chat; document fixed local-development identity behavior.
+- Confirm interruption if logout would discard a draft or active answer. On
+  successful logout, abort requests and clear protected sessions, documents,
+  content and account data; block late responses from restoring signed-out data.
+- Acceptance: supported/unsupported capabilities, preference validation and
+  persistence, safe auth failures, logout success/failure, and stale-response guards.
+- Dependency: 2026-10-03 frontend-to-backend handoff and published authoritative
+  API contract, including gateway/identity-provider ownership of logout.
+
+### FP-17 — Recent-document actions
+
+- Add a clickable per-document action control to the left recent-documents panel
+  with at least Brief overview and View document when supported. Use explicit
+  capability/unavailable messages for unsupported actions; no guessed content URLs.
+- Brief overview opens a clearly labelled overview of the selected whole document,
+  not an arbitrary retrieved chunk. Show source identity and generation/provenance
+  information supplied by the contract; handle loading/retry/empty/unavailable states.
+- For a document with exactly one page (PDF/DOCX) or one slide (presentation),
+  View document shows the complete authorized page/slide. DOCX page count must
+  come from an agreed rendering, not chunk count or filename inference.
+- Multi-page documents may show an overview and an explicit preview limitation;
+  broader multipage viewing/download/navigation is a separate scope decision.
+  Closing actions returns focus; support Hebrew/RTL, long titles and narrow layouts.
+- Abort/ignore stale overview/preview requests on workspace/document changes;
+  clear protected content on auth/access loss. Opening an action does not silently
+  filter chat retrieval or submit a prompt to the current conversation.
+- Acceptance: supported one-page/one-slide previews, multi-page/unknown count,
+  unsupported format, missing/deleted content, authorization loss, overview failure,
+  workspace switching, and accessible menu/dialog behavior.
+- Dependency: backend document overview, page/slide count, supported-action and
+  browser-safe preview contract; existing NP-20 metadata alone is insufficient.
+
+### Delivery boundaries and validation
+
+- Likely files: frontend/apps/rag-dev-plane/src/App.tsx, api.ts,
+  DocumentsPanel.tsx, styles.css, and focused unit tests; create small frontend
+  helpers/components as needed. Confirm exact files upon activation.
+- Sequence: FP-14, FP-15; FP-16 and FP-17 after their backend contracts arrive.
+  Planned commits use each task ID and keep features independently reviewable.
+- Implementation validation: permitted frontend type checks, focused unit tests,
+  production build and scoped whitespace check. New dependencies, browser
+  automation, deployment/auth changes and live-service validation retain existing
+  approval gates. No backend implementation or architecture edits during intake.
+- FP-13 documentation validation: targeted rereads of phase records and handoff.
+  No type checks, tests, builds, browser automation or live services ran.
+
+FP-13 intake completed on 2026-10-03. Phase/backlog and backend handoff records verified by targeted reads; FP-14 through FP-17 remain unimplemented candidates. No application validation commands or live services ran.
