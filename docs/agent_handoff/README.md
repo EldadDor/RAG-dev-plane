@@ -36,6 +36,20 @@ inside either implementation directory, so each side can read and write it.
 
 ## Current cross-team state
 
+**Last reviewed:** 2026-10-03. These checkpoints summarize recorded validation,
+not a fresh live-service health check.
+
+- NP-20 catalog and NP-21 PowerPoint ingestion are implemented with recorded
+  local rollout evidence. FP-10–FP-12 are implemented and locally validated;
+  manual catalog browser integration remains unverified.
+- NP-22 ordering/fallback persistence is approved and closed (`983e8d6`,
+  `32acbb5`), with 18 offline tests. FP-15 can use the uncapped session list;
+  FP-14 uses the existing session/SSE contract. FP-14–FP-17 remain candidates.
+- NP-23/NP-24 account/preferences/logout and NP-25/NP-26 overview/full-preview
+  contracts remain backend candidates required by FP-16/FP-17.
+- Shared local cursor-secret configuration is recorded; fresh process/catalog
+  acceptance remains an operator follow-up. Kotlin session parity is unverified.
+
 - Backend NP-05 workspace discovery and authorization are complete and
   live-validated. Frontend FP-01 and FP-02 are complete, including operator-run
   streaming validation.

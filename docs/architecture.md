@@ -151,7 +151,7 @@ Embeddings use 768 dimensions by default for `nomic-embed-text`; the configured 
 
 The normal pytest suite uses mocks and in-process FastAPI transport, so it does not require a running API, model endpoint, Qdrant, or PostgreSQL instance.
 
-`tests/integration/test_live_stack.py` is opt-in (`RUN_LIVE_INTEGRATION=1`). It calls an already-running local API and verifies readiness, ingestion, embedding, pgvector retrieval, grounded chat sources, workspace isolation, and cleanup. See [testing.md](testing.md) for exact commands and PyCharm configuration.
+`tests/integration/test_live_stack.py` is opt-in (`RUN_LIVE_INTEGRATION=1`). It calls an already-running local API and verifies readiness, ingestion, embedding, pgvector retrieval, grounded chat sources, workspace isolation, and cleanup. See [testing.md](archive/testing.md) for exact commands and PyCharm configuration.
 
 ## Current Boundaries and Planned Work
 

@@ -3,6 +3,17 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-10-03 — NP-22 activation and closure
+
+- **Status:** Approved and completed.
+- **Decision:** User instructed “Start NP-22”, then approved proceeding with
+  implementation and closure. Preserve the uncapped bare-array session response,
+  add deterministic timestamp/ID ordering and fix fallback rename/archive
+  persistence. FP-15's display cap remains separate from retained raw turns.
+- **Evidence:** Implementation `983e8d6`, closure `32acbb5`, 18 offline tests;
+  docs/work_current_phase.md and docs/frontend_architecture.md. No live validation
+  or NP-23–NP-26 activation was implied by this decision.
+
 ## 2026-08-31 — FP-06 streaming interaction and recovery
 
 - **Status:** Approved.

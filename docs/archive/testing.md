@@ -15,7 +15,7 @@ Run the unit suite from the project root:
 .\.venv\Scripts\python.exe -m pytest tests\ -q
 ```
 
-The suite must remain independent of live services. `tests/conftest.py` sets
+The suite must remain independent of live services. `../../tests/conftest.py` sets
 test-only Qdrant and model values before the application modules load, while
 service and HTTP clients are mocked at their adapters.
 
@@ -43,7 +43,7 @@ default `%TEMP%` pytest directory is not accessible:
 
 ## Live integration test
 
-`tests/integration/test_live_stack.py` is deliberately skipped unless enabled.
+`../../tests/integration/test_live_stack.py` is deliberately skipped unless enabled.
 It does not start the application. Instead, it calls the API you already run
 from IntelliJ at `RAG_API_BASE_URL` (default `http://127.0.0.1:8000`).
 

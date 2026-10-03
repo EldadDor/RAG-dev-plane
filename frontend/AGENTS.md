@@ -1,6 +1,6 @@
 # Frontend Agent Instructions
 
-The root `AGENTS.md` applies here in full — including the phase-record rule,
+The root `AGENTS.md` and its referenced `.codex/AGENTS.md` apply here in full — including the phase-record rule,
 intake rule, safety rules, precedence, and the closing `Phase records: …` line.
 This file only pins the frontend paths and its definition of done.
 
@@ -11,8 +11,11 @@ whether or not the prompt mentions them, unless the user explicitly says not to.
 Never start an item that has no row in `work_current_phase.md`; move it from
 `next_phase.md` first.
 
-The "Required Update Protocol" kept in the phase file now mirrors this section;
-if they diverge, this file wins (per root precedence).
+Follow `.codex/AGENTS.md` gates G1–G4, including task-specific approval and the
+`Status`, `Gate`, and `Request / evidence` columns. Current records cover only
+the active phase; next records contain at most three brief candidate phases.
+All completed frontend phases belong only in `../docs/complete_phases.md`.
+Disregard `../docs/archive/` entirely unless the user requests a specific item.
 
 ## Scope (frontend)
 Work only in `frontend/**`. Treat everything outside it — `src/`, `tests/`,
@@ -27,7 +30,8 @@ instead of crossing over.
 Never search, read, or run against these (they are generated or vendored):
 `node_modules/`, `dist/`, `.vite/`, `.vite-temp/`, `coverage/`, `../out/`,
 `../.venv/`, `../src/`, `../tests/`, `../database/`.
-Source of truth is `frontend/src/`; static assets live in `frontend/public/`.
+Source of truth is `frontend/apps/rag-dev-plane/src/`; app assets live alongside
+that application. Consult its app-scoped configuration for exact asset paths.
 
 ## Validation
 - Run frontend type checks, tests, and production builds when the user permits.
