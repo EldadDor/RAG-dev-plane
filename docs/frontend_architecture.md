@@ -20,7 +20,7 @@ React + TypeScript + Vite SPA: top workspace selector, central streaming chat an
   `role` is either `owner` or `member`. Workspaces are ordered by `display_name`, then `workspace_id`.
 - `POST /chat` returns a completed grounded response.
 - `POST /chat/stream` is SSE. Its complete wire contract, including the named JSON events and cancellation semantics, is below.
-- `GET /chat/sessions?workspace_id=<non-empty text>` lists the current user's active sessions. It returns a bare JSON array, newest `updated_at` first:
+- `GET /chat/sessions?workspace_id=<non-empty text>` lists the current user's active sessions. It returns a bare JSON array, newest `updated_at` first, null timestamps last, then `session_id` ascending using case-sensitive ordinal ordering for ties. Both PostgreSQL and the in-memory fallback follow this order. There is one record per session ID within the authorized workspace; similarly titled sessions with different IDs remain distinct. The list is uncapped and has no limit/cursor parameters. Frontend FP-15 deduplicates by ID and applies its 10/20/50/100 display choice locally (default 10); this does not change stored history or the raw-turn retention limit. Refresh replaces the previous list; archive excludes the session on subsequent list/load requests. Rename persists the title and refreshes updated_at. It returns:
 
   ```json
   [

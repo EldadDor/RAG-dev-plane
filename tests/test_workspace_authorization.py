@@ -179,3 +179,31 @@ async def test_session_list_rejects_an_empty_workspace_id_as_invalid_request():
         "code": "invalid_request",
         "message": "The request is invalid.",
     }
+
+
+@pytest.mark.asyncio
+async def test_session_actions_persist_through_api_and_archive_hides_detail():
+    store = InMemoryConversationStore()
+    await store.ensure_session("session", "alice", "alpha", "Original")
+    previous_store = getattr(app.state, "conversation_store", None)
+    app.state.conversation_store = store
+    app.dependency_overrides[get_principal] = lambda: Principal("alice", "Alice")
+    app.dependency_overrides[get_workspace_store] = _workspace_store
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            renamed = await client.patch("/chat/sessions/session", json={"title": "Renamed"})
+            listed = await client.get("/chat/sessions", params={"workspace_id": "alpha"})
+            detail = await client.get("/chat/sessions/session")
+            archived = await client.delete("/chat/sessions/session")
+            after = await client.get("/chat/sessions", params={"workspace_id": "alpha"})
+            hidden = await client.get("/chat/sessions/session")
+    finally:
+        if previous_store is None:
+            del app.state.conversation_store
+        else:
+            app.state.conversation_store = previous_store
+    assert renamed.status_code == 200
+    assert listed.json()[0]["title"] == detail.json()["title"] == "Renamed"
+    assert archived.status_code == 204
+    assert after.json() == []
+    assert hidden.status_code == 404

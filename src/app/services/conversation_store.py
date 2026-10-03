@@ -88,7 +88,12 @@ class InMemoryConversationStore:
     async def list_sessions(self, owner_id, workspace_id):
         async with self._lock:
             sessions = [v for v in self._session_meta.values() if v["owner_id"] == owner_id and v["workspace_id"] == workspace_id and not v["archived"]]
-            return sorted(sessions, key=lambda item: item["updated_at"], reverse=True)
+            sessions.sort(key=lambda item: item["session_id"])
+            sessions.sort(
+                key=lambda item: item["updated_at"] or datetime.min.replace(tzinfo=UTC),
+                reverse=True,
+            )
+            return [dict(item) for item in sessions]
     async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._lock:
             v = self._session_meta.get(session_id)
@@ -102,13 +107,21 @@ class InMemoryConversationStore:
             ]
             return result
     async def rename_session(self, session_id, owner_id, workspace_id, title):
-        v = await self.get_session(session_id, owner_id, workspace_id)
-        if not v: return False
-        v["title"] = title; v["updated_at"] = datetime.now(UTC); return True
+        async with self._lock:
+            item = self._session_meta.get(session_id)
+            if not item or item["owner_id"] != owner_id or item["workspace_id"] != workspace_id or item["archived"]:
+                return False
+            item["title"] = title[:200]
+            item["updated_at"] = datetime.now(UTC)
+            return True
     async def archive_session(self, session_id, owner_id, workspace_id):
-        v = await self.get_session(session_id, owner_id, workspace_id)
-        if not v: return False
-        v["archived"] = True; v["updated_at"] = datetime.now(UTC); return True
+        async with self._lock:
+            item = self._session_meta.get(session_id)
+            if not item or item["owner_id"] != owner_id or item["workspace_id"] != workspace_id or item["archived"]:
+                return False
+            item["archived"] = True
+            item["updated_at"] = datetime.now(UTC)
+            return True
 
 
 class PostgresConversationStore:
@@ -222,7 +235,7 @@ class PostgresConversationStore:
             await conn.execute(f"UPDATE {self._schema}.chat_sessions SET last_preview=$4, updated_at=now() WHERE session_id=$1 AND owner_id=$2 AND workspace_id=$3", session_id, owner_id, workspace_id, preview[:300])
     async def list_sessions(self, owner_id, workspace_id):
         async with self._pool.acquire() as conn:
-            return [dict(r) for r in await conn.fetch(f"SELECT session_id, workspace_id, title, last_preview, updated_at FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC", owner_id, workspace_id)]
+            return [dict(r) for r in await conn.fetch(f'SELECT session_id, workspace_id, title, last_preview, updated_at FROM {self._schema}.chat_sessions WHERE owner_id=$1 AND workspace_id=$2 AND NOT archived ORDER BY updated_at DESC NULLS LAST, session_id COLLATE "C" ASC', owner_id, workspace_id)]
     async def get_session(self, session_id, owner_id, workspace_id=None):
         async with self._pool.acquire() as conn:
             row = await conn.fetchrow(f"SELECT session_id, workspace_id, title, last_preview, updated_at FROM {self._schema}.chat_sessions WHERE session_id=$1 AND owner_id=$2 AND ($3::text IS NULL OR workspace_id=$3) AND NOT archived", session_id, owner_id, workspace_id)

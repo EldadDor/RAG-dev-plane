@@ -1,3 +1,20 @@
+# Current Work Phase — NP-22 Recent Chats
+
+**Last reviewed:** 2026-10-03
+**Status:** Implementation complete — offline validated; pending commit/phase closure
+**Approval:** User instructed “Start NP-22” after committing the intake snapshot as `0eccf9d` (secret-bearing local .env excluded).
+**Scope:** Audit session uniqueness, stabilize ordering and fix in-memory rename/archive persistence. Preserve the uncapped bare-array API; FP-15 applies display limits locally. No pagination extension is needed for this phase. No schema, retention, provider, frontend or service configuration changes; rollback is a code revert.
+
+| ID | Task | Status | Evidence / outcome |
+| --- | --- | --- | --- |
+| NP22-01 | Audit session creation/list/refresh/archive and duplicate semantics | Completed | chat_service uses UUID for new sessions and ensures existing IDs; PostgreSQL session_id is a primary key and fallback metadata is keyed by ID. List filters owner/workspace/non-archived, has no joins/cap; frontend refresh replaces rows. Apparent UI duplicates remain unconfirmed without live reproduction. |
+| NP22-02 | Stabilize ordering and fix fallback mutations | Completed | Both stores use updated_at descending, null last, session_id ascending. In-memory rename/archive persist scope-guarded changes under lock; rename matches 200-character store bound, list returns metadata copies. No pagination API added. |
+| NP22-03 | Offline regression checks and contract/handoff publication | Completed | 18 focused store/API tests passed, including 105 sessions, duplicate ensure, same titles, timestamp ties/nulls, scope guards, mutation isolation and API rename/archive. Mocked PostgreSQL checks scope/order query; no real SQL execution. Contract and readiness handoff published; diff --check passed. |
+
+**Validation command:** `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .codex-test-tmp-np22 tests/test_conversation_store.py tests/test_workspace_authorization.py tests/test_api.py` — 18 passed. `git -c safe.directory=E:/Workspace/AI_Stuff/RAG-dev-plane diff --check` — passed.
+**Files touched:** src/app/services/conversation_store.py; tests/test_conversation_store.py; tests/test_workspace_authorization.py; docs/frontend_architecture.md; docs/agent_handoff/backend_to_frontend.md; docs/next_phase.md; this record.
+**Commit:** Intake snapshot `0eccf9d`; NP-22 implementation uncommitted for review. Formal complete_phases.md entry deferred until committed, as that file requires. Not run: full suite, live PostgreSQL/API/browser/model calls, migrations or services. No frontend/runtime configuration changes.
+
 ## Frontend requirements review and backend task intake — 2026-10-03
 
 **Last reviewed:** 2026-10-03

@@ -1,4 +1,16 @@
 # Backend → Frontend
+## 2026-10-03 — NP-22 recent-chat contract and fallback fixes ready
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Clarification / Validation
+- **Status:** Implemented and offline validated; live integration not run
+- **Affected contract/files:** GET /chat/sessions; docs/frontend_architecture.md; conversation_store.py.
+- **Message:** Session listing remains an uncapped bare array of owned, authorized-workspace active sessions, one row per session ID. Both stores now order updated_at descending, nulls last, then session_id ascending with ordinal/case-sensitive comparison. No limit/cursor request parameters were introduced. FP-15 may apply default 10 and choices 10/20/50/100 locally after ID deduplication; different IDs with similar titles remain valid distinct chats. In-memory rename/archive now persist guarded updates under lock; archived sessions disappear from subsequent list/detail requests. List results no longer expose mutable stored metadata.
+- **Validation:** 18 provider-free focused tests passed, including 105 sessions, ID uniqueness, timestamp ties/nulls, ownership/workspace boundaries, rename/archive through the API and mocked PostgreSQL query order. Scoped whitespace checks passed. No live SQL/API/browser/model calls, full suite or service operations ran. Apparent frontend duplicates were not reproduced and no cause is claimed. PostgreSQL query execution remains live-unverified.
+- **Action requested:** Integrate FP-15 against the published existing response shape. Kotlin owner should apply equivalent ordering/fallback semantics when coordinating runtime parity; this repository change does not update Kotlin.
+- **Supersedes / follow-up:** Updates NP-22 readiness in the earlier 2026-10-03 intake response. NP-23–NP-26 readiness is unchanged. Implementation remains uncommitted for review.
+
 ## 2026-10-03 — FP-15–FP-17 reviewed; backend tasks NP-22–NP-26 recorded
 
 - **From:** Backend
