@@ -1,4 +1,15 @@
 # Backend → Frontend
+## 2026-10-03 — NP-24 closed with G4 approval
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Completed — G4 approved; backend phase closed
+- **Affected contract/files:** docs/complete_phases.md; docs/work_current_phase.md; NP-24 published contract and operations guide.
+- **Message:** User approved NP-24 closure. Design, gateway/session/logout implementation, 266-test offline validation and contract delivery are complete (`be26a96`, `8afaefd` pushed). Completed outcomes and approved carry-over are tracked only in the completed ledger; current backend board has no active phase.
+- **Action requested:** Preserve operator-approved rollout/real acceptance prerequisites for FP-16 login/logout and mutation CSRF integration; coordinate Kotlin gateway parity with its owner. No frontend activation or live operations requested.
+- **Supersedes / follow-up:** Supersedes the preceding G4-pending delivery state. Existing contract and admitted-request/global-Microsoft-logout limits remain applicable; no additional application checks or services ran for this documentation-only closure.
+
 ## 2026-10-03 — NP-24 delivered to origin/main; closure awaiting G4
 
 - **From:** Backend

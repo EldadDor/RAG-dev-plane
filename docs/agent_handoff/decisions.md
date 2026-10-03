@@ -3,6 +3,12 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-10-03 — NP-24 phase closure approved
+
+- **Status:** G4 approved; phase closed.
+- **Decision:** User instructed “G4 approved” after the delivered outcomes and carry-over request. NP24-01 approved design, NP24-02 implementation, NP24-03 offline validation/contract/delivery and NP24-04 closure are complete. Sole closure/outcomes/carry-over record: docs/complete_phases.md; current backend board is cleared.
+- **Evidence/boundary:** Implementation `be26a96` and delivery records `8afaefd` are pushed to `origin/main`; 266 offline tests passed. Carry-over is live operator rollout/acceptance, frontend login/logout and mutation CSRF integration, and Kotlin gateway parity. No live-service authorization or frontend/new-backend-phase activation is implied.
+
 ## 2026-10-03 — NP-24 G3 delivery completed
 
 - **Status:** G3 completed; G4 closure requested.

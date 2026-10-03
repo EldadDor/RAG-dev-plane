@@ -4,6 +4,53 @@
 require G4 approval after validation and the approved G3 delivery boundary.
 Historical consolidation preserves recorded evidence; it does not grant new approval.
 
+## Phase: NP-24 Sign-in, Sessions and Logout
+
+**Status:** Complete — G4 approved 2026-10-03.
+**Commits:** `be26a96` (`NP-24: add gateway sign-in sessions and logout`),
+delivery records `8afaefd`; both pushed to `origin/main`.
+**Approval:** G1 activation, NP24-01 G2 structural design, G3 commit/push and
+G4 closure explicitly approved. User instructed “G4 approved” after reviewing
+the outcomes and proposed carry-over.
+
+**Task outcomes:**
+
+- **NP24-01:** Approved separate Authlib/FastAPI gateway and Nginx authorization
+  boundary, with alternative and additive migration/rollback documented.
+- **NP24-02:** Implemented Entra code/PKCE sign-in, browser-bound one-use login
+  transactions, two predefined local identities, encrypted PostgreSQL/process
+  session records, server idle/absolute expiry, configurable cookie security,
+  origin/CSRF enforcement, rotation/revocation and application logout. Added
+  migration 009, restricted gateway configuration, proxy examples, API identity
+  decoding and truthful profile logout capability. Existing fixed-local mode
+  remains logout-unsupported; no user ownership/preferences are rewritten.
+- **NP24-03:** Published the frontend contract and operator rollout/maintenance
+  guide, validated offline and delivered implementation plus handoff records.
+- **NP24-04:** G4-approved closure recorded here; current backend board cleared.
+
+**Validation:** `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider
+--basetemp .codex-test-tmp-np24-acceptance --ignore=tests/integration
+-m 'not integration'` — 266 passed. Synthetic RSA/JWKS tests exercise real
+Authlib signature/claims validation; session, CSRF, expiry, cookie, replay,
+revocation and membership/capability tests pass. Scoped/staged whitespace
+checks passed. One Authlib HTTPX fallback deprecation warning remains. SQL
+mocks and proxy-template checks do not establish live durability or proxy safety.
+
+**Limits:** No migration execution, role grants, real PostgreSQL concurrency,
+Nginx syntax/runtime validation, Entra provisioning, browser/cookie/SSE
+acceptance, deployment, frontend implementation or service operations occurred.
+Logout blocks future admissions; already admitted streams/writes/auth callbacks
+can finish. Global Microsoft sign-out is not provided. Pre-existing `.env` and
+`docs/task_overview.md` changes were excluded from delivery.
+
+**Approved carry-over:** Operator-approved migration/role/private proxy/Entra
+rollout and real SQL/browser/cookie/SSE acceptance; FP-16 login/logout UI and
+CSRF on every protected mutation; Kotlin gateway integration/parity. These are
+follow-ups, not automatic activation or authorization for live operations.
+Migration 009 belongs to the optional gateway; migration 008 remains required
+for PostgreSQL account preferences. See [operations](auth_gateway_operations.md)
+and the [published contract](frontend_architecture.md).
+
 ## Phase: NP-23 Profile and Preferences
 
 **Status:** Complete — G4 approved 2026-10-03
