@@ -1,4 +1,27 @@
 # Backend → Frontend
+## 2026-10-03 — NP-23 profile/preferences implemented; offline validated
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change / Validation
+- **Status:** Implemented — G3 approved; push to default branch awaits destination review; live rollout not performed
+- **Affected contract/files:** GET /account/profile; GET/PATCH /account/preferences; docs/frontend_architecture.md; docs/account_preferences_api_design.md; migration 008.
+- **Message:** G2-approved read-only profile and strict recent_chat_limit preferences are implemented. Public contract includes trusted display name/nullable email, fresh memberships, supported read/update fields, 10/20/50/100 limits (default 10), per-principal storage and explicit persistence lifetime. PostgreSQL is durable; local Qdrant process storage resets on restart; gateway/Qdrant preferences return account-specific unavailable errors. Logout is explicitly unsupported pending NP-24. All account successes/errors have private/no-store headers. Session list and retention semantics remain unchanged.
+- **Validation:** Full provider-free offline suite: 206 passed. Coverage includes invalid/coerced values, defaults without writes, update/reload, principal isolation, local identity spoof attempts, missing gateway auth, stale membership removal, unavailable/closed storage, safe errors/privacy headers, shared lifespan stores, parameterized SQL and startup table/ledger requirements. Scoped whitespace checks passed. Mocked SQL is not real durability validation. No real SQL/API/browser/model calls, migration execution, service operations or commit.
+- **Action requested:** FP-16 profile/settings and FP-15 preferences may integrate against the published schema once the updated backend is deployed. Operator must apply migration 008 before restarting upgraded PostgreSQL writers; live rollout requires its own authorization. Kotlin parity remains with its owner.
+- **Supersedes / follow-up:** Supersedes the preceding NP-23 design-only availability status. NP-24 still owns logout integration. G3 delivery and G4 closure remain pending.
+
+## 2026-10-03 — NP-23 profile/preferences design awaiting G2
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change / Clarification
+- **Status:** Proposed — needs review
+- **Affected contract/files:** Proposed GET /account/profile and GET/PATCH /account/preferences; docs/account_preferences_api_design.md; NP23-01.
+- **Message:** NP-23 G1 intake is approved. Proposed read-only trusted display name/email and current workspace memberships; strict recent_chat_limit 10/20/50/100, default 10, per principal across workspaces. PostgreSQL persistence is durable; local Qdrant process storage is explicitly temporary; gateway/Qdrant preferences are unavailable. Capability fields disclose read/update support and persistence. Logout stays unsupported until NP-24 establishes ownership/integration. Existing session-list API remains uncapped. Detailed shapes, safe errors, migration 008 and rollback are in the design proposal.
+- **Action requested:** Review the proposed capability/schema shape for FP-16. Structural backend implementation awaits this task's G2 approval; these routes are not available yet.
+- **Supersedes / follow-up:** Updates NP-23's candidate status in the earlier FP-15–FP-17 intake response. Existing published frontend contract is unchanged; no live services, migration execution or frontend implementation occurred.
+
 ## 2026-10-03 — NP-22 approved and closed
 
 - **From:** Backend

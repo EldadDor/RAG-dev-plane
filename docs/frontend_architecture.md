@@ -75,6 +75,91 @@ All non-streaming API failures use this safe JSON envelope; clients must not ren
 
 The envelope is also the `data` payload of a post-start SSE `error` event. A failure that is detected before SSE headers are sent uses the ordinary HTTP status/envelope instead.
 
+## Account Profile and Preferences Contract (NP-23)
+
+Implemented in source with offline validation. Migration 008 and live rollout
+have not been performed; PostgreSQL operators must apply the migration before
+restarting the updated writer. See `../database/README.md`. FP-16 profile/settings
+and FP-15 preference integration can target the following contract once the
+updated backend is deployed; logout remains an NP-24 dependency.
+
+All account paths are relative proxy routes. Identity is resolved server-side
+on every request. No user/subject/workspace selector or query parameters are
+accepted. `GET /account/profile` returns:
+
+```json
+{
+  "profile": { "display_name": "Ada Lovelace", "email": null },
+  "workspaces": [
+    { "workspace_id": "platform", "display_name": "Platform", "role": "owner" }
+  ],
+  "capabilities": {
+    "profile_editable": false,
+    "preferences": {
+      "read": true,
+      "update": true,
+      "persistence": "server",
+      "editable_fields": ["recent_chat_limit"],
+      "recent_chat_limit_options": [10, 20, 50, 100],
+      "recent_chat_limit_default": 10
+    },
+    "logout": { "supported": false, "reason": "not_configured" }
+  }
+}
+```
+
+Display name and nullable email are trusted identity/configuration assertions,
+not an email-verification claim. Subject IDs stay internal. Profile fields and
+workspace roles are read-only. Memberships are read fresh, and a principal with
+no memberships receives `workspaces: []` and may still use personal preferences.
+Account data does not authorize chat/document access.
+
+`GET /account/preferences` returns the effective limit, defaulting to 10 without
+writing a row. `PATCH /account/preferences` requires `application/json` and
+exactly `{ "recent_chat_limit": 20 }`; it returns the same response shape:
+
+```json
+{ "preferences": { "recent_chat_limit": 20 }, "persistence": "server" }
+```
+
+Allowed values are strict integers 10/20/50/100. Reject null, booleans, strings,
+floats, other values, empty bodies/objects and extra fields. JSON charset
+parameters are supported; `application/merge-patch+json` is not. Concurrent
+updates use last committed write wins. Preferences apply to the principal
+across workspaces; they change visible session count only, not retention or the
+existing uncapped session-list API.
+
+| Backend mode | Preference capabilities | Persistence/lifetime |
+| --- | --- | --- |
+| PostgreSQL | Read/update true | `server`: survives restarts/login when the trusted subject remains stable. |
+| Local identity + Qdrant | Read/update true | `process`: shared across requests; resets on backend restart and is not shared across workers. |
+| Gateway identity + Qdrant | Read/update false; editable fields empty | `unavailable`: preference routes return 503. Profile remains readable through existing workspace discovery. |
+
+`logout.supported` is false. The reason is `fixed_local_identity` for local auth
+and `not_configured` for gateway auth. Do not simulate logout; NP-24 will publish
+an actual capability when ownership/integration is approved. Capability flags
+describe configured support, not a live storage-health check: reads/updates can
+still fail with 503. Do not silently present an unsuccessful save as persisted.
+
+All account responses, including errors, carry
+`Cache-Control: private, no-store` and `Vary: Cookie, Authorization`.
+
+| Status | Code | Client behavior |
+| --- | --- | --- |
+| 401 | `authentication_required` | Clear protected account state; use the existing trusted sign-in flow. |
+| 415 | `unsupported_media_type` | Send JSON with the supported content type. |
+| 422 | `invalid_request` | Correct request fields/values; do not display raw server detail. |
+| 503 | `account_preferences_unavailable` | Show unavailable/retry; do not claim a successful save or switch silently to durable local storage. |
+| 503 | `account_profile_unavailable` | Show retry; do not infer that the user lost every workspace. |
+| 500 | `internal_error` | Offer retry using safe copy. |
+
+Example error: `{ "code": "account_preferences_unavailable", "message":
+"Account preferences are temporarily unavailable." }`.
+Use capability flags for unsupported actions and the response persistence field
+to explain settings lifetime. Clear/ignore stale account responses on auth loss.
+Office gateway origin/CSRF enforcement remains a deployment validation item;
+this change adds no browser identity headers or authentication integration.
+
 ## Recent Document Metadata Contract (NP-20)
 
 Implemented and locally live-validated on 2026-10-02. Migration 006 is applied,

@@ -17,6 +17,7 @@ services:
       - ./database/migrations/005_model_profiles.sql:/docker-entrypoint-initdb.d/005_model_profiles.sql:ro
       - ./database/migrations/006_document_index_metadata.sql:/docker-entrypoint-initdb.d/006_document_index_metadata.sql:ro
       - ./database/migrations/007_powerpoint_document_type.sql:/docker-entrypoint-initdb.d/007_powerpoint_document_type.sql:ro
+      - ./database/migrations/008_account_preferences.sql:/docker-entrypoint-initdb.d/008_account_preferences.sql:ro
       - ./database/seeds/local_workspace.sql:/docker-entrypoint-initdb.d/900_local_workspace.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rag_app -d ragdb"]

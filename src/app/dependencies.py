@@ -17,10 +17,16 @@ from app.services.workspace_store import (
 )
 from app.services.asset_store import AssetStore, LocalFileAssetStore
 from app.services.document_catalog import DocumentCatalogService, DocumentCursor
+from app.services.account_preferences import AccountPreferenceStore, UnavailableAccountPreferenceStore
 import secrets
 
 # Local single-process fallback; never regenerated between requests.
 _local_document_cursor_secret = secrets.token_urlsafe(48)
+
+
+def get_account_preference_store(request: Request) -> AccountPreferenceStore:
+    store = getattr(request.app.state, "account_preference_store", None)
+    return store if store is not None else UnavailableAccountPreferenceStore()
 
 
 def get_document_catalog_service(request: Request, settings: Settings = Depends(get_settings)) -> DocumentCatalogService:

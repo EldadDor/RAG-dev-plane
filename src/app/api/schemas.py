@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator
 
 
 class ChatRequest(BaseModel):
@@ -65,6 +65,54 @@ class WorkspaceListResponse(BaseModel):
 class ApiErrorResponse(BaseModel):
     code: str
     message: str
+
+
+class AccountProfile(BaseModel):
+    display_name: str
+    email: str | None
+
+
+class AccountPreferences(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    recent_chat_limit: StrictInt
+
+    @field_validator("recent_chat_limit")
+    @classmethod
+    def supported_limit(cls, value: int) -> int:
+        if value not in (10, 20, 50, 100):
+            raise ValueError("Unsupported recent-chat limit")
+        return value
+
+
+class AccountPreferenceCapabilities(BaseModel):
+    read: bool
+    update: bool
+    persistence: Literal["server", "process", "unavailable"]
+    editable_fields: list[Literal["recent_chat_limit"]]
+    recent_chat_limit_options: list[int] = Field(default_factory=lambda: [10, 20, 50, 100])
+    recent_chat_limit_default: Literal[10] = 10
+
+
+class AccountLogoutCapability(BaseModel):
+    supported: Literal[False] = False
+    reason: Literal["fixed_local_identity", "not_configured"]
+
+
+class AccountCapabilities(BaseModel):
+    profile_editable: Literal[False] = False
+    preferences: AccountPreferenceCapabilities
+    logout: AccountLogoutCapability
+
+
+class AccountProfileResponse(BaseModel):
+    profile: AccountProfile
+    workspaces: list[WorkspaceSummary]
+    capabilities: AccountCapabilities
+
+
+class AccountPreferencesResponse(BaseModel):
+    preferences: AccountPreferences
+    persistence: Literal["server", "process"]
 
 
 class DocumentScope(BaseModel):

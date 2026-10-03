@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import admin, assets, chat, documents, health, ingest, workspaces
+from app.api.routers import account, admin, assets, chat, documents, health, ingest, workspaces
 from app.config import Settings, get_settings
 from app.logging_config import configure_logging
 from app.services.conversation_store import InMemoryConversationStore, PostgresConversationStore
@@ -18,6 +18,10 @@ from app.services.asset_store import LocalFileAssetStore
 from app.services.model_profiles import PostgresEmbeddingCache, PostgresModelProfileStore
 from app.clients.qdrant_client import QdrantVectorStore
 from app.services.document_catalog import DOCUMENT_HEADERS, DocumentListError, PostgresDocumentCatalog
+from app.services.account_preferences import (
+    ACCOUNT_HEADERS, AccountUnavailableError, InMemoryAccountPreferenceStore,
+    PostgresAccountPreferenceStore, UnavailableAccountPreferenceStore,
+)
 
 # Configure logging before anything else
 configure_logging()
@@ -70,6 +74,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     app.state.asset_store = LocalFileAssetStore(settings.asset_storage_root)
     app.state.conversation_store = InMemoryConversationStore(settings.memory_max_turns)
+    app.state.account_preference_store = (
+        InMemoryAccountPreferenceStore() if settings.auth_mode == "local"
+        else UnavailableAccountPreferenceStore()
+    )
     app.state.workspace_store = InMemoryWorkspaceStore(
         {
             settings.local_subject: [
@@ -87,6 +95,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             retention_days=settings.memory_retention_days,
         )
         app.state.workspace_store = PostgresWorkspaceStore(app.state.vector_store.pool, settings.pg_schema)
+        app.state.account_preference_store = PostgresAccountPreferenceStore(
+            app.state.vector_store.pool, settings.pg_schema,
+        )
         app.state.document_catalog = PostgresDocumentCatalog(app.state.vector_store.pool, settings.pg_schema)
         app.state.model_profile_store = PostgresModelProfileStore(
             app.state.vector_store.pool, settings.pg_schema
@@ -145,7 +156,16 @@ def create_app() -> FastAPI:
         response = await call_next(request)
         if request.url.path.startswith("/workspaces/") and request.url.path.endswith("/documents"):
             response.headers.update(DOCUMENT_HEADERS)
+        if request.url.path.startswith("/account/"):
+            response.headers.update(ACCOUNT_HEADERS)
         return response
+
+    @app.exception_handler(AccountUnavailableError)
+    async def account_unavailable_handler(_: Request, exc: AccountUnavailableError) -> JSONResponse:
+        return JSONResponse(
+            status_code=503, content={"code": exc.code, "message": exc.message},
+            headers=ACCOUNT_HEADERS,
+        )
 
     @app.exception_handler(DocumentListError)
     async def document_list_exception_handler(_: Request, exc: DocumentListError) -> JSONResponse:
@@ -167,6 +187,8 @@ def create_app() -> FastAPI:
         response = _error_response(500)
         if request.url.path.startswith("/workspaces/") and request.url.path.endswith("/documents"):
             response.headers.update(DOCUMENT_HEADERS)
+        if request.url.path.startswith("/account/"):
+            response.headers.update(ACCOUNT_HEADERS)
         return response
 
     app.add_middleware(
@@ -180,6 +202,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(workspaces.router)
+    app.include_router(account.router)
     app.include_router(documents.router)
     app.include_router(ingest.router)
     app.include_router(assets.router)
