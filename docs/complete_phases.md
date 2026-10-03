@@ -4,6 +4,15 @@
 require G4 approval after validation and the approved G3 delivery boundary.
 Historical consolidation preserves recorded evidence; it does not grant new approval.
 
+## Phase: NP-23 Profile and Preferences
+
+**Status:** Complete — G4 approved 2026-10-03
+**Commit:** `5b315c8` (`NP-23: add approved account preferences`), pushed to `origin/main`; delivery record `d1f5479`.
+**Approval:** G1 intake, G2 structural design, G3 delivery and G4 closure explicitly approved by the user.
+**Delivered:** Read-only trusted profile/workspace details; strict per-principal recent-chat limit (10/20/50/100, default 10); PostgreSQL persistence with an additive versioned migration; process-lifetime local fallback and explicit unavailable capability; privacy headers and safe errors; published frontend contract and handoff. Existing session-list and retention semantics remain unchanged.
+**Validation:** `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np23-regression-tmp --ignore=tests/integration -m 'not integration'` — 206 passed. Focused account/workspace/API run — 65 passed. Scoped `git diff --check` passed. No real SQL/API/browser/model calls, migration execution or service operations ran.
+**Carry-over:** Operator-authorized migration 008/local rollout and real SQL/API acceptance; gateway origin/CSRF deployment validation; frontend FP-15/FP-16 integration; Kotlin runtime parity with its owner. Migration 008 must be applied before restarting an upgraded PostgreSQL writer.
+
 ## Phase: NP-22 Recent Chats
 
 **Status:** Complete — user-approved closure 2026-10-03

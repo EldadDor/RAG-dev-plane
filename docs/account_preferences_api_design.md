@@ -3,7 +3,7 @@
 **Last reviewed:** 2026-10-03
 **Status:** NP23-01 G2 Design and G3 delivery approved 2026-10-03; implemented,
 offline validated (206 tests passed) and pushed as `5b315c8` to `origin/main`.
-NP-23 awaits G4 phase closure.
+NP-23 G4 phase closure approved 2026-10-03.
 User instruction: “Approved G2, procced”. Live migration/application rollout
 remains separately authorized.
 

@@ -5,9 +5,9 @@ frontend. Add newest entries directly below this heading.
 
 ## 2026-10-03 — NP-23 intake and structural design approved
 
-- **Status:** G1, G2 and G3 approved; commit/push complete; G4 phase closure pending.
-- **Decision:** User instructed “Start NP-23”, “Approved G2, procced”, “G3 approved” and explicitly approved the commit/push. Approved read-only trusted profile and per-principal recent-chat preferences, strict 10/20/50/100 values, PostgreSQL migration 008, shared local process fallback, explicit unavailable gateway/Qdrant preference capability, and delivery to `origin/main`. Logout integration remains NP-24.
-- **Evidence:** `5b315c8` (`NP-23: add approved account preferences`) is pushed to `origin/main`; offline validation passed (206 tests). SQL execution, service restart, frontend implementation, Kotlin parity and G4 closure remain outside this approval.
+- **Status:** G1, G2, G3 and G4 approved; phase closed 2026-10-03.
+- **Decision:** User instructed “Start NP-23”, “Approved G2, procced”, “G3 approved”, explicitly approved commit/push, and approved G4 closure on 2026-10-03. Approved read-only trusted profile and per-principal recent-chat preferences, strict 10/20/50/100 values, PostgreSQL migration 008, shared local process fallback, explicit unavailable gateway/Qdrant preference capability, and delivery to `origin/main`. Logout integration remains NP-24.
+- **Evidence:** `5b315c8` (`NP-23: add approved account preferences`) is pushed to `origin/main`; delivery records are in `d1f5479`; G4 closure and carry-over are recorded in docs/complete_phases.md. Offline validation passed (206 tests). SQL execution, service restart, frontend implementation and Kotlin parity remain follow-ups.
 
 ## 2026-10-03 — NP-22 activation and closure
 
