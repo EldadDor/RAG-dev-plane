@@ -3,6 +3,16 @@
 **Purpose:** Immutable-style record of completed, validated work. Add a new
 entry only after its phase is approved, verified, and committed.
 
+## Phase: NP-22 Recent Chats
+
+**Status:** Complete — user-approved closure 2026-10-03
+**Commit:** `983e8d6` (`NP-22: stabilize recent chat listing`)
+**Validation:** 18 focused offline tests passed using `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .codex-test-tmp-np22 tests/test_conversation_store.py tests/test_workspace_authorization.py tests/test_api.py`; diff whitespace checks passed.
+
+**Delivered:** Deterministic newest-first session listing with null timestamps last and ordinal session-ID ties; persistent, scope-guarded in-memory rename/archive operations; copied list metadata; published unchanged uncapped bare-array contract for FP-15 and frontend readiness handoff.
+
+**Limits:** Apparent frontend duplicates remain unconfirmed. PostgreSQL ordering query tested with mocks; no live SQL/API/browser/model traffic, full suite, migrations or service operations ran. Kotlin runtime parity remains with its owner. NP-23–NP-26 remain backlog candidates.
+
 ## Phase: NP-20 Recent Document Metadata API
 
 **Status:** Complete — locally live-validated 2026-10-02  

@@ -1,6 +1,6 @@
 # Next Phase — Approval Backlog
 
-**Status:** NP-22 implementation complete and offline validated 2026-10-03; pending commit/phase closure. NP-23–NP-26 remain candidates.
+**Status:** NP-22 approved, committed as 983e8d6 and closed 2026-10-03. NP-23–NP-26 remain candidates.
 **Last reviewed:** 2026-10-03
 
 This is the ordered backlog for the next approved phase. Each item must have a
@@ -31,7 +31,7 @@ defined scope, acceptance checks, and an approval decision before implementation
 | 19 | NP-19 | Recent document metadata API design | Full proposed contract and publication/lifecycle implementation plan in recent_document_metadata_api_design.md. | Design complete 2026-10-02. |
 | 20 | NP-20 | Implement recent document metadata API | Catalog storage, lifecycle integration, authorized listing, reconciliation tooling and frontend contract implemented. | Complete 2026-10-02: 134 offline tests; migration/backfill, enablement and live acceptance validated. |
 | 21 | NP-21 | PowerPoint ingestion | Slide text, images, tables, cached charts, notes, scoped chunking and catalog type implemented. | Complete 2026-10-02: 149 offline tests, migration 007 and provider-free local SQL validation. |
-| 22 | NP-22 | Recent-chat uniqueness, ordering and retrieval contract | Deterministic session ordering and in-memory rename/archive persistence; uncapped response retained. | Implementation complete 2026-10-03: 18 offline tests; pending commit/closure. |
+| 22 | NP-22 | Recent-chat uniqueness, ordering and retrieval contract | Deterministic session ordering and in-memory rename/archive persistence; uncapped response retained. | Complete 2026-10-03: 18 offline tests; approved commit 983e8d6. |
 | 23 | NP-23 | Authenticated profile and user preferences | Define and deliver approved account capabilities for FP-16. | Contract/product scope and persistence design before implementation. |
 | 24 | NP-24 | Logout ownership and signed-out contract | Resolve gateway/identity-provider ownership for FP-16. | Infrastructure owner decision; separate from NP-12/FP-03 deployment. |
 | 25 | NP-25 | Whole-document overview capability | Define and deliver authorized, revision-scoped overview actions for FP-17. | Design first; model processing and persistence require phase approval. |

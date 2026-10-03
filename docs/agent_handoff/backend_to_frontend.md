@@ -1,4 +1,15 @@
 # Backend → Frontend
+## 2026-10-03 — NP-22 approved and closed
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Completed
+- **Affected contract/files:** GET /chat/sessions; docs/frontend_architecture.md; backend phase records.
+- **Message:** User approved the reviewed implementation. NP-22 is committed as `983e8d6` and closed; the preceding readiness entry remains the capability/validation reference. FP-15 can use the uncapped list and published deterministic ordering. NP-23–NP-26 remain backlog candidates.
+- **Action requested:** None for backend implementation; frontend integration and Kotlin parity remain with their owners.
+- **Supersedes / follow-up:** Supersedes the uncommitted status in the preceding NP-22 readiness entry. No additional tests or live operations were required for this documentation-only closure; prior 18-test evidence remains applicable.
+
 ## 2026-10-03 — NP-22 recent-chat contract and fallback fixes ready
 
 - **From:** Backend

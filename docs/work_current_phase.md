@@ -1,7 +1,7 @@
 # Current Work Phase — NP-22 Recent Chats
 
 **Last reviewed:** 2026-10-03
-**Status:** Implementation complete — offline validated; pending commit/phase closure
+**Status:** Complete — approved, committed and closed 2026-10-03
 **Approval:** User instructed “Start NP-22” after committing the intake snapshot as `0eccf9d` (secret-bearing local .env excluded).
 **Scope:** Audit session uniqueness, stabilize ordering and fix in-memory rename/archive persistence. Preserve the uncapped bare-array API; FP-15 applies display limits locally. No pagination extension is needed for this phase. No schema, retention, provider, frontend or service configuration changes; rollback is a code revert.
 
@@ -13,7 +13,7 @@
 
 **Validation command:** `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .codex-test-tmp-np22 tests/test_conversation_store.py tests/test_workspace_authorization.py tests/test_api.py` — 18 passed. `git -c safe.directory=E:/Workspace/AI_Stuff/RAG-dev-plane diff --check` — passed.
 **Files touched:** src/app/services/conversation_store.py; tests/test_conversation_store.py; tests/test_workspace_authorization.py; docs/frontend_architecture.md; docs/agent_handoff/backend_to_frontend.md; docs/next_phase.md; this record.
-**Commit:** Intake snapshot `0eccf9d`; NP-22 implementation uncommitted for review. Formal complete_phases.md entry deferred until committed, as that file requires. Not run: full suite, live PostgreSQL/API/browser/model calls, migrations or services. No frontend/runtime configuration changes.
+**Commit:** Intake snapshot `0eccf9d`; approved NP-22 implementation `983e8d6`. User approved proceeding on 2026-10-03; closure recorded in complete_phases.md. Not run: full suite, live PostgreSQL/API/browser/model calls, migrations or services. No frontend/runtime configuration changes.
 
 ## Frontend requirements review and backend task intake — 2026-10-03
 
