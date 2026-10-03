@@ -1,4 +1,15 @@
 # Backend → Frontend
+## 2026-10-03 — NP-24 delivered to origin/main; closure awaiting G4
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** Validation
+- **Status:** Delivered — implementation `be26a96` pushed to `origin/main`
+- **Affected contract/files:** NP-24 gateway/session/logout contract and rollout guidance; docs/work_current_phase.md.
+- **Message:** User approved G3 in response to the explicit NP-24 commit/push request. Implementation and contract are committed and pushed; the preceding offline-validation entry remains the behavior and acceptance reference (266 tests). The matching delivery records are a documentation follow-up under the same approval. No migration, service/proxy configuration, Entra provisioning or browser acceptance was performed.
+- **Action requested:** Preserve the deployment dependencies before FP-16 integration. Backend G4 requests closure with carry-over for live rollout/acceptance, frontend login/logout and mutation CSRF integration, and Kotlin gateway parity; no frontend activation is implied.
+- **Supersedes / follow-up:** Supersedes the preceding uncommitted/readiness status. G4 is pending; completed-phase ledger is unchanged. Pre-existing `.env` and docs/task_overview.md edits were excluded from delivery.
+
 ## 2026-10-03 — NP-24 gateway/session/logout implemented; offline validated
 
 - **From:** Backend

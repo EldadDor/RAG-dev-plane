@@ -3,6 +3,12 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-10-03 — NP-24 G3 delivery completed
+
+- **Status:** G3 completed; G4 closure requested.
+- **Decision/evidence:** The approved NP-24 implementation is committed as `be26a96` and pushed to `origin/main`. Offline evidence remains 266 provider-free tests and scoped/staged whitespace checks. Matching delivery/closure-request records are included under that G3 approval.
+- **Boundary:** G4 closure remains pending. No live rollout or frontend activation occurred; operator acceptance, FP-16 integration and Kotlin gateway parity are proposed carry-over items. Existing `.env` and docs/task_overview.md edits remain outside this delivery.
+
 ## 2026-10-03 — NP-24 delivery approved
 
 - **Status:** G3 approved; commit/push in progress.
