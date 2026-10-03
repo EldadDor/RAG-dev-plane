@@ -4,12 +4,12 @@
 - **From:** Backend
 - **To:** Frontend
 - **Type:** API change / Validation
-- **Status:** Implemented — G3 approved; push to default branch awaits destination review; live rollout not performed
+- **Status:** Implemented and offline validated; `5b315c8` pushed to `origin/main`; live rollout not performed
 - **Affected contract/files:** GET /account/profile; GET/PATCH /account/preferences; docs/frontend_architecture.md; docs/account_preferences_api_design.md; migration 008.
 - **Message:** G2-approved read-only profile and strict recent_chat_limit preferences are implemented. Public contract includes trusted display name/nullable email, fresh memberships, supported read/update fields, 10/20/50/100 limits (default 10), per-principal storage and explicit persistence lifetime. PostgreSQL is durable; local Qdrant process storage resets on restart; gateway/Qdrant preferences return account-specific unavailable errors. Logout is explicitly unsupported pending NP-24. All account successes/errors have private/no-store headers. Session list and retention semantics remain unchanged.
-- **Validation:** Full provider-free offline suite: 206 passed. Coverage includes invalid/coerced values, defaults without writes, update/reload, principal isolation, local identity spoof attempts, missing gateway auth, stale membership removal, unavailable/closed storage, safe errors/privacy headers, shared lifespan stores, parameterized SQL and startup table/ledger requirements. Scoped whitespace checks passed. Mocked SQL is not real durability validation. No real SQL/API/browser/model calls, migration execution, service operations or commit.
+- **Validation:** Full provider-free offline suite: 206 passed. Coverage includes invalid/coerced values, defaults without writes, update/reload, principal isolation, local identity spoof attempts, missing gateway auth, stale membership removal, unavailable/closed storage, safe errors/privacy headers, shared lifespan stores, parameterized SQL and startup table/ledger requirements. Scoped whitespace checks passed. Mocked SQL is not real durability validation. No real SQL/API/browser/model calls, migration execution or service operations. Commit `5b315c8` was pushed to `origin/main`.
 - **Action requested:** FP-16 profile/settings and FP-15 preferences may integrate against the published schema once the updated backend is deployed. Operator must apply migration 008 before restarting upgraded PostgreSQL writers; live rollout requires its own authorization. Kotlin parity remains with its owner.
-- **Supersedes / follow-up:** Supersedes the preceding NP-23 design-only availability status. NP-24 still owns logout integration. G3 delivery and G4 closure remain pending.
+- **Supersedes / follow-up:** Supersedes the preceding NP-23 design-only availability status. NP-24 still owns logout integration. G3 delivery is complete; G4 closure approval is pending.
 
 ## 2026-10-03 — NP-23 profile/preferences design awaiting G2
 

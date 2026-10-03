@@ -1,9 +1,9 @@
 # NP-23 — Profile and Preferences Design
 
 **Last reviewed:** 2026-10-03
-**Status:** NP23-01 G2 Design and G3 delivery approved 2026-10-03; implemented and
-offline validated (206 tests passed). Direct push to `origin/main` awaits the
-destination-specific automatic review; G4 phase closure remains separate.
+**Status:** NP23-01 G2 Design and G3 delivery approved 2026-10-03; implemented,
+offline validated (206 tests passed) and pushed as `5b315c8` to `origin/main`.
+NP-23 awaits G4 phase closure.
 User instruction: “Approved G2, procced”. Live migration/application rollout
 remains separately authorized.
 
