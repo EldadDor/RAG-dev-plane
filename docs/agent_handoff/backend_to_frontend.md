@@ -1,4 +1,27 @@
 # Backend → Frontend
+## 2026-10-03 — NP-24 gateway/session/logout implemented; offline validated
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change / Validation
+- **Status:** Implemented and offline validated; awaiting G3, uncommitted and not deployed
+- **Affected contract/files:** docs/frontend_architecture.md; docs/auth_gateway_operations.md; src/app/auth/; migration 009; /auth/session, /auth/login, /auth/callback, /auth/dev-login, /auth/logout; account logout capability.
+- **Message:** G2-approved separate gateway implements Entra authorization code/PKCE and server-bound one-use transactions, predefined local dev identities, encrypted session records, server idle/absolute expiry, CSRF/origin checks, identifier rotation and application logout. Default local mode remains unsupported for logout. API session-gateway configuration enables decoded trusted identity headers and supported relative POST logout capability. Proxy examples authenticate internal subrequests, preserve original mutation methods, replace client identity headers and disable SSE buffering/auth caching. The authoritative contract now includes exact route/payload/error/recovery behavior.
+- **Validation:** Full provider-free offline suite: 266 passed. Includes real Authlib RSA/JWKS validation with synthetic tokens (issuer/audience/expiry/nonce/tenant/signature/embedded-key/none rejection), PKCE creation, callback browser binding/replay, session isolation, expiry, CSRF, revocation, key failures, cookie attributes, safe errors, parameterized/atomic SQL shape and membership/profile integration. One Authlib HTTPX fallback deprecation warning. SQL mocks are not real PostgreSQL durability/concurrency evidence; template checks are not live Nginx validation.
+- **Action requested:** FP-16 may target the published contract after operator-approved gateway/Entra/proxy/migration rollout; frontend activation/implementation is not implied. Send CSRF on every protected mutation, including chat/stream; clear protected state only on confirmed logout/401, abort requests and ignore late responses. API calls must use the same gateway origin to test sessions. Already admitted streams/writes/auth callbacks can finish; global Microsoft logout is not provided.
+- **Supersedes / follow-up:** Supersedes NP-24's design-only readiness above older entries. Real migration/role grants, SQL concurrency, Nginx, Entra/browser/cookie/SSE acceptance and Kotlin integration remain unperformed. G3 commit/push and G4 closure await this phase's approval.
+
+## 2026-10-03 — NP-24 activated; gateway session/logout design awaiting G2
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change / Clarification
+- **Status:** Proposed — NP24-01 awaiting G2
+- **Affected contract/files:** Proposed /auth/session, /auth/login, /auth/callback, /auth/dev-login, /auth/logout and profile logout capability; docs/auth_session_logout_design.md.
+- **Message:** G1 covers Entra sign-in/account selection, local session test identities, configurable cookie security/expiry and application logout. Proposal: separate Authlib/FastAPI gateway with Nginx authorization subrequests and durable PostgreSQL sessions. API identity remains gateway-derived. Fixed-local bypass remains logout-unsupported. Logout revokes future requests; frontend must abort current requests and ignore late results. Already admitted streams/writes can finish. Global Microsoft sign-out is deferred. These routes/capability changes are not implemented or published in the authoritative contract.
+- **Action requested:** Keep FP-16 integration dependent on implemented contract publication. Review proposed session/logout recovery; no frontend activation or live operations requested.
+- **Supersedes / follow-up:** Expands NP-24's earlier logout-only candidate scope. Existing NP-23 published profile/preferences behavior remains the available contract. Detailed G2 choice, rejected alternative, migration/rollback and acceptance limits are in the design proposal.
+
 ## 2026-10-03 — NP-23 profile/preferences implemented; offline validated
 
 - **From:** Backend

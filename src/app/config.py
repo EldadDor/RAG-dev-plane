@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
     auth_mode: str = Field(default="local", alias="AUTH_MODE")
+    auth_session_gateway_enabled: bool = Field(default=False, alias="AUTH_SESSION_GATEWAY_ENABLED")
     chat_identity_header: str = Field(default="X-Forwarded-User", alias="CHAT_IDENTITY_HEADER")
     chat_identity_name_header: str = Field(default="X-Forwarded-Name", alias="CHAT_IDENTITY_NAME_HEADER")
     chat_identity_email_header: str = Field(default="X-Forwarded-Email", alias="CHAT_IDENTITY_EMAIL_HEADER")
@@ -134,6 +135,14 @@ class Settings(BaseSettings):
     def validate_providers(self) -> Self:
         if self.auth_mode not in {"local", "gateway"}:
             raise ValueError("AUTH_MODE must be 'local' or 'gateway'")
+        if self.auth_session_gateway_enabled and self.auth_mode != "gateway":
+            raise ValueError("AUTH_SESSION_GATEWAY_ENABLED requires AUTH_MODE=gateway")
+        if self.auth_session_gateway_enabled and (
+            self.chat_identity_header != "X-Forwarded-User"
+            or self.chat_identity_name_header != "X-Forwarded-Name"
+            or self.chat_identity_email_header != "X-Forwarded-Email"
+        ):
+            raise ValueError("NP-24 session gateway requires its standard trusted identity headers")
         if self.app_env != "local" and self.auth_mode != "gateway":
             raise ValueError("AUTH_MODE=gateway is required outside APP_ENV=local")
         if self.document_list_cursor_secret is not None and len(self.document_list_cursor_secret.encode()) < 32:

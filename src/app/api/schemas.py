@@ -98,10 +98,18 @@ class AccountLogoutCapability(BaseModel):
     reason: Literal["fixed_local_identity", "not_configured"]
 
 
+class GatewayLogoutCapability(BaseModel):
+    supported: Literal[True] = True
+    owner: Literal["gateway"] = "gateway"
+    method: Literal["POST"] = "POST"
+    url: Literal["/auth/logout"] = "/auth/logout"
+    scope: Literal["application"] = "application"
+
+
 class AccountCapabilities(BaseModel):
     profile_editable: Literal[False] = False
     preferences: AccountPreferenceCapabilities
-    logout: AccountLogoutCapability
+    logout: AccountLogoutCapability | GatewayLogoutCapability
 
 
 class AccountProfileResponse(BaseModel):

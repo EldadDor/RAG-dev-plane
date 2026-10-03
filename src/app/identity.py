@@ -1,6 +1,7 @@
 """Environment-neutral authenticated principal resolution."""
 
 from dataclasses import dataclass
+from urllib.parse import unquote
 
 from fastapi import Depends, HTTPException, Request
 
@@ -25,8 +26,13 @@ def get_principal(request: Request, settings: Settings = Depends(get_settings)) 
     subject = request.headers.get(settings.chat_identity_header)
     if not subject:
         raise HTTPException(status_code=401, detail="Trusted gateway identity is required")
+    name = request.headers.get(settings.chat_identity_name_header, subject)
+    email = request.headers.get(settings.chat_identity_email_header) or None
+    if getattr(settings, "auth_session_gateway_enabled", False):
+        subject, name = unquote(subject, errors="strict"), unquote(name, errors="strict")
+        email = unquote(email, errors="strict") if email else None
     return Principal(
         subject=subject,
-        display_name=request.headers.get(settings.chat_identity_name_header, subject),
-        email=request.headers.get(settings.chat_identity_email_header),
+        display_name=name,
+        email=email,
     )

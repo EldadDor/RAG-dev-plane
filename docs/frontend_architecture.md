@@ -81,7 +81,8 @@ Implemented in source with offline validation. Migration 008 and live rollout
 have not been performed; PostgreSQL operators must apply the migration before
 restarting the updated writer. See `../database/README.md`. FP-16 profile/settings
 and FP-15 preference integration can target the following contract once the
-updated backend is deployed; logout remains an NP-24 dependency.
+updated backend is deployed. NP-24 session/logout integration requires deployment
+of the separate gateway described below.
 
 All account paths are relative proxy routes. Identity is resolved server-side
 on every request. No user/subject/workspace selector or query parameters are
@@ -135,9 +136,10 @@ existing uncapped session-list API.
 | Local identity + Qdrant | Read/update true | `process`: shared across requests; resets on backend restart and is not shared across workers. |
 | Gateway identity + Qdrant | Read/update false; editable fields empty | `unavailable`: preference routes return 503. Profile remains readable through existing workspace discovery. |
 
-`logout.supported` is false. The reason is `fixed_local_identity` for local auth
-and `not_configured` for gateway auth. Do not simulate logout; NP-24 will publish
-an actual capability when ownership/integration is approved. Capability flags
+`logout.supported` is false for fixed-local auth or an unconfigured external
+gateway. The reason is `fixed_local_identity` or `not_configured`, respectively.
+The configured NP-24 gateway reports the supported capability below. Do not
+simulate logout by clearing browser state alone. Capability flags
 describe configured support, not a live storage-health check: reads/updates can
 still fail with 503. Do not silently present an unsuccessful save as persisted.
 
@@ -159,6 +161,120 @@ Use capability flags for unsupported actions and the response persistence field
 to explain settings lifetime. Clear/ignore stale account responses on auth loss.
 Office gateway origin/CSRF enforcement remains a deployment validation item;
 this change adds no browser identity headers or authentication integration.
+
+## Sign-in, Session and Logout Contract (NP-24)
+
+Implemented in source and offline-validated; gateway, Nginx, migration 009 and
+Entra/browser rollout have not been performed. These routes belong to the separate
+authentication gateway on the same browser origin, rather than the RAG API.
+Deployment prerequisites and configuration are in
+[gateway operations](auth_gateway_operations.md). Frontend integration is not
+implemented by the backend phase.
+
+`GET /auth/session` accepts no query parameters. It returns 200 in both states,
+with `Cache-Control: private, no-store` and `Vary: Cookie, Authorization`:
+
+```json
+{
+  "authenticated": true,
+  "profile": { "display_name": "Ada Lovelace", "email": null },
+  "csrf_token": "opaque-session-bound-token",
+  "idle_expires_at": "2026-10-03T10:30:00+00:00",
+  "absolute_expires_at": "2026-10-03T18:00:00+00:00",
+  "persistence": "postgres"
+}
+```
+
+Anonymous status has `authenticated: false`, null profile and expiry fields,
+and a short-lived bootstrap CSRF token/cookie. `persistence` is `memory` or
+`postgres`, describing the gateway store rather than preferences. Polling this
+route does not renew idle expiry. The earliest expiry ends future API admission.
+Keep the CSRF token in memory; do not log it or store it in localStorage.
+Browser cookies are opaque, HttpOnly, host-only and path `/`; no identity/provider
+tokens are stored in browser JavaScript. Workplace cookies require Secure/HTTPS.
+
+`GET /auth/login` starts Entra authorization-code sign-in with PKCE and account
+selection, returning 302 to Microsoft. Optional `return_to` must match a configured
+relative destination (default only `/`); arbitrary URLs/query selectors are
+rejected. Username/password, if permitted by the tenant, is entered at Microsoft.
+`GET /auth/callback` is gateway/provider-owned: the frontend must not manufacture
+callback parameters or exchange codes. Success creates/rotates the session,
+revokes the previous browser session and returns 303 to the approved destination.
+Sign-in grants no workspace membership and creates no chat conversation.
+
+In local-only dev-provider mode, `GET /auth/login` instead returns:
+
+```json
+{
+  "provider": "dev",
+  "identities": [
+    { "identity": "local-dev", "display_name": "Local Developer" },
+    { "identity": "local-test-2", "display_name": "Local Test User 2" }
+  ],
+  "session_url": "/auth/session",
+  "login_url": "/auth/dev-login"
+}
+```
+
+Fetch `/auth/session`, then POST JSON `{"identity":"local-dev"}` to
+`/auth/dev-login` with `X-CSRF-Token` and the browser's exact Origin. Only the
+returned server-defined choices are accepted; no password, arbitrary subject or
+extra fields. Success returns 303 to `/`. Dev login is unavailable outside local
+loopback environments. Fixed-local API bypass still cannot log out.
+
+When the deployed API has `AUTH_MODE=gateway` and
+`AUTH_SESSION_GATEWAY_ENABLED=true`, `GET /account/profile` reports:
+
+```json
+{
+  "supported": true,
+  "owner": "gateway",
+  "method": "POST",
+  "url": "/auth/logout",
+  "scope": "application"
+}
+```
+
+This replaces only `capabilities.logout`; profile/preferences/memberships are
+unchanged. Call `POST /auth/logout` with no query parameters and the current
+`X-CSRF-Token`. Exact-origin validation and server-side revocation occur before
+204; cookies are cleared using matching attributes. Already signed-out retry
+requires a fresh bootstrap token from `/auth/session`. 503 means logout was not
+confirmed. Logout affects this application, not Microsoft SSO or every device.
+
+Every protected POST/PATCH/PUT/DELETE (including `/chat` and `/chat/stream`)
+also requires `X-CSRF-Token`, in addition to same-origin browser cookies. Nginx
+captures the original method before its authorization subrequest, validates the
+session/CSRF at the gateway, strips browser identity headers, and injects verified
+headers. Browser identity headers/user IDs remain forbidden. Local dev choices
+are an explicit testing flow, not an identity mechanism for protected APIs.
+API calls must use the gateway origin; direct Vite-to-API proxying bypasses session
+tests and cannot be used to verify login/logout.
+
+After confirmed logout or API 401, clear protected account/workspace/chat/source
+data. Abort in-flight requests and ignore late responses/events using the auth
+generation guard. Do not replay mutations/streaming POSTs automatically after
+re-authentication. Session revocation applies to future admissions in every tab;
+already admitted streams/writes/callbacks can finish. The frontend owns stream
+cancellation; gateway logout cannot undo a write already admitted by the API.
+
+| Status / code | Meaning and recovery |
+| --- | --- |
+| 400 `invalid_auth_request` | Invalid/replayed/denied callback or unsafe return destination; initiate fresh sign-in. |
+| 401 `authentication_required` | No active app session; clear protected state and offer sign-in. API returns JSON, not an HTML login redirect. |
+| 403 `auth_request_denied` | Origin/CSRF or proxy authorization failure; refresh session context once and require explicit retry. Distinct from API workspace denial. |
+| 404 `resource_not_found` | Route unavailable, including dev login under Entra. |
+| 405 `method_not_allowed` | Incorrect authentication route method. |
+| 413 `request_too_large` | Authentication body exceeds 4 KiB. |
+| 415 `unsupported_media_type` | Dev login requires application/json. |
+| 422 `invalid_request` | Invalid body/extra fields/query. |
+| 503 `auth_unavailable` | Store/provider temporarily unavailable; no successful login/logout or durable fallback is claimed. |
+| 500 `internal_error` | Unexpected safe failure; offer explicit retry. |
+
+Gateway errors use `{ "code": "auth_unavailable", "message":
+"Authentication is temporarily unavailable." }`; no provider details/secrets.
+Nginx examples preserve safe 401/403 and translate failed authorization
+subrequests to safe 503. Real browser/proxy/Entra acceptance remains unverified.
 
 ## Recent Document Metadata Contract (NP-20)
 
@@ -417,11 +533,15 @@ Sessions retain title, workspace, preview, compact summary, and the latest 10 ra
 
 Vite proxies API/SSE traffic to a backend using its fixed server-side development subject; Vite does not select or inject user identity. Nginx must strip client-supplied identity headers, inject the authenticated office identity, proxy SSE without buffering, and serve SPA fallback. Browser bundles contain no provider, database, identity, or Langfuse secrets.
 
-Two-user ownership isolation is validated in backend tests through FastAPI dependency overrides rather than a browser-controlled local identity mechanism.
+The NP-24 local session-testing path instead uses the Nginx/gateway origin,
+with two predefined dev identities and the same session/expiry/logout policy.
+Its offline tests validate admission, profile/membership isolation and revocation;
+real browser/proxy acceptance remains unperformed.
 
 ## Unresolved Office Inputs
 
-- Exact gateway identity header name and authentication provider.
+- Entra tenant/application registration, allowed users/guests, workspace grants
+  and secret distribution. NP-24 uses the standard trusted gateway header names.
 - Nginx CI/CD, static asset path, API upstream, TLS, and CORS policy.
 - User-facing wording for archive versus permanent deletion.
 

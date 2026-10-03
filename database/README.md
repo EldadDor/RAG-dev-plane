@@ -35,6 +35,22 @@ Local Qdrant preferences are process-only; gateway/Qdrant preference operations
 are explicitly unavailable. Actual SQL rollout and post-restart acceptance are
 operator actions and have not been performed by the offline implementation.
 
+## Authentication gateway — migration 009
+
+`009_auth_sessions.sql` is required only for the separate NP-24 PostgreSQL
+authentication gateway; the RAG/vector-store startup requirements do not change.
+Apply it with the migration role before starting that gateway. The gateway checks
+the table and `009_auth_sessions` ledger entry, and never creates tables at startup.
+The encrypted records include sessions, short-lived browser CSRF contexts and
+one-use OIDC login transactions; the table stores no raw cookies/provider tokens.
+Local process storage does not require SQL. This migration is intentionally not
+added to the default RAG Docker initialization: gateway rollout is optional and
+uses a separate restricted database role.
+
+Rollback retains the additive table and existing application data. SQL execution,
+role grants and migration/live durability acceptance have not been performed.
+See [gateway rollout/maintenance](../docs/auth_gateway_operations.md).
+
 Migration 007 widens the catalog's canonical type constraint to include
 `powerpoint`; it changes no vectors/source records. Apply it before restarting
 the PowerPoint-enabled writer. PostgreSQL startup requires the migration ledger

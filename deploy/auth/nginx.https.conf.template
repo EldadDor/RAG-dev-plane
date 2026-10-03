@@ -1,0 +1,84 @@
+# Example only. Requires ngx_http_auth_request_module. Upstreams stay private.
+# Render ONLY AUTH_PROXY_SECRET with envsubst; preserve Nginx $variables.
+server {
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/tls/rag.crt;
+    ssl_certificate_key /etc/nginx/tls/rag.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    server_name rag.example.test;
+    # Operator mounts the built frontend here; this does not build frontend code.
+    root /srv/rag-frontend;
+    client_max_body_size 1m;
+
+    location = /_gateway_authorize {
+        internal;
+        proxy_pass http://127.0.0.1:8001/internal/authorize;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header X-Auth-Proxy-Secret "${AUTH_PROXY_SECRET}";
+        proxy_set_header X-Original-Method $auth_original_method;
+        proxy_set_header Origin $http_origin;
+        proxy_set_header X-CSRF-Token $http_x_csrf_token;
+        proxy_set_header Cookie $http_cookie;
+        proxy_cache off;
+    }
+
+    location /auth/ {
+        # Callback URLs contain authorization codes; never log the query string.
+        access_log off;
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host localhost;
+        proxy_set_header X-Auth-Proxy-Secret "";
+        proxy_set_header X-Forwarded-User "";
+        proxy_set_header X-Forwarded-Name "";
+        proxy_set_header X-Forwarded-Email "";
+        proxy_cache off;
+        client_max_body_size 4k;
+    }
+
+    location ~ ^/(chat|workspaces|account|assets|ingest|admin|health|readiness)(/|$) {
+        # Capture before auth_request changes the subrequest method to GET.
+        set $auth_original_method $request_method;
+        auth_request /_gateway_authorize;
+        auth_request_set $auth_user $upstream_http_x_forwarded_user;
+        auth_request_set $auth_name $upstream_http_x_forwarded_name;
+        auth_request_set $auth_email $upstream_http_x_forwarded_email;
+        proxy_set_header X-Forwarded-User $auth_user;
+        proxy_set_header X-Forwarded-Name $auth_name;
+        proxy_set_header X-Forwarded-Email $auth_email;
+        proxy_set_header X-Auth-Proxy-Secret "";
+        proxy_set_header Authorization "";
+        # API does not own cookies; never forward browser session credentials.
+        proxy_set_header Cookie "";
+        proxy_pass http://127.0.0.1:8000;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 300s;
+        proxy_hide_header Cache-Control;
+        add_header Cache-Control "private, no-store" always;
+        error_page 401 = @signed_out;
+        error_page 403 = @denied;
+        # auth_request maps upstream store failures to 500; expose safe 503.
+        error_page 500 = @auth_unavailable;
+    }
+
+    location @signed_out {
+        default_type application/json;
+        add_header Cache-Control "private, no-store" always;
+        return 401 '{"code":"authentication_required","message":"Authentication is required."}';
+    }
+    location @denied {
+        default_type application/json;
+        add_header Cache-Control "private, no-store" always;
+        return 403 '{"code":"auth_request_denied","message":"The authentication request is not permitted."}';
+    }
+    location @auth_unavailable {
+        default_type application/json;
+        add_header Cache-Control "private, no-store" always;
+        return 503 '{"code":"auth_unavailable","message":"Authentication is temporarily unavailable."}';
+    }
+    location /internal/ { return 404; }
+    location = /docs { return 404; }
+    location = /openapi.json { return 404; }
+    location / { try_files $uri $uri/ /index.html; }
+}

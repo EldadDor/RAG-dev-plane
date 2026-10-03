@@ -3,6 +3,24 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-10-03 — NP-24 delivery approved
+
+- **Status:** G3 approved; commit/push in progress.
+- **Decision:** User instructed “G3 approved” in response to the explicit request to commit and push NP-24 to `origin/main`. Approval includes the implementation, contract, rollout guidance and matching delivery records; excludes pre-existing `.env` and `docs/task_overview.md` edits.
+- **Evidence/boundary:** 266 provider-free tests passed; scoped whitespace checks passed. No live migration, SQL/proxy/Entra/browser acceptance, deployment, frontend activation or G4 closure is authorized by this approval.
+
+## 2026-10-03 — NP24-01 structural design approved
+
+- **Status:** G2 approved; implementation in progress.
+- **Decision:** User instructed “Approving G2 for NP24-01”. Implement the separate Authlib/FastAPI gateway, Nginx authorization boundary, migration 009/session stores, local test identities, configurable cookie policy and application-only logout described in docs/auth_session_logout_design.md.
+- **Boundary:** No live rollout, secrets, tenant provisioning, frontend activation, merge/push or phase closure authorized.
+
+## 2026-10-03 — NP-24 expanded intake approved
+
+- **Status:** G1 approved; concrete structural design awaits NP24-01 G2.
+- **Decision:** User instructed “Approved, activate NP-24” after discussing Entra sign-in/account selection, local test identities, configurable cookie security/lifetimes and logout. Authentication gateway ownership is the approved direction; implementation library, persistence/migration and public routes are proposed in docs/auth_session_logout_design.md.
+- **Boundary:** No G2/G3/G4 approval, live-service changes, tenant provisioning, credentials or frontend activation is implied. Workplace single-tenant policy is the proposed initial default; broader tenant access needs an explicit policy.
+
 ## 2026-10-03 — NP-23 intake and structural design approved
 
 - **Status:** G1, G2, G3 and G4 approved; phase closed 2026-10-03.

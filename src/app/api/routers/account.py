@@ -4,7 +4,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.schemas import (
-    AccountCapabilities, AccountLogoutCapability, AccountPreferenceCapabilities,
+    AccountCapabilities, AccountLogoutCapability, GatewayLogoutCapability, AccountPreferenceCapabilities,
     AccountPreferences, AccountPreferencesResponse, AccountProfile,
     AccountProfileResponse, ApiErrorResponse, WorkspaceSummary,
 )
@@ -50,7 +50,9 @@ async def get_profile(
                 read=available, update=available, persistence=preference_store.persistence,
                 editable_fields=["recent_chat_limit"] if available else [],
             ),
-            logout=AccountLogoutCapability(
+            logout=GatewayLogoutCapability() if (
+                settings.auth_mode == "gateway" and getattr(settings, "auth_session_gateway_enabled", False)
+            ) else AccountLogoutCapability(
                 reason="fixed_local_identity" if settings.auth_mode == "local" else "not_configured",
             ),
         ),

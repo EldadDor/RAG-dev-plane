@@ -193,7 +193,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"] if settings.app_env == "local" else [],
+        allow_origins=["*"] if settings.app_env == "local" and not settings.auth_session_gateway_enabled else [],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
