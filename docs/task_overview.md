@@ -9,6 +9,12 @@ Current work and the next three candidates per area live in the
 All finished-phase outcomes and evidence live only in
 [complete_phases.md](complete_phases.md).
 
+## Pending workflow approval
+
+| ID | Status | Gate | Request / evidence |
+| --- | --- | --- | --- |
+| DOC-03 RAG flow diagram | In progress | — | G1 approved by user 2026-10-06 (“start DOC-03”). Current phase board contains the documentation-only scope, affected area, rough validation plan and active task row. DOC-01 G4 closure and carry-over are recorded in complete_phases.md. |
+
 ## Parked work beyond the next three phases
 
 These requests are retained for later prioritization; none is activated.

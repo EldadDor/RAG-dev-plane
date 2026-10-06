@@ -4,6 +4,15 @@
 require G4 approval after validation and the approved G3 delivery boundary.
 Historical consolidation preserves recorded evidence; it does not grant new approval.
 
+## Phase: DOC-01 Phase-record workflow reorganization
+
+**Status:** Complete — G4 approved by user on 2026-10-06.
+**Commit:** `755ec01` (reorganization snapshot).
+**Approval:** User instructed “Complete DOC-01” on 2026-10-06, approving the pending G4 closure request.
+**Delivered:** Established approval gates, concise current/next boards, a shared completed-phase ledger, and consolidated historical task evidence.
+**Validation:** Existing record reports documentation consistency and whitespace checks passed. No checks rerun during this synchronization.
+**Carry-over:** None for DOC-01. DOC-03 Mermaid flow diagram is separately activated and does not inherit this closure approval.
+
 ## Phase: NP-24 Sign-in, Sessions and Logout
 
 **Status:** Complete — G4 approved 2026-10-03.

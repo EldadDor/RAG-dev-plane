@@ -11,6 +11,8 @@ inside either implementation directory, so each side can read and write it.
 - The asking side adds an entry to the direction-specific file whenever a
   feature, bug, requirement, proposed API change, contract clarification,
   validation result, or blocker affects the other side.
+- `backend_to_kotlin.md` is the backend-owned parity handoff for the Kotlin
+  runtime. It follows the same newest-first, append-only convention.
 - Add new entries at the top, using the template below. Do not rewrite or delete
   prior entries; supersede them explicitly and link the newer entry.
 - Keep the authoritative API specification in `docs/frontend_architecture.md`.
