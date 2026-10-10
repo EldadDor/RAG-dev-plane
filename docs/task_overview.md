@@ -1,6 +1,6 @@
 # Project Task Overview
 
-**Last reviewed:** 2026-10-03
+**Last reviewed:** 2026-10-10
 
 Current work and the next three candidates per area live in the
 [backend current board](work_current_phase.md), [backend next phases](next_phase.md),
@@ -13,7 +13,7 @@ All finished-phase outcomes and evidence live only in
 
 | ID | Status | Gate | Request / evidence |
 | --- | --- | --- | --- |
-| DOC-03 RAG flow diagram | In progress | — | G1 approved by user 2026-10-06 (“start DOC-03”). Current phase board contains the documentation-only scope, affected area, rough validation plan and active task row. DOC-01 G4 closure and carry-over are recorded in complete_phases.md. |
+| DOC-03 RAG flow diagram | Completed | G3 approved | Completed documentation-only Mermaid diagram in `docs/architecture.md`; source-flow review and `git diff --check` passed. Mermaid renderer and application tests were not run. User authorized local commit of all pending changes on 2026-10-10. G4 closure remains pending. |
 
 ## Parked work beyond the next three phases
 
@@ -30,5 +30,6 @@ These requests are retained for later prioritization; none is activated.
 | Quality / UI | Further semantic-splitter experiments, browser chunking-profile selection and any reranking default change require their own scoped decisions. |
 | Operator acceptance | Fresh-process cursor/catalog acceptance, frontend catalog browser integration and PowerPoint badges need separately scoped follow-up. |
 | Kotlin owner | Runtime parity with approved Python contracts; gateway authorization for profile warming needs a separate design. |
+| RAG-Anything adoption / backend | Review and separate [adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) completed 2026-10-08. Start with structured PDF/OCR comparison and selectable local ingestion, then image/table enrichment, processing cache and optional vision synthesis. Stage A intake approved 2026-10-10; use verified English/Hebrew evidence and stage-specific G1/G2 decisions. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
 
 Move a prioritized request into a next-phase slot; define its detailed plan at G1.

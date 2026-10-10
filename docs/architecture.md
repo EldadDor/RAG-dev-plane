@@ -45,6 +45,69 @@ Office identity is derived from gateway-validated headers. Local identity is a
 fixed server-side principal. The browser never supplies a user ID, and
 two-user isolation tests replace the FastAPI principal dependency directly.
 
+## End-to-End Ingestion and Chat Flow
+
+The diagram joins the two runtime paths. Ingestion prepares workspace-scoped,
+provenance-rich chunks and persists them with source lifecycle metadata. Chat
+retrieves only from the authorized workspace and selected profiles, then either
+abstains when evidence is absent or sends retrieved context to the chat model.
+Embedding and chat generation use separate adapters and provider settings.
+
+```mermaid
+  flowchart TB
+  subgraph Ingest["Document ingestion — POST /ingest"]
+    Files["File or directory"] --> Loader["Loader registry\nextract text, metadata, provenance"]
+    Loader --> Doc["Document\ncontent hash, source identity, assets"]
+    Doc --> Chunker["Profile-selected chunker\nstructure-aware and code-aware"]
+    Chunker --> Chunks["Valid chunks\ntext + provenance metadata"]
+    Chunks --> DocEmbed["EmbeddingClient\nbatch document embeddings"]
+    EmbedProvider["Embedding provider\nOllama or Azure OpenAI"] --> DocEmbed
+    Chunks --> PersistChunks["Persist chunks + source record\nVectorStore.replace_document"]
+    DocEmbed --> PersistChunks
+    Doc --> SourceLifecycle["Source lifecycle\nunchanged hash skip; replace changed source"]
+    SourceLifecycle --> PersistChunks
+    Doc --> AssetBytes["Private AssetStore\nembedded image bytes"]
+    AssetBytes -. "asset IDs attached to related chunks" .-> PersistChunks
+    DirScan["Directory scan completes"] --> Stale["Remove stale documents\nwithin workspace/profile/root scope"]
+    Stale --> PersistChunks
+  end
+
+  subgraph Chat["Chat — POST /chat or POST /chat/stream"]
+    User["Client question\nworkspace, session and profile selectors"] --> Identity["Resolve trusted principal\nserver-side identity"]
+    Identity --> Access{"Workspace membership\nand session scope valid?"}
+    Access -->|No| Denied["Safe authorization error"]
+    Access -->|Yes| Memory["ConversationStore\nload scoped summary and recent turns"]
+    Memory --> Rewrite["Optional follow-up rewrite\nChatClient"]
+    User --> Rewrite
+    Rewrite --> QueryEmbed["EmbeddingClient\nembed query for selected model profile"]
+    QueryProvider["Embedding provider\nOllama or Azure OpenAI"] --> QueryEmbed
+    QueryEmbed --> Search["VectorStore semantic search\nworkspace + chunking profile"]
+    Index[("Vector index\nPostgreSQL + pgvector\nor Qdrant")]
+    PersistChunks --> Index
+    Index --> Search
+    Search --> Filter["Score threshold\noptional PostgreSQL lexical search + rank fusion"]
+    Filter --> Rerank["Optional local reranking\nthen top-k"]
+    Rerank --> Evidence{"Grounded chunks remain?"}
+    Evidence -->|No| Abstain["Explicit abstention\nno chat-model call"]
+    Evidence -->|Yes| Prompt["Build prompt with retrieved context"]
+    Prompt --> Synthesis["ChatClient\ngrounded answer synthesis"]
+    ChatProvider["Chat provider\nOpenAI-compatible or Azure OpenAI"] --> Synthesis
+    Synthesis --> Sources["Answer + source references\nchunk provenance and related assets"]
+    Abstain --> Persist["Persist user/assistant turns\nrefresh summary when due"]
+    Sources --> Persist
+    Persist --> Response["JSON response or SSE events\nanswer, sources, grounded, session ID"]
+    Sources -. "client may request cited image\nthrough workspace-authorized asset route" .-> AssetBytes
+  end
+
+    Chunks -. "dry_run: report chunk counts; skip embedding and persistence" .-> DryRun["Ingestion result"]
+```
+
+PostgreSQL also stores source-document records, profile/cache data, workspace
+membership, and (when configured) conversation turns and summaries. In local
+Qdrant mode, conversation memory may use the process-local fallback. Ingestion
+currently accepts a server-side source path; this diagram does not imply a
+browser upload or ingestion UI.
+
 ## Ingestion and Source Lifecycle
 
 ```mermaid

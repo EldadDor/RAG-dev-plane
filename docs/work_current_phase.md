@@ -1,7 +1,7 @@
 # Current Backend Work Phase
 
-**Last reviewed:** 2026-10-06
-**Status:** DOC-03 RAG ingestion and chat flow diagram — In progress.
+**Last reviewed:** 2026-10-10
+**Status:** DOC-03 RAG ingestion and chat flow diagram — complete; G3 local commit approved.
 
 **Scope:** Documentation only. Create a Mermaid flow showing the complete document ingestion and chat/retrieval/synthesis paths, key stores, model/provider boundaries and relevant authorization/workspace boundaries. Add it to the authoritative architecture documentation.
 
@@ -11,4 +11,10 @@
 
 | ID | Task | Status | Request / evidence |
 | --- | --- | --- | --- |
-| DOC-03-01 | Trace and diagram document ingestion and chat flows in Mermaid | In progress | Intake approved 2026-10-06. Include extraction/chunking/embedding/index persistence and chat authorization/retrieval/context/synthesis/streaming, with key stores and provider boundaries. |
+| DOC-03-01 | Trace and diagram document ingestion and chat flows in Mermaid | Completed | Added joined end-to-end flow to `docs/architecture.md`: loader/provenance/chunking, embedding and profile boundaries, unchanged/changed/stale source lifecycle, vector persistence, private assets, trusted principal/workspace/session checks, memory, semantic/hybrid retrieval, optional reranking, abstention, grounded synthesis, citations and JSON/SSE response. Reviewed against `ingest.py`, `ingestion_service.py`, `chat.py`, `chat_service.py` and `retrieval_service.py`. `git diff --check` passed. Mermaid renderer and application tests not run. Files: `docs/architecture.md`; local commit approved 2026-10-10 (user: “commit it, and all changes”). |
+| RAG-REVIEW-01 | Assess RAG-Anything code for adoption in this project | Completed | G1 approved by the user's 2026-10-08 review request. Compared upstream `parser.py`, `modalprocessors.py`, `processor.py`, `query.py`, configuration, prompts and dependency/license declarations with local loaders, domain models, ingestion/retrieval/chat services, provider interface and evaluation guidance. Recommendations: optional structured PDF/OCR parsing; normalized blocks with precise page/slide provenance; context-aware image/table enrichment; configuration-aware parse/enrichment cache; later authorized VLM synthesis. Retain existing pgvector, providers, workspace/assets and hybrid/reranking behavior; defer graph adoption pending measured benefit. Prioritized follow-up parked in `docs/task_overview.md`; next three candidates unchanged. Validation: source inspection and upstream source links; `git diff --check` passed. No installation, runtime changes, application tests, live services, commit or push. Files: `docs/work_current_phase.md`, `docs/task_overview.md`. |
+| RAG-PLAN-01 | Write a separate plan for all five RAG-Anything adoption priorities | Completed | G1 approved by the user's 2026-10-08 request. Created `docs/RAG_ANYTHING_ADOPTION_PLAN.md`: extraction-only and isolated indexed parser comparison, local/API switch proposals, Windows/Python 3.14 compatibility, block provenance, image/table enrichment, processing identity/cache, optional authorized vision synthesis, acceptance evidence, rollback and G1–G4 delivery sequence. Reconciled loader/ingestion/API/provider/evaluation interfaces with current source and upstream guidance; marked new commands/interfaces as proposed. `git diff --check` passed. Updated parked-work link in `docs/task_overview.md`; next-phase order unchanged. No application tests, dependency installs, model downloads, live services, migrations, commit or push. Plan approved and local commit authorized 2026-10-10; “proceed” approves Stage A intake. Stage-specific G2 decisions remain required. |
+
+**Delivery decision (2026-10-10):** User approved the adoption plan and instructed committing all pending changes. This authorizes the local documentation commit, including DOC-03. No push or G4 closure was requested. Validation: `git diff --check`; application tests and Mermaid rendering not run.
+
+**Delivery decision (2026-10-10):** User approved the adoption plan and instructed committing all pending changes. This authorizes the local documentation commit, including DOC-03. No push or G4 closure was requested. Validation: git diff --check; application tests and Mermaid rendering not run.
