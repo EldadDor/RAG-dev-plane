@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "template_not_frozen",
+  "documents": [],
+  "required_categories": [
+    "ordinary_text",
+    "two_column",
+    "tables",
+    "diagrams",
+    "scanned",
+    "mixed_scanned_text",
+    "hebrew",
+    "mixed_english_hebrew"
+  ],
+  "error_fixture_categories": ["malformed", "encrypted"],
+  "reference_protocol": "README.md"
+}

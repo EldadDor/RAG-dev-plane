@@ -1,8 +1,8 @@
 # RAG-Anything adoption plan
 
-**Created:** 2026-10-08; **last reviewed:** 2026-10-10  
-**Planning task:** RAG-PLAN-01  
-**Status:** Plan reviewed and approved by the user on 2026-10-10, with local commit of all pending changes authorized. Stage A intake is authorized by “proceed”; stage-specific design decisions, installations/model preparation, live benchmarks and rollout retain their stated gates.  
+**Created:** 2026-10-08; **last reviewed:** 2026-10-10
+**Planning task:** RAG-PLAN-01
+**Status:** Plan reviewed and approved by the user on 2026-10-10, with local commit of all pending changes authorized. Stage A intake is authorized by “proceed”; stage-specific design decisions, installations/model preparation, live benchmarks and rollout retain their stated gates.
 **Scope:** All five priorities from RAG-REVIEW-01: PDF extraction, image enrichment, table enrichment, processing identity/cache and optional vision-assisted answers.
 
 ## 1. Objective and boundaries

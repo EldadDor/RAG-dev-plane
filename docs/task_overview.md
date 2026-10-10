@@ -13,7 +13,7 @@ All finished-phase outcomes and evidence live only in
 
 | ID | Status | Gate | Request / evidence |
 | --- | --- | --- | --- |
-| DOC-03 RAG flow diagram | Completed | G3 approved | Completed documentation-only Mermaid diagram in `docs/architecture.md`; source-flow review and `git diff --check` passed. Mermaid renderer and application tests were not run. User authorized local commit of all pending changes on 2026-10-10. G4 closure remains pending. |
+| DOC-03 RAG flow diagram | Completed | G3 approved | Completed documentation-only Mermaid diagram in `docs/architecture.md`; source-flow review and `git diff --check` passed. Mermaid renderer and application tests were not run. User authorized local commit of all pending changes on 2026-10-10; delivered in d548a00. G4 closure remains pending: proposed outcome is the reviewed ingestion/chat diagram, with no DOC-03 carry-over. |
 
 ## Parked work beyond the next three phases
 
@@ -30,6 +30,6 @@ These requests are retained for later prioritization; none is activated.
 | Quality / UI | Further semantic-splitter experiments, browser chunking-profile selection and any reranking default change require their own scoped decisions. |
 | Operator acceptance | Fresh-process cursor/catalog acceptance, frontend catalog browser integration and PowerPoint badges need separately scoped follow-up. |
 | Kotlin owner | Runtime parity with approved Python contracts; gateway authorization for profile warming needs a separate design. |
-| RAG-Anything adoption / backend | Review and separate [adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) completed 2026-10-08. Start with structured PDF/OCR comparison and selectable local ingestion, then image/table enrichment, processing cache and optional vision synthesis. Stage A intake approved 2026-10-10; use verified English/Hebrew evidence and stage-specific G1/G2 decisions. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
+| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved and committed in d548a00. Stage A/B preparation is on the current board; Stage C is a next-phase candidate. Later processing caches, image/table enrichment and optional vision synthesis retain separate gates. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
 
 Move a prioritized request into a next-phase slot; define its detailed plan at G1.
