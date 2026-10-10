@@ -2,14 +2,15 @@
 
 **Task:** RAG-A-02
 **Last reviewed:** 2026-10-10
-**Status:** Concrete G2 proposal; runtime implementation has not started.
+**Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
+and validated offline. Candidate installation/model runs and corpus freezing remain pending.
 
-## Decision requested
+## Approved decision
 
-Approve an extraction-only adapter boundary and comparison command for Stage B.
+User approved the extraction-only adapter boundary and comparison command for Stage B.
 Use internal normalized results, a pypdf baseline and a lazily imported Docling
 candidate. Initially keep the experiment independent of production ingestion.
-Approve an optional `pdf-experiment` dependency group only after an isolated
+Use an optional `pdf-experiment` dependency group only after an isolated
 Windows/Python 3.14 resolution and wheel check selects compatible pins. Model
 downloads and model-using runs require their separate preparation decision.
 
@@ -79,6 +80,10 @@ failed to resolve its backing interpreter inside the sandbox. Resolve executable
 access before claiming local runtime validation; do not recreate the environment
 or downgrade the application interpreter as an incidental repair.
 
+Resolved during implementation: existing Python 3.14.2 executes through approved
+sandbox escalation. No environment repair or interpreter change was needed.
+Focused offline tests pass (37 tests, including existing loader checks).
+
 Primary sources checked 2026-10-10:
 
 - [Docling package metadata](https://pypi.org/project/docling/) declares
@@ -115,6 +120,38 @@ measurements as zero. Use a serial CPU experiment initially; propose 50 MiB per
 file, 200 pages and 180 seconds per extraction with a killable subprocess.
 Machine-specific memory and final time ceilings need operator agreement before
 real model runs. Do not label synthetic/mock results as a Docling quality result.
+
+## Implementation evidence (2026-10-10)
+
+All proposed modules/CLI/tests are present. The production PDFLoader/registry,
+Document model, application dependency files and ingestion behavior are unchanged.
+The optional group lives in the separate `evaluation/pdf_parsers/pyproject.toml`;
+its frozen Windows/CPython 3.14 requirements file contains 113 resolved packages.
+Metadata-only `uv pip compile` with `--only-binary :all:` and upload cutoff
+2026-10-11 succeeded; this does not establish installed runtime compatibility.
+No candidate package was installed, no model was downloaded and no Docling model
+was run. Versions and settings are written by actual experiment workers when run.
+
+No RAG-Anything or Docling implementation code was copied. The adapter uses
+public interfaces reviewed in [Docling v2.137.0 options](https://github.com/docling-project/docling/blob/v2.137.0/docling/datamodel/pipeline_options.py)
+and [Docling Core v2.101.1 document types](https://github.com/docling-project/docling-core/blob/v2.101.1/docling_core/types/doc/document.py).
+Dependency/model license review remains a preparation prerequisite before
+installation/redistribution; no license conclusion about all transitive models
+is inferred from Docling's package license.
+
+Validation: `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider
+--basetemp .codex-test-tmp-pdf-extraction tests/test_pdf_extraction.py
+tests/test_loaders.py` — 37 passed. CLI help renders; the synthetic pypdf command
+produces raw/normalized/text artifacts for one cold and three warm runs, verifies
+failure exit codes and refuses overwrite. Fake converters verify structure,
+Unicode offsets, pages/boxes/assets and offline initialization options; a real
+sleeping worker verifies timeout termination. No live service, SQL, migration,
+provider/model call or real corpus benchmark was performed.
+
+See [the executable protocol](../evaluation/pdf_parsers/README.md) for command
+options, private output placement, cold/warm definitions and Windows memory
+measurement limits. Model preparation must freeze the exact local artifact
+revisions/hashes and hardware budget before a real comparison is claimed.
 
 Real corpus/reference approval, installation/model preparation, resource budget
 and live indexed workspaces remain pending. Stage A reference preparation cannot

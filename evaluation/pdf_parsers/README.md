@@ -18,10 +18,13 @@ multiple categories per document; use separate malformed/encrypted error fixture
 
 Each manifest document requires `id` (opaque unique ID), `source_path` (private
 absolute local path), `source_sha256`, `categories`, `languages`,
-`inspection_pages` (one-based), `permission_basis` and `references_path`.
+`inspection_pages` (one-based), `permission_basis`, `references_path` and
+`references_sha256`. The manifest requires `status: "frozen"` to run. The template
+remains deliberately unfrozen and fails validation until populated and reviewed.
 References are UTF-8 JSONL, one object per question: `id`, `document_id`,
-`question`, `answerable`, `expected_facts`, `evidence` (page, visible quote/table
-cell or figure label), `verified_by` and `verified_on`. Unanswerable cases have
+`question`, `answerable`, `expected_facts`, `evidence` (objects with `page` and
+`source_evidence`: visible quote/table cell or figure label), `verified_by` and
+`verified_on`. Unanswerable cases have
 empty facts/evidence and a manually checked reason. Separate page reference text
 and expected reading order may accompany question evidence for extraction scoring.
 Do not derive references from either parser's output or model-generated answers.
@@ -49,3 +52,85 @@ without unexplained regressions and pass offline correctness/isolation checks.
 Retain baseline output and failed examples. This small corpus cannot establish
 statistical significance. Extraction success does not imply RAG answer improvement;
 paired indexed evaluation follows in Stage C after its own approval.
+
+## Implemented extraction command
+
+The command is available after G2 approval on 2026-10-10. It requires human-verified
+references even for extraction-only runs. Use private absolute source/reference
+paths and SHA-256 hashes. Outputs must be outside every Git checkout; on this
+machine the user's home is also a checkout, so use an explicitly chosen private
+directory elsewhere. The command rejects an existing output directory.
+
+Baseline-only run in the existing environment:
+
+```powershell
+.venv\Scripts\python.exe scripts/compare_pdf_parsers.py `
+  --manifest E:/Private/pdf-experiment/corpus.json --parsers pypdf `
+  --output E:/Private/pdf-experiment/run-001
+```
+
+After separately authorized dependency/model preparation, compare both parsers:
+
+```powershell
+<experiment-python> scripts/compare_pdf_parsers.py `
+  --manifest E:/Private/pdf-experiment/corpus.json --parsers pypdf docling `
+  --artifacts-path E:/Private/pdf-experiment/docling-models `
+  --max-memory-mib <approved-budget> --timeout 180 `
+  --output E:/Private/pdf-experiment/run-002
+```
+
+These paths and the memory budget are examples, not provisioned resources.
+`--ocr --ocr-languages he en --ocr-models-path <prepared-EasyOCR-models>`
+enables explicitly selected EasyOCR; no OCR engine auto-selection occurs.
+OCR is disabled by default, including for Docling. Language support and mixed RTL
+accuracy remain unmeasured; missing/unsupported models fail without fallback.
+
+Each document uses a new serial CPU worker per engine; converter initialization
+is timed separately. The first parse is labeled cold (a fresh process/converter,
+not a flushed OS disk cache), followed by at least three warm parses using that
+converter. Byte/page limits and a killable initialization/extraction timeout apply.
+Docling requires an explicit memory budget, currently enforced on Windows using
+the worker's lifetime peak working set. This is not a per-parse allocation metric,
+GPU memory measurement or whole-machine limit. Unsupported memory enforcement
+fails rather than ignoring the budget. Baseline-only runs may omit memory limits;
+unavailable measurements are null with an explicit method label.
+
+Workers disable Hugging Face online mode and Python socket connections/sends;
+Docling receives local PDF bytes, local artifact paths, CPU-only options, disabled
+remote services/plugins and disabled picture descriptions/classification.
+These controls cover this pipeline's Python network paths, not an OS-level
+sandbox for arbitrary native plugins. No services are started and no RAG stores,
+configuration or provider clients are imported. Package installation and model
+downloads are separate actions; this command never prepares them automatically.
+
+`report.json` records initialization/run timing, package versions, settings,
+warnings/failures and manifest hash. Each engine/run has raw JSON, normalized
+JSON, assembled text and linked PNG assets where available. `source.pdf` and
+`references.json` are private inspection snapshots; `inspection.md` points to
+each treatment. Source-byte changes during comparison fail the run. Failed or
+partial extraction returns exit code 1. Exit code 0 establishes extraction
+completion only; manual rubric inspection and paired RAG evaluation remain pending.
+
+## Optional dependency preparation
+
+The separate `pyproject.toml` declares the `pdf-experiment` group. It is outside
+the application's dependency configuration. `requirements-windows-py314.txt`
+freezes the 113-package metadata resolution for CPython 3.14/Windows x86_64, with
+an upload cutoff of 2026-10-11. The direct pins are Docling 2.137.0 with EasyOCR
+and pypdf 6.12.1; no package was installed or imported for this candidate.
+
+Reproduce the metadata-only wheel check without changing the application lock:
+
+```powershell
+uv pip compile --directory evaluation/pdf_parsers --group pdf-experiment `
+  --python-version 3.14 --python-platform x86_64-pc-windows-msvc `
+  --only-binary :all: --no-python-downloads --no-config `
+  --exclude-newer 2026-10-11 --output-file <scratch-requirements-file>
+```
+
+Before installation, review package and model licenses and approve a private
+environment/artifact directory and resource budget. Then install from the frozen
+requirements into that isolated environment, prove imports, prepare approved
+models and prove warmed offline parsing. Metadata resolution proves compatible
+wheel candidates are published; it does not prove installation, ABI behavior,
+Docling parsing, OCR or Hebrew support. The application runtime remains Python 3.14.

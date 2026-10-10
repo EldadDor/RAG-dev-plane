@@ -30,6 +30,6 @@ These requests are retained for later prioritization; none is activated.
 | Quality / UI | Further semantic-splitter experiments, browser chunking-profile selection and any reranking default change require their own scoped decisions. |
 | Operator acceptance | Fresh-process cursor/catalog acceptance, frontend catalog browser integration and PowerPoint badges need separately scoped follow-up. |
 | Kotlin owner | Runtime parity with approved Python contracts; gateway authorization for profile warming needs a separate design. |
-| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved and committed in d548a00. Stage A/B preparation is on the current board; Stage C is a next-phase candidate. Later processing caches, image/table enrichment and optional vision synthesis retain separate gates. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
+| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved and committed in d548a00. Stage A/B extraction tooling is implemented and offline-validated; actual corpus/model preparation and quality evidence remain on the current board. Stage C is a next-phase candidate. Later processing caches, image/table enrichment and optional vision synthesis retain separate gates. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
 
 Move a prioritized request into a next-phase slot; define its detailed plan at G1.
