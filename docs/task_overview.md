@@ -1,6 +1,6 @@
 # Project Task Overview
 
-**Last reviewed:** 2026-10-10
+**Last reviewed:** 2026-10-11
 
 Current work and the next three candidates per area live in the
 [backend current board](work_current_phase.md), [backend next phases](next_phase.md),
@@ -30,6 +30,6 @@ These requests are retained for later prioritization; none is activated.
 | Quality / UI | Further semantic-splitter experiments, browser chunking-profile selection and any reranking default change require their own scoped decisions. |
 | Operator acceptance | Fresh-process cursor/catalog acceptance, frontend catalog browser integration and PowerPoint badges need separately scoped follow-up. |
 | Kotlin owner | Runtime parity with approved Python contracts; gateway authorization for profile warming needs a separate design. |
-| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved and committed in d548a00. Stage A/B extraction tooling is implemented and offline-validated; private corpus inspection and per-PDF worksheets are complete. User-authored golden cases, model preparation and scored comparison remain pending on the current board. Stage C is a next-phase candidate. Later processing caches, image/table enrichment and optional vision synthesis retain separate gates. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
+| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved and committed in d548a00. Stage A/B extraction tooling is implemented and offline-validated; corpus inspection and all 51 submitted-case reviews are complete. Corrected private candidate references await human source verification before freezing; model preparation and scored comparison remain pending on the current board. Stage C is a next-phase candidate. Later processing caches, image/table enrichment and optional vision synthesis retain separate gates. Coordinate provenance with NP-25/NP-26; graph adoption deferred. |
 
 Move a prioritized request into a next-phase slot; define its detailed plan at G1.
