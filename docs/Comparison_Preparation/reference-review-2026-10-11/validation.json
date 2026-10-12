@@ -1,0 +1,12 @@
+{
+  "documents": 17,
+  "cases": 51,
+  "answerable": 44,
+  "unanswerable": 7,
+  "explicit_review_note_cases": 34,
+  "source_hashes_unchanged": true,
+  "submitted_worksheets_unchanged": true,
+  "structural_checks": "passed",
+  "human_verified_cases": 0,
+  "manifest_frozen": false
+}

@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "status": "draft_awaiting_human_source_verification",
+  "documents": [
+    {
+      "id": "pdf-001",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\10-common-hibernate-mistakes-that-cripple-your-performance-free.pdf",
+      "source_sha256": "4d2f8d0f4779568178a0e8e1c403687f9c10014461b0703725db8171e099c016",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-001.jsonl",
+      "references_sha256": "b01cf9153e05c726142f136791c0ec9a0fffd1d6a1ef0b903bab9dcc07a56652"
+    },
+    {
+      "id": "pdf-002",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\9rules.pdf",
+      "source_sha256": "f9d36c6af00f1b04e197b8a49d0e96680d56d43b27d5fe99f647588cfd8b5f51",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-002.jsonl",
+      "references_sha256": "a05673e2b355c0980a341078bc9a6dc377959b955ceface4c2b6dce57edd2902"
+    },
+    {
+      "id": "pdf-003",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Alpha_Casino_LeadMagnet_V28.pdf",
+      "source_sha256": "f1805ca26056d20898b5d47ec733f0b52c4a913ee34c0c859513ac7c50416743",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        8,
+        9
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-003.jsonl",
+      "references_sha256": "81eb6e5c917c05cda2e10daea9f1ebfb4f3e046f9b298c15f5800b589cbd8e8f"
+    },
+    {
+      "id": "pdf-004",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Catalogue_of_Czech_TOYS-and-GAMES.pdf",
+      "source_sha256": "2667941f4049afff9db2ad8668f6791417588b96116fa08812631b20b90d2417",
+      "categories": [
+        "two_column"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        3,
+        7,
+        24,
+        33
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-004.jsonl",
+      "references_sha256": "4039a9fd459076527f038a8a110286ff65dbae28231393b9e6e5f92578003ff4"
+    },
+    {
+      "id": "pdf-005",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Full Process for Coding with AI Coding Assistants.pdf",
+      "source_sha256": "5c1fcee607f0d31e278a072d9dbf85c9d39f892e0a3d63b1caf7cf2417ae21cf",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-005.jsonl",
+      "references_sha256": "82254c7037b85b67bad2b24898a41ed220908a7d5b8d1a85603f99d1415d7890"
+    },
+    {
+      "id": "pdf-006",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\gurkan03tableschairs.pdf",
+      "source_sha256": "ddcfda91694f3b572f24d4b4fae5ff5a05d36d33079ee53f7c1dc9a110429788",
+      "categories": [
+        "tables",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        6
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-006.jsonl",
+      "references_sha256": "86d04d84fc6b6266f73e08feb7568f6b137ef85a80595d358b609ab33fc59eb7"
+    },
+    {
+      "id": "pdf-007",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Herbrew_Casino1.pdf",
+      "source_sha256": "60f988150c6dc105750e32c11343d8446e43a8aa2836fc8249aa5d68fb37dca9",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-007.jsonl",
+      "references_sha256": "a372db7d65d0bc91d5e16a8702a72eaf8a0f4369dc85c08c40c791b46f6f76ee"
+    },
+    {
+      "id": "pdf-008",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\imc_telemetry-solutions_EN-201810_WEB.pdf",
+      "source_sha256": "0e2fbeabfa3d0cd0654206bb3183b6a9b7ff99668e36f0c2f2534f15d4ea8f85",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        10,
+        12
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-008.jsonl",
+      "references_sha256": "8996199227a08ac6706aadcd69457753846523f4141e42e692cea8cf6eb03bdd"
+    },
+    {
+      "id": "pdf-009",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Maven, IntelliJ Build & Run Guide-2.pdf",
+      "source_sha256": "4afedf5799ab6f401ee763100306285c2e2bd67ba25078a1ae9b194a35974f2e",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-009.jsonl",
+      "references_sha256": "692bf825d79719ae8f1bfb230e3091c60ac2d763ea4a4378cdab16cb8e39082c"
+    },
+    {
+      "id": "pdf-010",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\phillippine_weather_PAGASA.pdf",
+      "source_sha256": "3d04529c3ed0ee8c3feeed4d18ea97c36d3a608fee863ebc63d53c3434fda42e",
+      "categories": [
+        "scanned",
+        "tables"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-010.jsonl",
+      "references_sha256": "8b9d19a10511b5bd69d6a7cf0aab0d47e166a04cdd43f58d7025d3993e225323"
+    },
+    {
+      "id": "pdf-011",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Print-Ready-file-for-Know-the-Odds-4pg-brochure__165223_GAMING_V01.pdf",
+      "source_sha256": "42b4534eb6b650ffecf11c3f4006de532f49c07ce769239936e9cdc890a6152f",
+      "categories": [
+        "two_column",
+        "tables"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-011.jsonl",
+      "references_sha256": "5c91de25ed1dec18a92595a3112faeefd1dfc20672ded1a40e49ed9f603bb6b4"
+    },
+    {
+      "id": "pdf-012",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Qwopus3-5-27b-Colab_complete_guide_to_llm_finetuning.pdf",
+      "source_sha256": "59ae5b40d5e1d3fb5376efe6e5dc7d82bb75901462919b147dc41749ddedd9e5",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        13
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-012.jsonl",
+      "references_sha256": "ba7380afd3c9283b26614e205926287f7781f5f71297b440bcf603cb692c0cbe"
+    },
+    {
+      "id": "pdf-013",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\t4.pdf",
+      "source_sha256": "71f6ee6f188dd786a2cea13a50511366b20b367f3a0088c42852d8cfb0ea8ede",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-013.jsonl",
+      "references_sha256": "6bf5ed0a22b50062e9efaa24a6ef861f3451898d9c3abea7367a0e3c14e96bb8"
+    },
+    {
+      "id": "pdf-014",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Technion_AI_change_cse.pdf",
+      "source_sha256": "326a96cfa66140e7287c9dc1cb033283f89a89038d0c098cac5395b2401b4c98",
+      "categories": [
+        "tables",
+        "mixed_english_hebrew"
+      ],
+      "languages": [
+        "he",
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-014.jsonl",
+      "references_sha256": "e3cd9d05c5b5615662afeca590975b45899c697ff709738e3b78bb9ed4ae790c"
+    },
+    {
+      "id": "pdf-015",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\Technion_programing_casino.pdf",
+      "source_sha256": "fea0b0d20fc96fdff16986e72ae0da5beba0eb0a193ba7f3aa441114851014f1",
+      "categories": [
+        "ordinary_text",
+        "tables",
+        "diagrams",
+        "mixed_english_hebrew"
+      ],
+      "languages": [
+        "he",
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        7,
+        9
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-015.jsonl",
+      "references_sha256": "f211f7c5b5f8753ebfc6d007b2163c739432851d250583d8c9e1fbaf701f495e"
+    },
+    {
+      "id": "pdf-016",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\חוברת חקלאות מוגבר-חגית חלד.pdf",
+      "source_sha256": "5c61d8fb21627728b45afca39c8e83746faec59d27f99253ff9d79f769e1e8d3",
+      "categories": [
+        "ordinary_text",
+        "tables",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        57,
+        88
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-016.jsonl",
+      "references_sha256": "f48d4cfd2778d8084093796da6f5aa4941dfecf49a06b963aec481a7993d50a8"
+    },
+    {
+      "id": "pdf-017",
+      "source_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\PDFs\\שם-קוד.pdf",
+      "source_sha256": "f082ebd4a02bec5188327b3ac01819db52032fa6f9ac0796f23f20c1db14d53c",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "permission_basis": "User supplied PDFs and approved local comparison preparation on 2026-10-10.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Preparation\\reference-review-2026-10-11\\references\\pdf-017.jsonl",
+      "references_sha256": "72e64941ebd734f452f94d75c1ea92c236aa19bf6345cdc8ccdb0b3096c93f97"
+    }
+  ],
+  "review_date": "2026-10-11",
+  "scope": "Each question is restricted to its assigned document; full-corpus negative cases require a further cross-document check."
+}
