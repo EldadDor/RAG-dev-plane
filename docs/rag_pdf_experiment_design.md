@@ -1,9 +1,9 @@
 # RAG PDF extraction experiment — Stage A design
 
 **Task:** RAG-A-02
-**Last reviewed:** 2026-10-10
+**Last reviewed:** 2026-10-13
 **Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
-and validated offline. Candidate installation/model runs and corpus freezing remain pending.
+and validated offline. Corpus/reference freezing and the pypdf baseline are complete; candidate installation/model runs await separate preparation approval.
 
 ## Approved decision
 
@@ -153,6 +153,12 @@ options, private output placement, cold/warm definitions and Windows memory
 measurement limits. Model preparation must freeze the exact local artifact
 revisions/hashes and hardware budget before a real comparison is claimed.
 
-Real corpus/reference approval, installation/model preparation, resource budget
-and live indexed workspaces remain pending. Stage A reference preparation cannot
-be declared complete until permitted files and human-verified answers exist.
+The user approved all submitted worksheets on 2026-10-13. A 17-document frozen
+manifest with 47 valid cases passed the existing loader; four optional
+mixed/ambiguous cases are retained outside scoring. The real pypdf baseline
+completed 68 cold/warm passes with source/reference snapshot and offset/page
+consistency checks. Manual quality inspection remains distinct from extraction
+completion. See [the corpus release](Comparison_Preparation/GOLDEN_CASES_VALIDATION.md)
+and [the concrete candidate setup request](Comparison_Preparation/DOCLING_RUNTIME_PREPARATION.md).
+Candidate installation/model preparation, resource budget and live indexed
+workspaces remain pending; human reference approval is complete.

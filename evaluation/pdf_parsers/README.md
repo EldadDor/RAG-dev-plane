@@ -1,15 +1,18 @@
 # PDF parser comparison corpus
 
 **Task:** RAG-A-01
-**Last reviewed:** 2026-10-10
-**Status:** Intake protocol and rubric proposal; corpus/references not frozen.
+**Last reviewed:** 2026-10-13
+**Status:** Implemented protocol; user-approved corpus frozen and pypdf baseline completed. Docling/OCR preparation awaits its separate decision.
 
 Copy `corpus.example.json` to a private directory outside the repository and
-replace its empty document list with permitted local PDFs. No non-archived PDFs
-were found in repository discovery. Do not commit private source paths, PDFs,
-extracted content, screenshots, answers or experiment results. The future
-comparison command must require an explicit output directory outside the Git
-checkout for private runs. The example is a template, not a runnable benchmark.
+replace its empty document list with permitted local PDFs. The user explicitly
+chose to copy, commit and push the supplied corpus/review artifacts under
+`docs/Comparison_Preparation`, and approved every worksheet on 2026-10-13.
+That corpus now has a validated `corpus.frozen.json` and 47 cases across 17 PDFs;
+see [the release report](../../docs/Comparison_Preparation/GOLDEN_CASES_VALIDATION.md).
+Other private corpora and extraction run outputs remain outside Git. The
+comparison command requires an explicit output directory outside every Git
+checkout. `corpus.example.json` remains a template, not a runnable benchmark.
 
 Target 12–20 documents and 30–50 manually verified questions. Include ordinary
 text, two columns, tables with units/footnotes, labeled diagrams, scanned pages,

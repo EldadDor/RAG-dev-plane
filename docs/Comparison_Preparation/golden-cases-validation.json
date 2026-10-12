@@ -1,0 +1,408 @@
+{
+  "status": "passed",
+  "validated_on": "2026-10-13",
+  "loader": "scripts.compare_pdf_parsers.load_manifest",
+  "manifest_sha256": "a84483eabfeeba04232dc365709f9e8bec26b9c2b195983e5f9b94dc4126abdd",
+  "documents": [
+    {
+      "document_id": "pdf-001",
+      "pages": 6,
+      "included": 3,
+      "answerable": 2,
+      "unanswerable": 1
+    },
+    {
+      "document_id": "pdf-002",
+      "pages": 4,
+      "included": 3,
+      "answerable": 2,
+      "unanswerable": 1
+    },
+    {
+      "document_id": "pdf-003",
+      "pages": 18,
+      "included": 3,
+      "answerable": 2,
+      "unanswerable": 1
+    },
+    {
+      "document_id": "pdf-004",
+      "pages": 48,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-005",
+      "pages": 9,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-006",
+      "pages": 11,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-007",
+      "pages": 7,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-008",
+      "pages": 20,
+      "included": 3,
+      "answerable": 2,
+      "unanswerable": 1
+    },
+    {
+      "document_id": "pdf-009",
+      "pages": 1,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-010",
+      "pages": 1,
+      "included": 3,
+      "answerable": 2,
+      "unanswerable": 1
+    },
+    {
+      "document_id": "pdf-011",
+      "pages": 2,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-012",
+      "pages": 26,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-013",
+      "pages": 16,
+      "included": 2,
+      "answerable": 2,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-014",
+      "pages": 9,
+      "included": 2,
+      "answerable": 2,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-015",
+      "pages": 14,
+      "included": 2,
+      "answerable": 2,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-016",
+      "pages": 113,
+      "included": 3,
+      "answerable": 3,
+      "unanswerable": 0
+    },
+    {
+      "document_id": "pdf-017",
+      "pages": 8,
+      "included": 2,
+      "answerable": 2,
+      "unanswerable": 0
+    }
+  ],
+  "source_pages": 313,
+  "submitted_cases": 51,
+  "frozen_cases": 47,
+  "excluded_cases": 4,
+  "answerable": 42,
+  "unanswerable": 5,
+  "minimum_answerable_per_document": 2,
+  "source_hashes_match_original_inventory": true,
+  "submitted_worksheets_unchanged": true,
+  "normalization": [
+    {
+      "id": "pdf-001-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-001-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-002-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-002-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-003-q1",
+      "notes": [
+        "Bar and Video Walls are separate visible labels. Audio is a label; the source does not label it a connecting element across the whole diagram.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-003-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-004-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-004-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-004-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-005-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-005-q2",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-005-q3",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-006-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-006-q2",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-006-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-007-q1",
+      "notes": [
+        "Corrected illegal money to unreported money; narrowed grading to the state-tax argument actually asked for.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-007-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-007-q3",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-008-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-008-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-009-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-009-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-009-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-010-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-010-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-011-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-011-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-011-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-012-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-012-q2",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-012-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-013-q1",
+      "notes": [
+        "Examples are on viewer page 4, not 2. There are seven examples, not six. Removed the unsupported three-properties assertion.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-013-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-014-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-014-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-015-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-015-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-016-q1",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-016-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-016-q3",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-017-q1",
+      "notes": [
+        "Mandatory facts restricted to the approved question's scope; other submitted facts retained in the submission trace.",
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    },
+    {
+      "id": "pdf-017-q2",
+      "notes": [
+        "Evidence normalized to the prior source-reviewed viewer pages/quotes; approved question wording preserved."
+      ]
+    }
+  ],
+  "limitations": [
+    "Negatives apply only to the assigned document/page, not the combined corpus.",
+    "No parser output scored, runtime installed, models downloaded, or live RAG services used."
+  ]
+}

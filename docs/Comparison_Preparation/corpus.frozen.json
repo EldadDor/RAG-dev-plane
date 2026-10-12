@@ -1,0 +1,394 @@
+{
+  "schema_version": 1,
+  "status": "frozen",
+  "documents": [
+    {
+      "id": "pdf-001",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\10-common-hibernate-mistakes-that-cripple-your-performance-free.pdf",
+      "source_sha256": "4d2f8d0f4779568178a0e8e1c403687f9c10014461b0703725db8171e099c016",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-001.jsonl",
+      "references_sha256": "001336541deb8978f9352ccfbd156db7b653acfca2400e64daece85e43dca1d2",
+      "page_count": 6,
+      "submission_sha256": "cdf03fc6ea4c804a91f35f3c8e0167fa91b0ab6a4bd6dc321b8808dee8ba9819"
+    },
+    {
+      "id": "pdf-002",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\9rules.pdf",
+      "source_sha256": "f9d36c6af00f1b04e197b8a49d0e96680d56d43b27d5fe99f647588cfd8b5f51",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-002.jsonl",
+      "references_sha256": "cda334090d827c989d812af317fd6edc45dca32e04494ab23f0977a3815f4e8d",
+      "page_count": 4,
+      "submission_sha256": "d2576bd5621dc554f5e7dcd3fbf2b1f9fdc9615e2bb459087f4074b25a32f383"
+    },
+    {
+      "id": "pdf-003",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Alpha_Casino_LeadMagnet_V28.pdf",
+      "source_sha256": "f1805ca26056d20898b5d47ec733f0b52c4a913ee34c0c859513ac7c50416743",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        8,
+        9
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-003.jsonl",
+      "references_sha256": "05917d829a03d4206d5a994d2cd761ff6e4fada56c3f08b51627e67b60cfb211",
+      "page_count": 18,
+      "submission_sha256": "ce4418e29d3aff10b3790828964b027fa7439a83ade9a638ef20f910d8ca7836"
+    },
+    {
+      "id": "pdf-004",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Catalogue_of_Czech_TOYS-and-GAMES.pdf",
+      "source_sha256": "2667941f4049afff9db2ad8668f6791417588b96116fa08812631b20b90d2417",
+      "categories": [
+        "two_column"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        3,
+        7,
+        24,
+        33
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-004.jsonl",
+      "references_sha256": "99d25015c7368de888ce1cde88f410743ce3572647f6e66ba21dd5ad95656223",
+      "page_count": 48,
+      "submission_sha256": "d710c11198ffec3e0d36435fcc9e96df88474a683da346079d730d27117c7087"
+    },
+    {
+      "id": "pdf-005",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Full Process for Coding with AI Coding Assistants.pdf",
+      "source_sha256": "5c1fcee607f0d31e278a072d9dbf85c9d39f892e0a3d63b1caf7cf2417ae21cf",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-005.jsonl",
+      "references_sha256": "d7a2b1891667816a8a7c0bc6e231c4560cd17ceb2be4fd19c7ea088e519a9513",
+      "page_count": 9,
+      "submission_sha256": "dc15465f58d656031e114669c2bb5de846377e61b5d3cf6b9d6730ed1385c8e4"
+    },
+    {
+      "id": "pdf-006",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\gurkan03tableschairs.pdf",
+      "source_sha256": "ddcfda91694f3b572f24d4b4fae5ff5a05d36d33079ee53f7c1dc9a110429788",
+      "categories": [
+        "tables",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        6
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-006.jsonl",
+      "references_sha256": "fdc55c5cfe841db282411b9689fd638ddc47a3fb6790cf70cb73ab1efb18f6e5",
+      "page_count": 11,
+      "submission_sha256": "0ecc340eb4789e803b3ad6109e10e2fbb188d45f974d16b1743eb539c0b85d30"
+    },
+    {
+      "id": "pdf-007",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Herbrew_Casino1.pdf",
+      "source_sha256": "60f988150c6dc105750e32c11343d8446e43a8aa2836fc8249aa5d68fb37dca9",
+      "categories": [
+        "ordinary_text"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-007.jsonl",
+      "references_sha256": "b950807f540c4496ca221feef62ff95fcc79e371e7c2397ecb5bdfb22ae060bc",
+      "page_count": 7,
+      "submission_sha256": "67f63c66ae98c279a11310aeec99d8e83a8871d6c169aca4e5e0ae6674b1a685"
+    },
+    {
+      "id": "pdf-008",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\imc_telemetry-solutions_EN-201810_WEB.pdf",
+      "source_sha256": "0e2fbeabfa3d0cd0654206bb3183b6a9b7ff99668e36f0c2f2534f15d4ea8f85",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        10,
+        12
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-008.jsonl",
+      "references_sha256": "7680118466fdd5299b5c2447e6b409195797e3699b6bd82575cbe4525b4879dc",
+      "page_count": 20,
+      "submission_sha256": "5316bc6f3454e19d09e8292b1edd47e57efb42721d4f2c8798f1ac321d4b18d2"
+    },
+    {
+      "id": "pdf-009",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Maven, IntelliJ Build & Run Guide-2.pdf",
+      "source_sha256": "4afedf5799ab6f401ee763100306285c2e2bd67ba25078a1ae9b194a35974f2e",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-009.jsonl",
+      "references_sha256": "bd91e4452bb5102079f413b7a258537bd0e1c59003e447568870253b73ed3388",
+      "page_count": 1,
+      "submission_sha256": "0a0c1ed73c7d2285de11211f48347ce74afb9cd8a1264ffe9b9e890cdd3d09e6"
+    },
+    {
+      "id": "pdf-010",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\phillippine_weather_PAGASA.pdf",
+      "source_sha256": "3d04529c3ed0ee8c3feeed4d18ea97c36d3a608fee863ebc63d53c3434fda42e",
+      "categories": [
+        "scanned",
+        "tables"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-010.jsonl",
+      "references_sha256": "bb64d2b5d2d7686c6cdd233502caacbc60d19574cfe7215f35490e5c262363cb",
+      "page_count": 1,
+      "submission_sha256": "d1c31e4a382d2dcfc2df965bd2eadb57a2d9af147960fc7020e1ad94b0a2086b"
+    },
+    {
+      "id": "pdf-011",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Print-Ready-file-for-Know-the-Odds-4pg-brochure__165223_GAMING_V01.pdf",
+      "source_sha256": "42b4534eb6b650ffecf11c3f4006de532f49c07ce769239936e9cdc890a6152f",
+      "categories": [
+        "two_column",
+        "tables"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-011.jsonl",
+      "references_sha256": "2bea9d8274960cc36e2dd09519f8ddc37b2800cf92b776388632c2d8abecce5c",
+      "page_count": 2,
+      "submission_sha256": "bcce8ae9787df8922fcfca061c43f990408383c98ac8017faba41c8e9c166710"
+    },
+    {
+      "id": "pdf-012",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Qwopus3-5-27b-Colab_complete_guide_to_llm_finetuning.pdf",
+      "source_sha256": "59ae5b40d5e1d3fb5376efe6e5dc7d82bb75901462919b147dc41749ddedd9e5",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        13
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-012.jsonl",
+      "references_sha256": "2554ef24a639a19b6340a3a3ef95b31e21c25ed2ac442a4ed68d2aa03fdc6dab",
+      "page_count": 26,
+      "submission_sha256": "c5d8a64e952a18547c55eb4a80823f4b0d2098e7c1d8d5891270b003f177a991"
+    },
+    {
+      "id": "pdf-013",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\t4.pdf",
+      "source_sha256": "71f6ee6f188dd786a2cea13a50511366b20b367f3a0088c42852d8cfb0ea8ede",
+      "categories": [
+        "ordinary_text",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-013.jsonl",
+      "references_sha256": "2a956fd36f8a4668b5b6ee095613257b2d25fac6aa7bb23aa13af68c92d1754c",
+      "page_count": 16,
+      "submission_sha256": "1eacdc4bb67fa70b2b5c459b9a3b1c36eac31645923cf8ff2fe7b4fa18443e61"
+    },
+    {
+      "id": "pdf-014",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Technion_AI_change_cse.pdf",
+      "source_sha256": "326a96cfa66140e7287c9dc1cb033283f89a89038d0c098cac5395b2401b4c98",
+      "categories": [
+        "tables",
+        "mixed_english_hebrew"
+      ],
+      "languages": [
+        "he",
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-014.jsonl",
+      "references_sha256": "3f4d583a8deb37f12f36b530f38fdaa32a6a02a63ad7390fdd51bbded7a446ce",
+      "page_count": 9,
+      "submission_sha256": "9b29ba90f2af87f778a02ccabb554c6a2b7cf1207ef4e0a05e7ee890a4750ee6"
+    },
+    {
+      "id": "pdf-015",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\Technion_programing_casino.pdf",
+      "source_sha256": "fea0b0d20fc96fdff16986e72ae0da5beba0eb0a193ba7f3aa441114851014f1",
+      "categories": [
+        "ordinary_text",
+        "tables",
+        "diagrams",
+        "mixed_english_hebrew"
+      ],
+      "languages": [
+        "he",
+        "en"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        4,
+        7,
+        9
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-015.jsonl",
+      "references_sha256": "08ed412bd252cd5cf491459a4b08a0b111b03309fa7c47cead556ac59609b328",
+      "page_count": 14,
+      "submission_sha256": "b9bb214973d78314e244057b7d29f43caebb8751c72eab699da657ead57e6841"
+    },
+    {
+      "id": "pdf-016",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\חוברת חקלאות מוגבר-חגית חלד.pdf",
+      "source_sha256": "5c61d8fb21627728b45afca39c8e83746faec59d27f99253ff9d79f769e1e8d3",
+      "categories": [
+        "ordinary_text",
+        "tables",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        57,
+        88
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-016.jsonl",
+      "references_sha256": "141264a9e82b9e3e020878cd4b1b223c4c42b965f10705380fd801dde771d90d",
+      "page_count": 113,
+      "submission_sha256": "39a5926f8ce691677e9a15636e3c0a426c366e897cd1f4306722367e488cc062"
+    },
+    {
+      "id": "pdf-017",
+      "source_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\PDFs\\שם-קוד.pdf",
+      "source_sha256": "f082ebd4a02bec5188327b3ac01819db52032fa6f9ac0796f23f20c1db14d53c",
+      "categories": [
+        "two_column",
+        "diagrams"
+      ],
+      "languages": [
+        "he"
+      ],
+      "inspection_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "permission_basis": "User supplied/copied PDFs into this repository, committed/pushed them, and explicitly approved all worksheets-done cases for local testing on 2026-10-13.",
+      "references_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\golden-cases\\pdf-017.jsonl",
+      "references_sha256": "73c2dfc1802d72678ab567a7a430b01708a13b0465e01ae87af0122329b92b65",
+      "page_count": 8,
+      "submission_sha256": "41b48a3c0e85d95b4bfe40650b6a65febb5690af7092cf8db32df7b48a7fc806"
+    }
+  ],
+  "scope": "Assigned-document references only; negatives do not certify absence across the combined corpus.",
+  "frozen_on": "2026-10-13",
+  "human_approval_path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\Comparison_Preparation\\HUMAN_APPROVAL.md"
+}

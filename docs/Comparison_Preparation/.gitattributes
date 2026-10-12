@@ -1,0 +1,4 @@
+/golden-cases/*.jsonl -text whitespace=trailing-space,space-before-tab,cr-at-eol
+/corpus.frozen.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+/golden-cases-validation.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+/excluded-cases.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
