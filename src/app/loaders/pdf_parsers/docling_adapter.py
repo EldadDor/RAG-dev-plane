@@ -7,6 +7,8 @@ import hashlib
 from importlib.metadata import PackageNotFoundError, version
 from io import BytesIO
 import json
+import math
+import re
 from pathlib import Path
 
 from app.loaders.pdf_extraction import (
@@ -26,7 +28,7 @@ def _converter(options: ExtractionOptions):
     if not options.artifacts_path or not Path(options.artifacts_path).is_dir():
         raise ExtractionError("Docling requires an existing local --artifacts-path; downloads are disabled")
     if options.ocr and (not options.ocr_models_path or not Path(options.ocr_models_path).is_dir()):
-        raise ExtractionError("OCR requires prepared EasyOCR models via --ocr-models-path")
+        raise ExtractionError("OCR requires prepared local models via --ocr-models-path")
     pipeline = PdfPipelineOptions(
         artifacts_path=Path(options.artifacts_path), do_ocr=options.ocr,
         enable_remote_services=False, allow_external_plugins=False,
@@ -36,10 +38,29 @@ def _converter(options: ExtractionOptions):
         accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CPU, num_threads=1),
     )
     if options.ocr:
-        pipeline.ocr_options = EasyOcrOptions(
-            lang=list(options.ocr_languages), use_gpu=False, download_enabled=False,
-            model_storage_directory=options.ocr_models_path,
-        )
+        if options.ocr_engine == "easyocr":
+            if any(lang in {"he", "heb", "iw"} for lang in options.ocr_languages):
+                raise ExtractionError("EasyOCR 1.7.2 does not support Hebrew; select tesseract with heb eng")
+            pipeline.ocr_options = EasyOcrOptions(
+                lang=list(options.ocr_languages), use_gpu=False, download_enabled=False,
+                model_storage_directory=options.ocr_models_path,
+            )
+        else:
+            from docling.datamodel.pipeline_options import TesseractCliOcrOptions
+            if not options.ocr_executable or not Path(options.ocr_executable).is_file():
+                raise ExtractionError("Tesseract requires an explicit existing --ocr-executable")
+            for language in options.ocr_languages:
+                if not re.fullmatch(r"[A-Za-z0-9_]+", language) or not (
+                    Path(options.ocr_models_path) / f"{language}.traineddata"
+                ).is_file():
+                    raise ExtractionError(f"Missing prepared Tesseract language model: {language}")
+            for auxiliary in ("osd.traineddata", "configs/tsv"):
+                if not (Path(options.ocr_models_path) / auxiliary).is_file():
+                    raise ExtractionError(f"Missing prepared Tesseract auxiliary artifact: {auxiliary}")
+            pipeline.ocr_options = TesseractCliOcrOptions(
+                lang=list(options.ocr_languages), tesseract_cmd=options.ocr_executable,
+                path=options.ocr_models_path,
+            )
     converter = DocumentConverter(
         allowed_formats=[InputFormat.PDF],
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline)},
@@ -48,7 +69,16 @@ def _converter(options: ExtractionOptions):
         converter.initialize_pipeline(InputFormat.PDF)
     except Exception as exc:
         raise ExtractionError(f"Docling initialization failed; verify prepared local models: {exc}") from exc
-    return converter, pipeline.model_dump(mode="json")
+    settings = pipeline.model_dump(mode="json")
+    if options.ocr and options.ocr_engine == "tesseract":
+        paths = {"executable": Path(options.ocr_executable)}
+        paths.update({lang: Path(options.ocr_models_path) / f"{lang}.traineddata"
+                      for lang in options.ocr_languages})
+        paths.update({name: Path(options.ocr_models_path) / name for name in ("osd.traineddata", "configs/tsv")})
+        settings["native_ocr_sha256"] = {
+            name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()
+        }
+    return converter, settings
 
 
 def _versions() -> dict[str, str]:
@@ -70,7 +100,8 @@ class DoclingAdapter:
         else:
             self.converter, pipeline_settings = converter, {"test_converter": True}
         self.versions = versions if versions is not None else _versions()
-        self.settings = {"options": asdict(options), "effective_pipeline": pipeline_settings}
+        self.settings = {"options": asdict(options), "effective_pipeline": pipeline_settings,
+                         "normalization_policy": "bounded_boxes_or_partial_v1"}
         self.identity = json.dumps({"versions": self.versions, "settings": self.settings}, sort_keys=True)
 
     def extract(self, path: Path, options: ExtractionOptions) -> ExtractionResult:
@@ -122,6 +153,17 @@ class DoclingAdapter:
                     normalized_status = "partial" if normalized_status == "completed" else normalized_status
                     continue
                 box = prov.bbox.to_top_left_origin(page_height=page.size.height)
+                coordinates = (box.l, box.t, box.r, box.b, page.size.width, page.size.height)
+                if not all(math.isfinite(value) for value in coordinates) or not (
+                    0 <= box.l <= box.r <= page.size.width
+                    and 0 <= box.t <= box.b <= page.size.height
+                ):
+                    warnings.append(
+                        f"Block {ordinal}: invalid box on page {prov.page_no}; "
+                        "omitted from normalized boxes; upstream coordinates retained in raw output"
+                    )
+                    normalized_status = "partial" if normalized_status == "completed" else normalized_status
+                    continue
                 block.boxes.append(SourceBox(
                     page=prov.page_no, left=box.l, top=box.t, right=box.r, bottom=box.b,
                     page_width=page.size.width, page_height=page.size.height,

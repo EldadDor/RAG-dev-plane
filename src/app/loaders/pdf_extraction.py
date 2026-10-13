@@ -22,12 +22,16 @@ class ExtractionOptions:
     ocr: bool = False
     ocr_languages: tuple[str, ...] = ("en",)
     ocr_models_path: str | None = None
+    ocr_engine: Literal["easyocr", "tesseract"] = "easyocr"
+    ocr_executable: str | None = None
 
     def __post_init__(self) -> None:
         if self.max_bytes <= 0 or self.max_pages <= 0:
             raise ExtractionError("File/page limits must be positive")
         if not self.ocr_languages or any(not value.strip() for value in self.ocr_languages):
             raise ExtractionError("Specify nonempty OCR language codes")
+        if self.ocr_engine not in {"easyocr", "tesseract"}:
+            raise ExtractionError("Specify an explicit supported OCR engine")
 
 
 @dataclass

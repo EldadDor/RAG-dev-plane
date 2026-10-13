@@ -207,6 +207,32 @@ def test_docling_mapping_preserves_tables_locations_and_assets_and_reuses_conver
         adapter.extract(source, replace(options, max_pages=100))
 
 
+@pytest.mark.parametrize("top", [-17.1024227575474, float("nan")])
+def test_docling_invalid_upstream_box_retains_text_as_explicit_partial(tmp_path, top):
+    source = pdf(tmp_path / "source.pdf")
+    converted = fake_conversion()
+    items = list(converted.document.iterate_items())
+    heading = items[0][0]
+    heading.prov[0].bbox = SimpleNamespace(
+        to_top_left_origin=lambda **kwargs: SimpleNamespace(l=10, t=top, r=100, b=80)
+    )
+    upstream_raw = {"synthetic": True, "original_top": str(top)}
+    converted.document.export_to_dict = lambda: upstream_raw
+    options = ExtractionOptions()
+    adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=lambda *args, **kwargs: converted),
+                             versions={"docling": "fake"})
+    result = adapter.extract(source, options)
+    assert result.status == "partial"
+    assert result.blocks[0].source_text == "דוח"
+    assert result.blocks[0].pages == [1]
+    assert result.blocks[0].boxes == []
+    assert result.blocks[1].boxes  # Valid provenance for other blocks is retained.
+    assert any("invalid box on page 1" in warning for warning in result.warnings)
+    assert result.raw is upstream_raw
+    assert result.settings["normalization_policy"] == "bounded_boxes_or_partial_v1"
+    result.normalized("fixture")  # Partial output still meets strict normalized-box validation.
+
+
 @pytest.mark.parametrize("case", ["partial_success", "failure", "missing_image", "missing_page"])
 def test_docling_failure_and_partial_are_visible(tmp_path, case):
     source = pdf(tmp_path / "source.pdf")
@@ -256,7 +282,8 @@ def test_docling_factory_requires_local_models_and_disables_remote_features(tmp_
         "docling.datamodel.accelerator_options": {
             "AcceleratorDevice": SimpleNamespace(CPU="cpu"), "AcceleratorOptions": Options},
         "docling.datamodel.base_models": {"InputFormat": SimpleNamespace(PDF="pdf")},
-        "docling.datamodel.pipeline_options": {"EasyOcrOptions": Options, "PdfPipelineOptions": Options},
+        "docling.datamodel.pipeline_options": {"EasyOcrOptions": Options, "PdfPipelineOptions": Options,
+                                              "TesseractCliOcrOptions": Options},
         "docling.document_converter": {"DocumentConverter": Converter, "PdfFormatOption": Options},
     }
     for name, attributes in modules.items():
@@ -267,12 +294,12 @@ def test_docling_factory_requires_local_models_and_disables_remote_features(tmp_
         _converter(ExtractionOptions())
     artifacts = tmp_path / "artifacts"
     artifacts.mkdir()
-    with pytest.raises(ExtractionError, match="prepared EasyOCR models"):
+    with pytest.raises(ExtractionError, match="prepared local models"):
         _converter(ExtractionOptions(artifacts_path=str(artifacts), ocr=True))
     ocr_models = tmp_path / "ocr"
     ocr_models.mkdir()
     _, settings = _converter(ExtractionOptions(artifacts_path=str(artifacts), ocr=True,
-                                               ocr_languages=("he", "en"), ocr_models_path=str(ocr_models)))
+                                               ocr_languages=("en",), ocr_models_path=str(ocr_models)))
     pipeline = captured["format_options"]["pdf"].pipeline_options
     assert captured["allowed_formats"] == ["pdf"]
     assert captured["initialized"] == "pdf"
@@ -283,8 +310,36 @@ def test_docling_factory_requires_local_models_and_disables_remote_features(tmp_
     assert pipeline.do_table_structure is True
     assert pipeline.accelerator_options.device == "cpu"
     assert pipeline.ocr_options.download_enabled is False
-    assert pipeline.ocr_options.lang == ["he", "en"]
+    assert pipeline.ocr_options.lang == ["en"]
     assert settings == {"offline": True}
+    with pytest.raises(ExtractionError, match="does not support Hebrew"):
+        _converter(ExtractionOptions(artifacts_path=str(artifacts), ocr=True,
+                                     ocr_languages=("he", "en"), ocr_models_path=str(ocr_models)))
+    native_options = ExtractionOptions(artifacts_path=str(artifacts), ocr=True,
+                                       ocr_engine="tesseract", ocr_languages=("heb", "eng"),
+                                       ocr_models_path=str(ocr_models))
+    with pytest.raises(ExtractionError, match="ocr-executable"):
+        _converter(native_options)
+    native = tmp_path / "tesseract.exe"
+    native.write_bytes(b"fake-native-executable")
+    native_options = replace(native_options, ocr_executable=str(native))
+    with pytest.raises(ExtractionError, match="Missing prepared Tesseract"):
+        _converter(native_options)
+    for language in ("heb", "eng"):
+        (ocr_models / f"{language}.traineddata").write_bytes(language.encode())
+    with pytest.raises(ExtractionError, match="auxiliary artifact"):
+        _converter(native_options)
+    (ocr_models / "osd.traineddata").write_bytes(b"fake-orientation-model")
+    (ocr_models / "configs").mkdir()
+    (ocr_models / "configs/tsv").write_bytes(b"tessedit_create_tsv 1")
+    _, native_settings = _converter(native_options)
+    pipeline = captured["format_options"]["pdf"].pipeline_options
+    assert pipeline.ocr_options.lang == ["heb", "eng"]
+    assert pipeline.ocr_options.tesseract_cmd == str(native)
+    assert pipeline.ocr_options.path == str(ocr_models)
+    assert native_settings["native_ocr_sha256"]["executable"] == hashlib.sha256(native.read_bytes()).hexdigest()
+    with pytest.raises(ExtractionError, match="Missing prepared Tesseract"):
+        _converter(replace(native_options, ocr_languages=("../eng",)))
 
 
 @pytest.mark.parametrize("field", ["status", "source_sha256", "references_sha256", "id", "inspection_pages"])
@@ -406,6 +461,23 @@ def test_wait_enforces_timeout_and_memory(cli_module):
         cli_module.process_peak_memory = original
 
 
+def test_wait_rejects_over_budget_native_job_peak(cli_module):
+    process = SimpleNamespace(pid=123, is_alive=lambda: True)
+    connection = SimpleNamespace(poll=lambda timeout: False)
+    job = SimpleNamespace(peak_commit=lambda: 1024)
+    with pytest.raises(ExtractionError, match="process-tree peak commit"):
+        cli_module.wait_result(connection, process, 1, 100, job)
+
+
+def test_wait_records_native_crash_exit_code(cli_module):
+    def closed_pipe():
+        raise EOFError
+    process = SimpleNamespace(join=lambda **kwargs: None, exitcode=-1073741819)
+    connection = SimpleNamespace(poll=lambda timeout: True, recv=closed_pipe)
+    with pytest.raises(ExtractionError, match="exit code -1073741819"):
+        cli_module.wait_result(connection, process, 1, None)
+
+
 def test_timeout_terminates_a_real_worker(cli_module):
     import multiprocessing
     context = multiprocessing.get_context("spawn")
@@ -419,3 +491,61 @@ def test_timeout_terminates_a_real_worker(cli_module):
         cli_module._stop(process, parent)
         child.close()
     assert not process.is_alive()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows native process-tree control")
+@pytest.mark.parametrize("mode", ["cleanup", "memory_limit"])
+def test_native_job_controls_descendants(private_tmp_path, cli_module, mode):
+    gate = private_tmp_path / "start"
+    output = private_tmp_path / "child-result"
+    child_code = "import time; time.sleep(30)" if mode == "cleanup" else (
+        "try:\n b=bytearray(256*1024*1024)\n print('allocated')\n"
+        "except MemoryError:\n print('limited')\n"
+    )
+    script = """
+import pathlib, subprocess, sys, time
+gate, output = map(pathlib.Path, sys.argv[1:3])
+while not gate.exists(): time.sleep(0.01)
+if sys.argv[3] == 'cleanup':
+    child = subprocess.Popen([sys.executable, '-c', sys.argv[4]])
+    output.write_text(str(child.pid))
+else:
+    child = subprocess.run([sys.executable, '-c', sys.argv[4]], capture_output=True, text=True)
+    output.write_text(child.stdout.strip() or child.stderr)
+time.sleep(30)
+"""
+    process = subprocess.Popen([sys.executable, "-c", script, str(gate), str(output), mode, child_code])
+    job = None
+    child_handle = None
+    try:
+        job = cli_module.WindowsWorkerJob(process.pid, 128 * 1024 * 1024)
+        gate.write_text("ready")
+        deadline = time.monotonic() + 10
+        while not output.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert output.exists(), "Native child did not report"
+        assert job.peak_commit() > 0
+        if mode == "memory_limit":
+            assert output.read_text() == "limited", "Native child bypassed the job memory ceiling"
+        else:
+            import ctypes
+            from ctypes import wintypes
+            kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+            kernel.OpenProcess.restype = wintypes.HANDLE
+            kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+            kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+            child_handle = kernel.OpenProcess(0x00100000, False, int(output.read_text()))
+            assert child_handle
+        job.close()
+        process.wait(timeout=5)
+        if child_handle:
+            assert kernel.WaitForSingleObject(child_handle, 5000) == 0, "Native child survived worker cleanup"
+    finally:
+        if job:
+            job.close()
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=5)
+        if child_handle:
+            kernel.CloseHandle(child_handle)

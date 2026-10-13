@@ -1,10 +1,10 @@
 # Docling/OCR setup — concrete approval request
 
 **Task:** RAG-B-RUNTIME
-**Status:** Awaiting G1 preparation approval; no candidate environment or model downloads performed.
+**Status:** G1 preparation approved by the user on 2026-10-13; isolated environment created, package/model preparation in progress.
 **Prepared:** 2026-10-13
 
-The human-approved references are frozen and the pypdf baseline has run. A two-parser comparison next requires an isolated Docling environment and local model weights. The approved [Stage A design](../rag_pdf_experiment_design.md) explicitly says: “Model downloads and model-using runs require their separate preparation decision.” Worksheet approval covers reference checks; this separate request covers installation/downloads and model execution.
+The human-approved references are frozen and the pypdf baseline has run. The user explicitly approved proceeding after reviewing the model-download explanation. This authorizes the isolated Docling preparation and model execution within the proposed limits. EasyOCR 1.7.2 does not support Hebrew; changing the OCR engine requires a concrete revised design rather than silently running the invalid Hebrew configuration.
 
 ## Proposed scope
 
@@ -13,7 +13,7 @@ The human-approved references are frozen and the pypdf baseline has run. A two-p
 - Model artifacts: `E:/Workspace/AI_Stuff/Pdf_Examples/Parser_Experiment/models/docling` and `.../models/easyocr`. Resolve exact required official model revisions, review package/model licenses, download compatible permitted artifacts, and record every file hash before use. Prove Hebrew/English compatibility; unsupported language/native-wheel combinations fail explicitly.
 - Results: fresh directories under `E:/Workspace/AI_Stuff/Pdf_Examples/Comparison_Runs`, outside Git.
 - Execution: CPU only, serial workers, maximum **8 GiB lifetime peak working set per worker**, **180 seconds per initialization/extraction**, **50 MiB per source**, **200 pages per source**, one cold and three warm passes. This machine reports 63.78 GiB physical RAM; 8 GiB is a proposed experiment ceiling, not a measured Docling requirement.
-- Treatments: pypdf; Docling with OCR disabled; Docling with explicitly configured Hebrew/English EasyOCR. Freeze settings and artifact revisions before executing each treatment. No implicit fallback or remote inference.
+- Treatments: pypdf and Docling with OCR disabled are approved for preparation/comparison. The originally proposed Hebrew/English EasyOCR treatment is unsupported by EasyOCR 1.7.2 and will not run. Freeze settings and artifact revisions before executing each treatment. No implicit fallback or remote inference.
 
 ## Validation and boundaries
 

@@ -2,7 +2,7 @@
 
 **Task:** RAG-A-01
 **Last reviewed:** 2026-10-13
-**Status:** Implemented protocol; user-approved corpus frozen and pypdf baseline completed. Docling/OCR preparation awaits its separate decision.
+**Status:** User-approved corpus frozen; pypdf and paired no-OCR runs completed with recorded partials/failures. Approved Tesseract setup/controls and synthetic OCR are implemented. Corpus OCR awaits the explicit PDF backend revision after native decoder faults.
 
 Copy `corpus.example.json` to a private directory outside the repository and
 replace its empty document list with permitted local PDFs. The user explicitly
@@ -83,8 +83,27 @@ After separately authorized dependency/model preparation, compare both parsers:
 ```
 
 These paths and the memory budget are examples, not provisioned resources.
-`--ocr --ocr-languages he en --ocr-models-path <prepared-EasyOCR-models>`
-enables explicitly selected EasyOCR; no OCR engine auto-selection occurs.
+`--ocr --ocr-languages en --ocr-models-path <prepared-EasyOCR-models>`
+enables explicitly selected English EasyOCR; no OCR engine auto-selection occurs.
+EasyOCR 1.7.2 does not support Hebrew (`he`); Hebrew OCR requires a separately
+configured compatible engine, so do not use this option as a Hebrew treatment.
+The approved Tesseract option is explicit:
+
+```powershell
+<experiment-python> scripts/compare_pdf_parsers.py `
+  --manifest <frozen-manifest> --parsers docling --output <fresh-private-output> `
+  --artifacts-path <prepared-Docling-artifacts> --ocr --ocr-engine tesseract `
+  --ocr-executable <isolated-tesseract.exe> --ocr-models-path <prepared-tessdata> `
+  --ocr-languages heb eng --max-memory-mib 8192 --timeout 180 --warm-runs 3
+```
+
+This is configuration syntax, not authorization to execute corpus OCR before
+the pending [backend revision](../../docs/Comparison_Preparation/PDF_BACKEND_REVISION.md).
+Tesseract requires explicit native language files plus osd.traineddata and
+configs/tsv; missing files fail before initialization. The worker alone sets
+TESSDATA_PREFIX so Docling's language discovery sees that prepared directory.
+Native executable/model/config hashes and normalization policy are recorded
+in processing identity. No language-code translation or engine fallback occurs.
 OCR is disabled by default, including for Docling. Language support and mixed RTL
 accuracy remain unmeasured; missing/unsupported models fail without fallback.
 
@@ -97,6 +116,12 @@ the worker's lifetime peak working set. This is not a per-parse allocation metri
 GPU memory measurement or whole-machine limit. Unsupported memory enforcement
 fails rather than ignoring the budget. Baseline-only runs may omit memory limits;
 unavailable measurements are null with an explicit method label.
+Native Tesseract workers additionally enter a Windows job before initialization.
+The job caps aggregate private commit across the worker/native children and kills
+the process tree on cleanup. Job private-commit peaks are reported separately
+from the existing worker working-set peaks. The same 8192 MiB limit applies to
+both; native over-budget peaks fail conservatively, including rejected allocation
+attempts reflected by the counter. Unknown worker exits include the exit code.
 
 Workers disable Hugging Face online mode and Python socket connections/sends;
 Docling receives local PDF bytes, local artifact paths, CPU-only options, disabled
@@ -120,7 +145,10 @@ The separate `pyproject.toml` declares the `pdf-experiment` group. It is outside
 the application's dependency configuration. `requirements-windows-py314.txt`
 freezes the 113-package metadata resolution for CPython 3.14/Windows x86_64, with
 an upload cutoff of 2026-10-11. The direct pins are Docling 2.137.0 with EasyOCR
-and pypdf 6.12.1; no package was installed or imported for this candidate.
+and pypdf 6.12.1. On 2026-10-13 all 113 pins installed into the isolated
+experiment environment, native imports passed, and local Heron/TableFormer
+artifacts passed an offline smoke. See the
+[runtime results](../../docs/Comparison_Preparation/DOCLING_RUNTIME_RESULTS.md).
 
 Reproduce the metadata-only wheel check without changing the application lock:
 

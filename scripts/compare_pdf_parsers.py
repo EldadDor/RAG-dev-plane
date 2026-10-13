@@ -33,7 +33,7 @@ def _deny_network(*args, **kwargs):
 
 def _offline_worker() -> None:
     os.environ.update({"HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1",
-                       "HF_DATASETS_OFFLINE": "1", "OMP_NUM_THREADS": "1"})
+                       "HF_DATASETS_OFFLINE": "1", "OMP_NUM_THREADS": "1", "OMP_THREAD_LIMIT": "1"})
     socket.create_connection = _deny_network
     socket.socket.connect = _deny_network
     socket.socket.connect_ex = _deny_network
@@ -75,8 +75,13 @@ def process_peak_memory(pid: int) -> tuple[int | None, str]:
         kernel.CloseHandle(handle)
 
 
-def _worker(connection, engine: str, options: ExtractionOptions) -> None:
+def _worker(connection, engine: str, options: ExtractionOptions, ready=None) -> None:
     _offline_worker()
+    if options.ocr and options.ocr_engine == "tesseract" and options.ocr_models_path:
+        # Docling's language-discovery subprocess omits --tessdata-dir.
+        os.environ["TESSDATA_PREFIX"] = str(Path(options.ocr_models_path).resolve())
+    if ready is not None:
+        ready.wait()
     try:
         start = time.perf_counter()
         parser = create_parser(engine, options)
@@ -112,21 +117,104 @@ def _worker(connection, engine: str, options: ExtractionOptions) -> None:
         connection.close()
 
 
-def wait_result(connection, process, timeout: float, memory_limit: int | None) -> dict:
+class WindowsWorkerJob:
+    """Bound native descendants by private commit; closing kills the entire job."""
+
+    def __init__(self, pid: int, memory_limit: int):
+        if sys.platform != "win32":
+            raise ExtractionError("Native OCR process-tree enforcement requires Windows")
+        import ctypes
+        from ctypes import wintypes
+
+        class BasicLimits(ctypes.Structure):
+            _fields_ = [("ProcessTime", ctypes.c_longlong), ("JobTime", ctypes.c_longlong),
+                        ("Flags", wintypes.DWORD), ("MinWorkingSet", ctypes.c_size_t),
+                        ("MaxWorkingSet", ctypes.c_size_t), ("ActiveLimit", wintypes.DWORD),
+                        ("Affinity", ctypes.c_size_t), ("Priority", wintypes.DWORD),
+                        ("Scheduling", wintypes.DWORD)]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_ulonglong) for name in
+                        ("ReadCount", "WriteCount", "OtherCount", "ReadBytes", "WriteBytes", "OtherBytes")]
+
+        class ExtendedLimits(ctypes.Structure):
+            _fields_ = [("Basic", BasicLimits), ("Io", IoCounters),
+                        ("ProcessLimit", ctypes.c_size_t), ("JobLimit", ctypes.c_size_t),
+                        ("ProcessPeak", ctypes.c_size_t), ("JobPeak", ctypes.c_size_t)]
+
+        self.ctypes = ctypes
+        self.info_type = ExtendedLimits
+        self.kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        signatures = {
+            "CreateJobObjectW": ([wintypes.LPVOID, wintypes.LPCWSTR], wintypes.HANDLE),
+            "SetInformationJobObject": ([wintypes.HANDLE, ctypes.c_int, wintypes.LPVOID, wintypes.DWORD], wintypes.BOOL),
+            "QueryInformationJobObject": ([wintypes.HANDLE, ctypes.c_int, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID], wintypes.BOOL),
+            "OpenProcess": ([wintypes.DWORD, wintypes.BOOL, wintypes.DWORD], wintypes.HANDLE),
+            "AssignProcessToJobObject": ([wintypes.HANDLE, wintypes.HANDLE], wintypes.BOOL),
+            "TerminateJobObject": ([wintypes.HANDLE, wintypes.UINT], wintypes.BOOL),
+            "CloseHandle": ([wintypes.HANDLE], wintypes.BOOL),
+        }
+        for name, (args, result) in signatures.items():
+            method = getattr(self.kernel, name)
+            method.argtypes, method.restype = args, result
+        self.handle = self.kernel.CreateJobObjectW(None, None)
+        if not self.handle:
+            raise ctypes.WinError(ctypes.get_last_error())
+        process_handle = None
+        try:
+            info = ExtendedLimits()
+            info.Basic.Flags = 0x2000 | 0x200  # KILL_ON_JOB_CLOSE | JOB_MEMORY
+            info.JobLimit = memory_limit
+            if not self.kernel.SetInformationJobObject(self.handle, 9, ctypes.byref(info), ctypes.sizeof(info)):
+                raise ctypes.WinError(ctypes.get_last_error())
+            process_handle = self.kernel.OpenProcess(0x0100 | 0x0001, False, pid)
+            if not process_handle or not self.kernel.AssignProcessToJobObject(self.handle, process_handle):
+                raise ctypes.WinError(ctypes.get_last_error())
+        except Exception:
+            self.close()
+            raise
+        finally:
+            if process_handle:
+                self.kernel.CloseHandle(process_handle)
+
+    def peak_commit(self) -> int:
+        info = self.info_type()
+        if not self.kernel.QueryInformationJobObject(
+            self.handle, 9, self.ctypes.byref(info), self.ctypes.sizeof(info), None
+        ):
+            raise self.ctypes.WinError(self.ctypes.get_last_error())
+        return info.JobPeak
+
+    def close(self) -> None:
+        if self.handle:
+            self.kernel.TerminateJobObject(self.handle, 1)
+            self.kernel.CloseHandle(self.handle)
+            self.handle = None
+
+
+def wait_result(connection, process, timeout: float, memory_limit: int | None, job=None) -> dict:
     def receive():
         try:
             record = connection.recv()
         except EOFError as exc:
-            raise ExtractionError("Extraction worker exited without a result") from exc
+            process.join(timeout=0.1)
+            raise ExtractionError(f"Extraction worker exited without a result (exit code {process.exitcode})") from exc
         if memory_limit is not None and record.get("peak_memory_bytes", 0) is not None:
             if record.get("peak_memory_bytes", 0) > memory_limit:
                 raise ExtractionError(f"Worker exceeds {memory_limit} byte memory budget")
         if memory_limit is not None and "peak_memory_bytes" in record and record["peak_memory_bytes"] is None:
             raise ExtractionError("Worker memory measurement is unavailable; cannot enforce requested budget")
+        if job is not None:
+            record["process_tree_peak_commit_bytes"] = job.peak_commit()
+            record["process_tree_memory_method"] = "windows_job_lifetime_peak_private_commit_bytes"
+            if memory_limit is not None and record["process_tree_peak_commit_bytes"] > memory_limit:
+                raise ExtractionError("Native OCR process-tree peak commit exceeds the memory budget")
         return record
 
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
+        if job is not None and memory_limit is not None and job.peak_commit() > memory_limit:
+            raise ExtractionError("Native OCR process-tree peak commit exceeds the memory budget")
         if connection.poll(0):
             return receive()
         peak, method = process_peak_memory(process.pid)
@@ -141,7 +229,9 @@ def wait_result(connection, process, timeout: float, memory_limit: int | None) -
     raise ExtractionError(f"Extraction worker exceeded {timeout:g} second timeout")
 
 
-def _stop(process, connection) -> None:
+def _stop(process, connection, job=None) -> None:
+    if job is not None:
+        job.close()
     if process.is_alive():
         process.terminate()
     process.join(timeout=5)
@@ -156,20 +246,27 @@ def compare_document(engine: str, options: ExtractionOptions, source: Path, fold
                      memory_limit: int | None, warm_runs: int) -> dict:
     context = multiprocessing.get_context("spawn")
     parent, child = context.Pipe()
-    process = context.Process(target=_worker, args=(child, engine, options))
+    ready = context.Event()
+    process = context.Process(target=_worker, args=(child, engine, options, ready))
+    job = None
     report = {"document_id": document_id, "engine": engine, "runs": [], "status": "failed"}
     folder.mkdir()
     process.start()
     child.close()
     try:
-        initialization = wait_result(parent, process, timeout, memory_limit)
+        if engine == "docling" and options.ocr and options.ocr_engine == "tesseract":
+            if memory_limit is None:
+                raise ExtractionError("Native OCR requires an explicit process-tree memory budget")
+            job = WindowsWorkerJob(process.pid, memory_limit)
+        ready.set()
+        initialization = wait_result(parent, process, timeout, memory_limit, job)
         report.update(initialization)
         if initialization.get("status") == "failed":
             return report
         for index in range(warm_runs + 1):
             run_name = "cold" if index == 0 else f"warm-{index}"
             parent.send((str(source), str(folder / run_name), document_id, source_hash))
-            record = wait_result(parent, process, timeout, memory_limit)
+            record = wait_result(parent, process, timeout, memory_limit, job)
             record["run"] = run_name
             report["runs"].append(record)
             if record["status"] == "failed":
@@ -180,7 +277,7 @@ def compare_document(engine: str, options: ExtractionOptions, source: Path, fold
         report["error"] = str(exc)
         return report
     finally:
-        _stop(process, parent)
+        _stop(process, parent, job)
 
 
 def _hash_file(path: Path) -> str:
@@ -281,7 +378,9 @@ def main(argv=None) -> int:
     parser.add_argument("--parsers", nargs="+", choices=("pypdf", "docling"), default=["pypdf", "docling"])
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--artifacts-path", type=Path)
-    parser.add_argument("--ocr", action="store_true", help="Use prepared EasyOCR models for Docling only")
+    parser.add_argument("--ocr", action="store_true", help="Use an explicitly selected prepared local OCR engine")
+    parser.add_argument("--ocr-engine", choices=("easyocr", "tesseract"), default="easyocr")
+    parser.add_argument("--ocr-executable", type=Path, help="Explicit local Tesseract executable")
     parser.add_argument("--ocr-languages", nargs="+", default=["en"])
     parser.add_argument("--ocr-models-path", type=Path)
     parser.add_argument("--max-bytes", type=int, default=50 * 1024 * 1024)
@@ -304,6 +403,8 @@ def main(argv=None) -> int:
             max_bytes=args.max_bytes, max_pages=args.max_pages,
             artifacts_path=str(args.artifacts_path.resolve()) if args.artifacts_path else None,
             ocr=args.ocr, ocr_languages=tuple(args.ocr_languages),
+            ocr_engine=args.ocr_engine,
+            ocr_executable=str(args.ocr_executable.resolve()) if args.ocr_executable else None,
             ocr_models_path=str(args.ocr_models_path.resolve()) if args.ocr_models_path else None,
         )
         manifest_path = args.manifest.resolve()

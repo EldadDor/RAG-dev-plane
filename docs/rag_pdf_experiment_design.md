@@ -3,7 +3,7 @@
 **Task:** RAG-A-02
 **Last reviewed:** 2026-10-13
 **Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
-and validated offline. Corpus/reference freezing and the pypdf baseline are complete; candidate installation/model runs await separate preparation approval.
+and validated offline. No-OCR corpus execution is complete with recorded partials/failures. Tesseract G2 was approved on 2026-10-13 and its local setup/controls are implemented; OCR text is verified, but native decoder faults require an explicit backend revision before corpus OCR.
 
 ## Approved decision
 
@@ -160,5 +160,14 @@ completed 68 cold/warm passes with source/reference snapshot and offset/page
 consistency checks. Manual quality inspection remains distinct from extraction
 completion. See [the corpus release](Comparison_Preparation/GOLDEN_CASES_VALIDATION.md)
 and [the concrete candidate setup request](Comparison_Preparation/DOCLING_RUNTIME_PREPARATION.md).
-Candidate installation/model preparation, resource budget and live indexed
-workspaces remain pending; human reference approval is complete.
+Candidate installation/model preparation and the resource budget were approved
+on 2026-10-13. All 113 package pins installed, CPU/native imports passed and
+immutable Heron/TableFormer artifacts passed an offline synthetic smoke. See
+[runtime evidence](Comparison_Preparation/DOCLING_RUNTIME_RESULTS.md).
+EasyOCR 1.7.2 excludes Hebrew; the user approved the
+[Tesseract OCR revision](Comparison_Preparation/HEBREW_OCR_DESIGN.md), now prepared
+and tested. [Native decoder fault evidence](Comparison_Preparation/TESSERACT_RUNTIME_RESULTS.md)
+requires the [explicit PDF backend revision](Comparison_Preparation/PDF_BACKEND_REVISION.md)
+before corpus OCR. The no-OCR execution results and coordinate-partial remediation
+are retained in the runtime report; quality scoring remains pending.
+Live indexed workspaces remain pending; human reference approval is complete.
