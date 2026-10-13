@@ -26,4 +26,6 @@
 
 **Runtime files changed:** Experiment options/Docling adapter, comparison runner, focused tests; preparation/start/design/protocol documents; runtime/no-OCR/Tesseract results and explicit backend revision; current/backlog/task records. Approved worksheets/PDFs/JSONL/frozen manifest unchanged. Models, native runtime and extraction/review artifacts remain outside Git.
 
+**Delivery:** Implementation and evidence committed locally in `66b4b55` (`RAG-B-RUNTIME: prepare parsers and record comparison evidence`). Staged whitespace check passed; G3 push/merge and G4 phase closure are not approved.
+
 **Not run:** Full application suite, corpus OCR after native-fault evidence, PDFium inference/treatment switch, manual quality scoring, live RAG/provider/SQL calls, production ingestion, migrations or service operations. Revised backend G2, G3 push/merge and G4 closure remain pending; Tesseract preparation approval is already recorded.
