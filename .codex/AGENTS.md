@@ -77,6 +77,14 @@ concise and factual; never infer approvals or validations from a commit message.
 
 ## Documentation and archive
 
+Use `docs/README.md` as the reading index after the required area boards. Read
+additional documents only for the task-specific trigger recorded there; retained
+designs, completed history and experiment artifacts are not default reading.
+Do not recursively discover or read `docs/` during ordinary development. Use
+targeted lookups for relevant unlisted files; explicit document sweeps may inventory
+live files. Update the index when a document enters or leaves play, without
+duplicating task status or evidence from the phase records.
+
 Suggest moving documents no longer in use to `docs/archive/`; the user reviews
 and decides what to archive.
 **MANDATORY:** Disregard `docs/archive/` entirely unless the user explicitly
