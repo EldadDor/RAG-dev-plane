@@ -100,7 +100,7 @@ def _worker(connection, engine: str, options: ExtractionOptions, ready=None) -> 
             folder.mkdir()
             write_json(folder / "normalized.json", result.normalized(document_id))
             write_json(folder / "raw.json", result.raw)
-            (folder / "text.txt").write_text(result.assembled_text, encoding="utf-8")
+            (folder / "text.txt").write_bytes(result.assembled_text.encode("utf-8"))
             if result.assets:
                 (folder / "assets").mkdir()
                 for asset in result.assets:
@@ -380,6 +380,7 @@ def main(argv=None) -> int:
     parser.add_argument("--artifacts-path", type=Path)
     parser.add_argument("--ocr", action="store_true", help="Use an explicitly selected prepared local OCR engine")
     parser.add_argument("--ocr-engine", choices=("easyocr", "tesseract"), default="easyocr")
+    parser.add_argument("--pdf-backend", choices=("docling_parse", "pypdfium2"), default="docling_parse")
     parser.add_argument("--ocr-executable", type=Path, help="Explicit local Tesseract executable")
     parser.add_argument("--ocr-languages", nargs="+", default=["en"])
     parser.add_argument("--ocr-models-path", type=Path)
@@ -404,6 +405,7 @@ def main(argv=None) -> int:
             artifacts_path=str(args.artifacts_path.resolve()) if args.artifacts_path else None,
             ocr=args.ocr, ocr_languages=tuple(args.ocr_languages),
             ocr_engine=args.ocr_engine,
+            pdf_backend=args.pdf_backend,
             ocr_executable=str(args.ocr_executable.resolve()) if args.ocr_executable else None,
             ocr_models_path=str(args.ocr_models_path.resolve()) if args.ocr_models_path else None,
         )

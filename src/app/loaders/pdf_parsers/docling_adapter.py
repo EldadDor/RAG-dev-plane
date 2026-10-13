@@ -9,6 +9,7 @@ from io import BytesIO
 import json
 import math
 import re
+import warnings as python_warnings
 from pathlib import Path
 
 from app.loaders.pdf_extraction import (
@@ -23,6 +24,10 @@ def _converter(options: ExtractionOptions):
         from docling.datamodel.base_models import InputFormat
         from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOptions
         from docling.document_converter import DocumentConverter, PdfFormatOption
+        if options.pdf_backend == "pypdfium2":
+            from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend as backend
+        else:
+            from docling.backend.docling_parse_backend import ThreadedDoclingParseDocumentBackend as backend
     except ImportError as exc:
         raise ExtractionError("Docling is unavailable; prepare the optional pdf-experiment environment") from exc
     if not options.artifacts_path or not Path(options.artifacts_path).is_dir():
@@ -63,13 +68,14 @@ def _converter(options: ExtractionOptions):
             )
     converter = DocumentConverter(
         allowed_formats=[InputFormat.PDF],
-        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline)},
+        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline, backend=backend)},
     )
     try:
         converter.initialize_pipeline(InputFormat.PDF)
     except Exception as exc:
         raise ExtractionError(f"Docling initialization failed; verify prepared local models: {exc}") from exc
     settings = pipeline.model_dump(mode="json")
+    settings["pdf_backend"] = {"selection": options.pdf_backend, "class": backend.__name__}
     if options.ocr and options.ocr_engine == "tesseract":
         paths = {"executable": Path(options.ocr_executable)}
         paths.update({lang: Path(options.ocr_models_path) / f"{lang}.traineddata"
@@ -82,7 +88,7 @@ def _converter(options: ExtractionOptions):
 
 
 def _versions() -> dict[str, str]:
-    names = ("docling", "docling-slim", "docling-core", "docling-parse", "docling-ibm-models", "torch", "easyocr")
+    names = ("docling", "docling-slim", "docling-core", "docling-parse", "pypdfium2", "docling-ibm-models", "torch", "easyocr")
     result = {}
     for name in names:
         try:
@@ -101,10 +107,34 @@ class DoclingAdapter:
             self.converter, pipeline_settings = converter, {"test_converter": True}
         self.versions = versions if versions is not None else _versions()
         self.settings = {"options": asdict(options), "effective_pipeline": pipeline_settings,
-                         "normalization_policy": "bounded_boxes_or_partial_v1"}
+                         "normalization_policy": "export_clamp_pages_without_boxes_v3"}
         self.identity = json.dumps({"versions": self.versions, "settings": self.settings}, sort_keys=True)
 
     def extract(self, path: Path, options: ExtractionOptions) -> ExtractionResult:
+        # Exporters can validate/clamp document copies after conversion returns.
+        with python_warnings.catch_warnings(record=True) as upstream_warnings:
+            python_warnings.simplefilter("always")
+            result = self._extract(path, options)
+        result.warnings.extend(f"Docling upstream warning: {warning.message}" for warning in upstream_warnings)
+        clamped_pages = set()
+        for warning in upstream_warnings:
+            match = re.search(r"(?:Provenance|Table cell) bbox coordinate .* on page (\d+).*clamping to",
+                              str(warning.message))
+            if match:
+                clamped_pages.add(int(match.group(1)))
+        if clamped_pages:
+            result.status = "partial" if result.status == "completed" else result.status
+            for block in result.blocks:
+                block.boxes = [box for box in block.boxes if box.page not in clamped_pages]
+            result.warnings.extend(
+                f"Page {page}: upstream coordinates already clamped; normalized boxes omitted; "
+                "text/page identity retained and raw output contains the upstream clamped coordinates"
+                for page in sorted(clamped_pages)
+            )
+        result.validate()
+        return result
+
+    def _extract(self, path: Path, options: ExtractionOptions) -> ExtractionResult:
         if options != self.options:
             raise ExtractionError("Parser options must remain fixed within a run")
         content, sha256 = read_source(path, options)

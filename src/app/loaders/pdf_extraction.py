@@ -24,6 +24,7 @@ class ExtractionOptions:
     ocr_models_path: str | None = None
     ocr_engine: Literal["easyocr", "tesseract"] = "easyocr"
     ocr_executable: str | None = None
+    pdf_backend: Literal["docling_parse", "pypdfium2"] = "docling_parse"
 
     def __post_init__(self) -> None:
         if self.max_bytes <= 0 or self.max_pages <= 0:
@@ -32,6 +33,8 @@ class ExtractionOptions:
             raise ExtractionError("Specify nonempty OCR language codes")
         if self.ocr_engine not in {"easyocr", "tesseract"}:
             raise ExtractionError("Specify an explicit supported OCR engine")
+        if self.pdf_backend not in {"docling_parse", "pypdfium2"}:
+            raise ExtractionError("Specify an explicit supported PDF backend")
 
 
 @dataclass

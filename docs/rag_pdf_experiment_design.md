@@ -3,7 +3,7 @@
 **Task:** RAG-A-02
 **Last reviewed:** 2026-10-13
 **Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
-and validated offline. No-OCR corpus execution is complete with recorded partials/failures. Tesseract G2 was approved on 2026-10-13 and its local setup/controls are implemented; OCR text is verified, but native decoder faults require an explicit backend revision before corpus OCR.
+and validated offline. Tesseract and PDFium G2 revisions were approved on 2026-10-13; smoke and both frozen-corpus treatments are complete, with 124 available outputs audited. Separate telemetry validation addresses exact text export and export-time clamping warnings. Source-reviewed regressions prevent a universal default switch; see the [PDFium comparison](Comparison_Preparation/PDFIUM_COMPARISON.md).
 
 ## Approved decision
 
@@ -167,7 +167,8 @@ immutable Heron/TableFormer artifacts passed an offline synthetic smoke. See
 EasyOCR 1.7.2 excludes Hebrew; the user approved the
 [Tesseract OCR revision](Comparison_Preparation/HEBREW_OCR_DESIGN.md), now prepared
 and tested. [Native decoder fault evidence](Comparison_Preparation/TESSERACT_RUNTIME_RESULTS.md)
-requires the [explicit PDF backend revision](Comparison_Preparation/PDF_BACKEND_REVISION.md)
-before corpus OCR. The no-OCR execution results and coordinate-partial remediation
+led to the [explicit PDF backend revision](Comparison_Preparation/PDF_BACKEND_REVISION.md),
+approved and implemented on 2026-10-13. Both new treatments select pinned PDFium
+with unchanged budgets and no fallback. The original no-OCR results and coordinate-partial remediation
 are retained in the runtime report; quality scoring remains pending.
 Live indexed workspaces remain pending; human reference approval is complete.

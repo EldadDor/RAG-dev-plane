@@ -112,5 +112,8 @@ distinct from successful extraction.
 The user subsequently approved the [Tesseract OCR revision](HEBREW_OCR_DESIGN.md).
 Native/model preparation and OCR outputs are documented in
 [OCR runtime results](TESSERACT_RUNTIME_RESULTS.md); recurrent native PDF decoder
-faults now require the [explicit PDF backend revision](PDF_BACKEND_REVISION.md)
-before corpus OCR execution. No production ingestion/provider/configuration change.
+faults led to the [explicit PDF backend revision](PDF_BACKEND_REVISION.md), approved
+and implemented on 2026-10-13. Four-pass PDFium digital/raster smoke passed;
+paired corpus treatments and post-fix audits are complete. See
+[the PDFium comparison](PDFIUM_COMPARISON.md): keep pypdf as default because
+source-fidelity acceptance is not met. No production ingestion/provider/configuration change.

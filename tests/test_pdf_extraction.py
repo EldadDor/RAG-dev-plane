@@ -203,8 +203,44 @@ def test_docling_mapping_preserves_tables_locations_and_assets_and_reuses_conver
     again = adapter.extract(source, options)
     assert len(calls) == 2
     assert normalized == again.normalized("fixture")
+    pdfium_options = replace(options, pdf_backend="pypdfium2")
+    pdfium = DoclingAdapter(pdfium_options, converter=adapter.converter, versions=adapter.versions)
+    pdfium_result = pdfium.extract(source, pdfium_options)
+    assert pdfium.identity != adapter.identity
+    assert {b.block_id for b in result.blocks}.isdisjoint(b.block_id for b in pdfium_result.blocks)
+    assert pdfium_result.assembled_text == result.assembled_text
     with pytest.raises(ExtractionError, match="fixed"):
         adapter.extract(source, replace(options, max_pages=100))
+
+
+@pytest.mark.parametrize("stage", ["conversion", "export"])
+def test_docling_upstream_clamping_keeps_page_text_but_omits_affected_page_boxes(tmp_path, stage):
+    import warnings
+    source = pdf(tmp_path / "source.pdf")
+    def warn():
+        warnings.warn("Provenance bbox coordinate l on page 2 is outside page bounds; clamping to 0.0",
+                      UserWarning)
+    converted = fake_conversion()
+    if stage == "export":
+        def export():
+            warn()
+            return {"synthetic": True}
+        converted.document.export_to_dict = export
+    def convert(*args, **kwargs):
+        if stage == "conversion":
+            warn()
+        return converted
+    options = ExtractionOptions()
+    adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=convert), versions={"docling": "fake"})
+    result = adapter.extract(source, options)
+    assert result.status == "partial"
+    assert result.blocks[1].pages == [1, 2]
+    assert result.blocks[1].source_text
+    assert any(box.page == 1 for block in result.blocks for box in block.boxes)
+    assert not any(box.page == 2 for block in result.blocks for box in block.boxes)
+    assert any("clamping to" in warning for warning in result.warnings)
+    assert any("already clamped" in warning for warning in result.warnings)
+    assert result.raw == {"synthetic": True}
 
 
 @pytest.mark.parametrize("top", [-17.1024227575474, float("nan")])
@@ -229,7 +265,7 @@ def test_docling_invalid_upstream_box_retains_text_as_explicit_partial(tmp_path,
     assert result.blocks[1].boxes  # Valid provenance for other blocks is retained.
     assert any("invalid box on page 1" in warning for warning in result.warnings)
     assert result.raw is upstream_raw
-    assert result.settings["normalization_policy"] == "bounded_boxes_or_partial_v1"
+    assert result.settings["normalization_policy"] == "export_clamp_pages_without_boxes_v3"
     result.normalized("fixture")  # Partial output still meets strict normalized-box validation.
 
 
@@ -279,6 +315,10 @@ def test_docling_factory_requires_local_models_and_disables_remote_features(tmp_
             captured["initialized"] = input_format
 
     modules = {
+        "docling.backend.docling_parse_backend": {
+            "ThreadedDoclingParseDocumentBackend": type("ThreadedDoclingParseDocumentBackend", (), {})},
+        "docling.backend.pypdfium2_backend": {
+            "PyPdfiumDocumentBackend": type("PyPdfiumDocumentBackend", (), {})},
         "docling.datamodel.accelerator_options": {
             "AcceleratorDevice": SimpleNamespace(CPU="cpu"), "AcceleratorOptions": Options},
         "docling.datamodel.base_models": {"InputFormat": SimpleNamespace(PDF="pdf")},
@@ -311,7 +351,20 @@ def test_docling_factory_requires_local_models_and_disables_remote_features(tmp_
     assert pipeline.accelerator_options.device == "cpu"
     assert pipeline.ocr_options.download_enabled is False
     assert pipeline.ocr_options.lang == ["en"]
-    assert settings == {"offline": True}
+    assert settings == {"offline": True, "pdf_backend": {
+        "selection": "docling_parse", "class": "ThreadedDoclingParseDocumentBackend"}}
+    _, pdfium_settings = _converter(ExtractionOptions(artifacts_path=str(artifacts), pdf_backend="pypdfium2"))
+    assert captured["format_options"]["pdf"].backend.__name__ == "PyPdfiumDocumentBackend"
+    assert pdfium_settings["pdf_backend"] == {"selection": "pypdfium2", "class": "PyPdfiumDocumentBackend"}
+    with pytest.raises(ExtractionError, match="supported PDF backend"):
+        ExtractionOptions(pdf_backend="automatic-fallback")
+    def fail_initialization(self, input_format):
+        raise RuntimeError("selected backend failed")
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Converter, "initialize_pipeline", fail_initialization)
+        with pytest.raises(ExtractionError, match="selected backend failed"):
+            _converter(ExtractionOptions(artifacts_path=str(artifacts), pdf_backend="pypdfium2"))
+        assert captured["format_options"]["pdf"].backend.__name__ == "PyPdfiumDocumentBackend"
     with pytest.raises(ExtractionError, match="does not support Hebrew"):
         _converter(ExtractionOptions(artifacts_path=str(artifacts), ocr=True,
                                      ocr_languages=("he", "en"), ocr_models_path=str(ocr_models)))
@@ -445,6 +498,27 @@ def test_cli_failed_engine_is_recorded_and_nonzero(private_tmp_path):
     report = json.loads((output / "report.json").read_text())
     assert report["status"] == "failed"
     assert "page limit" in report["documents"][0]["runs"][0]["error"]
+
+
+def test_worker_exports_exact_utf8_text_with_embedded_carriage_returns(tmp_path, monkeypatch, cli_module):
+    block = ExtractionBlock(block_id="synthetic", ordinal=0, kind="text",
+                            source_text="A\rB\r\nC\nשלום -12.50", pages=[1])
+    result = ExtractionResult(source_sha256=hashlib.sha256(b"synthetic").hexdigest(),
+                              page_count=1, engine="docling", versions={}, settings={},
+                              blocks=[block], assembled_text=assemble([block]), raw={})
+    output = tmp_path / "cold"
+    requests = iter([(tmp_path / "unused.pdf", output, "synthetic", result.source_sha256), None])
+    sent = []
+    connection = SimpleNamespace(recv=lambda: next(requests), send=sent.append, close=lambda: None)
+    monkeypatch.setattr(cli_module, "_offline_worker", lambda: None)
+    monkeypatch.setattr(cli_module, "create_parser", lambda *args: SimpleNamespace(extract=lambda *args: result))
+    monkeypatch.setattr(cli_module, "process_peak_memory", lambda pid: (1, "synthetic"))
+    cli_module._worker(connection, "docling", ExtractionOptions())
+    assert sent[-1]["status"] == "completed"
+    assert (output / "text.txt").read_bytes() == result.assembled_text.encode("utf-8")
+    normalized = json.loads((output / "normalized.json").read_text(encoding="utf-8"))
+    text = (output / "text.txt").read_bytes().decode("utf-8")
+    assert text[block.start:block.end] == normalized["blocks"][0]["source_text"]
 
 
 def test_wait_enforces_timeout_and_memory(cli_module):

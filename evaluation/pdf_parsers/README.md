@@ -2,7 +2,7 @@
 
 **Task:** RAG-A-01
 **Last reviewed:** 2026-10-13
-**Status:** User-approved corpus frozen; pypdf and paired no-OCR runs completed with recorded partials/failures. Approved Tesseract setup/controls and synthetic OCR are implemented. Corpus OCR awaits the explicit PDF backend revision after native decoder faults.
+**Status:** User-approved corpus frozen; earlier runs retained. PDFium revision approved on 2026-10-13; paired corpus runs and 124-output audit complete. Separate telemetry revalidation covers exact UTF8 export and export-time clamping warnings. See [the comparison](../../docs/Comparison_Preparation/PDFIUM_COMPARISON.md).
 
 Copy `corpus.example.json` to a private directory outside the repository and
 replace its empty document list with permitted local PDFs. The user explicitly
@@ -94,11 +94,15 @@ The approved Tesseract option is explicit:
   --manifest <frozen-manifest> --parsers docling --output <fresh-private-output> `
   --artifacts-path <prepared-Docling-artifacts> --ocr --ocr-engine tesseract `
   --ocr-executable <isolated-tesseract.exe> --ocr-models-path <prepared-tessdata> `
-  --ocr-languages heb eng --max-memory-mib 8192 --timeout 180 --warm-runs 3
+  --ocr-languages heb eng --pdf-backend pypdfium2 `
+  --max-memory-mib 8192 --timeout 180 --warm-runs 3
 ```
 
-This is configuration syntax, not authorization to execute corpus OCR before
-the pending [backend revision](../../docs/Comparison_Preparation/PDF_BACKEND_REVISION.md).
+The user approved the [backend revision](../../docs/Comparison_Preparation/PDF_BACKEND_REVISION.md)
+on 2026-10-13. Both new Docling treatments explicitly use `--pdf-backend pypdfium2`;
+omit the OCR arguments for its paired no-OCR treatment. The original default
+`docling_parse` remains selectable. Backend selection/class and pypdfium2 version
+are recorded in processing identity; failures never trigger backend fallback.
 Tesseract requires explicit native language files plus osd.traineddata and
 configs/tsv; missing files fail before initialization. The worker alone sets
 TESSDATA_PREFIX so Docling's language discovery sees that prepared directory.
@@ -135,8 +139,19 @@ downloads are separate actions; this command never prepares them automatically.
 warnings/failures and manifest hash. Each engine/run has raw JSON, normalized
 JSON, assembled text and linked PNG assets where available. `source.pdf` and
 `references.json` are private inspection snapshots; `inspection.md` points to
-each treatment. Source-byte changes during comparison fail the run. Failed or
-partial extraction returns exit code 1. Exit code 0 establishes extraction
+each treatment. Source-byte changes during comparison fail the run.
+
+The current text export writes exact UTF8 bytes, preserving embedded carriage
+returns. Read with `read_bytes().decode("utf-8")` for offset-sensitive checks;
+universal-newline reading can change parser text. Original corpus exports used
+Windows LF-to-CRLF translation; their lossless audit and exact-text companion
+files are recorded in the comparison report. Original files are retained.
+Normalization policy `export_clamp_pages_without_boxes_v3` captures warnings
+through conversion and export. Upstream-clamped pages produce partial results
+with normalized boxes omitted; text/page IDs and raw output remain available.
+Raw coordinates may already be clamped, so they do not recover original geometry.
+
+Failed or partial extraction returns exit code 1. Exit code 0 establishes extraction
 completion only; manual rubric inspection and paired RAG evaluation remain pending.
 
 ## Optional dependency preparation

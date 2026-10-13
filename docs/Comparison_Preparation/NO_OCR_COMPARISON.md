@@ -62,6 +62,9 @@ outcome is 13 completed / 3 partial / 1 timeout for Docling.
 
 The approved [Tesseract OCR design](HEBREW_OCR_DESIGN.md) has been implemented and
 prepared. [Native OCR evidence](TESSERACT_RUNTIME_RESULTS.md) found decoder access
-violations; corpus OCR awaits the [explicit PDF backend revision](PDF_BACKEND_REVISION.md).
+violations; the [explicit PDF backend revision](PDF_BACKEND_REVISION.md) was approved
+on 2026-10-13. Separate PDFium no-OCR/OCR treatments and their audits are complete;
+see [the PDFium report](PDFIUM_COMPARISON.md). The original
+run above is retained unchanged and does not represent the new backend.
 
 During the timed-out agriculture-document extraction, the upstream table postprocessor logged 49 of 319 PDF cells dropped because they did not match the proposed 147x2 grid. This terminal diagnostic is a manual-inspection lead, not a scored denominator or a completed extraction result.

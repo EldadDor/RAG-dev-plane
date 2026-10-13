@@ -45,4 +45,18 @@ The corpus includes English, Hebrew, mixed Hebrew/English, tables, diagrams, col
 
 ## What follows your golden cases
 
-The pypdf baseline and paired no-OCR run are complete, including recorded partials/failures; see [runtime results](DOCLING_RUNTIME_RESULTS.md) and [the comparison](NO_OCR_COMPARISON.md). The user separately approved Tesseract setup on 2026-10-13 because EasyOCR cannot process Hebrew. [Native OCR results](TESSERACT_RUNTIME_RESULTS.md) verify the fixture text and record default PDF decoder faults. The [explicit PDFium backend revision](PDF_BACKEND_REVISION.md) now awaits G2 before corpus OCR. Score evidence fidelity, failures, time and memory across completed treatments; the private golden-case review packet puts approved references beside extracted source-page text. After selecting treatments, a separately approved indexed RAG comparison uses identical questions, retrieval settings and answer model in two test workspaces. Production ingestion and live RAG evaluation still require their own approval.
+Both PDFium no-OCR and Hebrew/English OCR treatments have run on all 17 files;
+see [results, source diagnostics and the extraction decision](PDFIUM_COMPARISON.md).
+All 124 available outputs and eight separate correctness-fix outputs passed their
+integrity audits. Keep pypdf as the production default: scanned-weather OCR gains
+do not remove observed fact loss, RTL/table errors or fixed-budget timeouts.
+The private paired review packet puts all 47 approved cases beside source-page
+text from the three treatments. Your worksheets and frozen reference bytes remain
+unchanged; **no new questions or repeated human approval are needed**.
+
+The next work is to resolve the documented fidelity gaps and complete fact/cell/
+label/RTL scoring with those existing cases before selecting indexed treatments.
+The separately gated Stage C comparison then uses identical questions, retrieval
+settings and answer model in test workspaces. Production ingestion and live RAG
+evaluation require their own design/operator approvals. Original native-decoder
+failures and the [approved PDFium revision](PDF_BACKEND_REVISION.md) remain recorded.

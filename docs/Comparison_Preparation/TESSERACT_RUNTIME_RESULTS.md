@@ -2,7 +2,7 @@
 
 **Task:** RAG-B-OCR
 **Prepared:** 2026-10-13
-**Status:** Tesseract G2 approved and implemented; native/model setup and synthetic OCR verified. Corpus OCR awaits the explicit PDF backend revision because the default native decoder faulted.
+**Status:** Tesseract and PDFium G2 revisions approved and implemented; smoke, both corpus runs, paired audit and post-fix telemetry validation complete. Earlier native decoder faults retained. See [comparison and decision](PDFIUM_COMPARISON.md).
 
 ## Prepared artifacts
 
@@ -95,8 +95,28 @@ successful worker. These are native decoder faults, not Tesseract missing-model
 errors. They are retained in `Parser_Experiment/native-pdf-decoder-events.json`.
 The passing r4 output therefore does not establish decoder stability.
 
-No corpus OCR run was started after this fault evidence. The reviewable
-[PDF backend revision](PDF_BACKEND_REVISION.md) proposes the existing pinned
-PDFium backend explicitly for both Docling treatments; it awaits its own G2
-decision under the approved native-failure rule. No interpreter change, backend
-switch or implicit retry/fallback has been made.
+Corpus OCR was held after that fault evidence until the user approved the
+[PDF backend revision](PDF_BACKEND_REVISION.md) on 2026-10-13. The implementation
+now selects pinned PDFium explicitly for both Docling treatments, with no retry
+or fallback. No interpreter change was made.
+
+The PDFium raster smoke completed four stable passes with the same exact facts
+and Hebrew order. Worker peak working set: 1,129,603,072 bytes; job peak private
+commit: 1,348,304,896 bytes. All 138 native files, four OCR artifacts and eight
+Docling files matched their inventories. Sparse-fixture OSD warnings remained;
+they did not prevent recognition. The separate PDFium digital smoke also passed
+four stable passes (worker peak 1,127,960,576 bytes). Both report the explicit
+`PyPdfiumDocumentBackend` identity and pypdfium2 5.14.0.
+
+The subsequent PDFium corpus run completed 14 treatments, with one coordinate
+partial and two 180-second timeouts. The paired no-OCR run completed 13, with
+three partials and one timeout. All 124 available outputs passed the paired
+integrity audit. Source-reviewed weather fields improve with OCR; critical game
+fact loss and other fidelity gaps prevent a universal default switch.
+
+Current export writes exact UTF8 bytes. Policy `export_clamp_pages_without_boxes_v3`
+captures warnings through conversion/export and omits normalized coordinates
+on upstream-clamped pages. Eight separate telemetry passes verified unchanged
+text/images, versioned IDs, exact offsets and explicit partials; 46 focused tests
+passed. The final readable Windows event audit found no matching native faults
+during the PDFium validation period. See the comparison for full limitations.
