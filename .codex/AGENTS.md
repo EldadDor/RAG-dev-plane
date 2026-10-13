@@ -52,6 +52,11 @@ A user instruction that explicitly authorizes this task's gated action counts
 as approval; record it rather than asking again. Intake approval alone does
 not approve a later design, merge/push, or phase close.
 
+Gate approvals are task- and gate-specific. A prior approval, a phase-board
+status, or an approval for another task never clears a new gate. When the user
+explicitly authorizes the gated action in the current request, record that
+authorization in the task row and proceed without asking again.
+
 **Not gates:** refactors within one layer, tests, formatting, log/comment/
 docstring edits, dependency patch bumps, and editing `next_phase.md`. Proceed
 autonomously within the approved task. Existing live-service and secret safety
@@ -65,6 +70,10 @@ rules still apply. Routine documentation edits do not trigger G2.
    park later requests in `docs/task_overview.md`.
 4. At G4, propose outcomes/carry-over; after approval, record the closure in
    `docs/complete_phases.md` and clear the closed phase from the current board.
+
+A `Completed` task row must identify its commit when one exists and state what
+was not run. Do not commit work against a `Not started` row. Keep evidence
+concise and factual; never infer approvals or validations from a commit message.
 
 ## Documentation and archive
 
@@ -101,6 +110,17 @@ contract decisions; frontend proposes/requests.
 - Don't edit `.env`, credentials, or secrets unless asked.
 - Don't run tests hitting live services without prior approval.
 - Run the smallest relevant check when permitted; always state what was not run.
+
+## Codex session preflight
+
+`.codex/hooks.json` registers a `SessionStart` hook that checks whether Codex's
+Git safe-directory setting reaches this checkout and whether `rtk git status`
+can access it. The hook reports a warning when preflight fails; it never edits
+Git configuration, files, or service state. The repo-specific setting lives in
+`.codex/config.toml`. If the root or checkout path changes, update that value.
+
+The PowerShell hook reads the SessionStart event from stdin and discovers the
+repository root from its `cwd`; it runs on Windows PowerShell 7 via `pwsh`.
 
 ## Precedence
 Explicit user prompt > this file (+ nested `AGENTS.md`) > phase records >

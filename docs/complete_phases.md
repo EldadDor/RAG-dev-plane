@@ -7,17 +7,17 @@ Historical consolidation preserves recorded evidence; it does not grant new appr
 ## Phase: DOC-01 Phase-record workflow reorganization
 
 **Status:** Complete — G4 approved by user on 2026-10-06.
-**Commit:** `755ec01` (reorganization snapshot).
+**Commits:** `755ec01` (reorganization snapshot); `695f479` (approved closure record).
 **Approval:** User instructed “Complete DOC-01” on 2026-10-06, approving the pending G4 closure request.
 **Delivered:** Established approval gates, concise current/next boards, a shared completed-phase ledger, and consolidated historical task evidence.
 **Validation:** Existing record reports documentation consistency and whitespace checks passed. No checks rerun during this synchronization.
-**Carry-over:** None for DOC-01. DOC-03 Mermaid flow diagram is separately activated and does not inherit this closure approval.
+**Carry-over:** None for DOC-01. The separate DOC-03 Mermaid diagram was locally delivered in `d548a00`; its G4 closure remains pending in [task overview](task_overview.md). It does not inherit DOC-01's closure approval.
 
 ## Phase: NP-24 Sign-in, Sessions and Logout
 
 **Status:** Complete — G4 approved 2026-10-03.
 **Commits:** `be26a96` (`NP-24: add gateway sign-in sessions and logout`),
-delivery records `8afaefd`; both pushed to `origin/main`.
+delivery records `8afaefd`; both pushed to `origin/main`. Approved closure record: `ec33af8`.
 **Approval:** G1 activation, NP24-01 G2 structural design, G3 commit/push and
 G4 closure explicitly approved. User instructed “G4 approved” after reviewing
 the outcomes and proposed carry-over.
@@ -63,7 +63,7 @@ and the [published contract](frontend_architecture.md).
 ## Phase: NP-23 Profile and Preferences
 
 **Status:** Complete — G4 approved 2026-10-03
-**Commit:** `5b315c8` (`NP-23: add approved account preferences`), pushed to `origin/main`; delivery record `d1f5479`.
+**Commit:** `5b315c8` (`NP-23: add approved account preferences`), pushed to `origin/main`; delivery record `d1f5479`; approved closure record `efc827c`.
 **Approval:** G1 intake, G2 structural design, G3 delivery and G4 closure explicitly approved by the user.
 **Delivered:** Read-only trusted profile/workspace details; strict per-principal recent-chat limit (10/20/50/100, default 10); PostgreSQL persistence with an additive versioned migration; process-lifetime local fallback and explicit unavailable capability; privacy headers and safe errors; published frontend contract and handoff. Existing session-list and retention semantics remain unchanged.
 **Validation:** `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .np23-regression-tmp --ignore=tests/integration -m 'not integration'` — 206 passed. Focused account/workspace/API run — 65 passed. Scoped `git diff --check` passed. No real SQL/API/browser/model calls, migration execution or service operations ran.
@@ -72,7 +72,7 @@ and the [published contract](frontend_architecture.md).
 ## Phase: NP-22 Recent Chats
 
 **Status:** Complete — user-approved closure 2026-10-03
-**Commit:** `983e8d6` (`NP-22: stabilize recent chat listing`)
+**Commit:** `983e8d6` (`NP-22: stabilize recent chat listing`); approved closure record `32acbb5`.
 **Validation:** 18 focused offline tests passed using `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp .codex-test-tmp-np22 tests/test_conversation_store.py tests/test_workspace_authorization.py tests/test_api.py`; diff whitespace checks passed.
 
 **Delivered:** Deterministic newest-first session listing with null timestamps last and ordinal session-ID ties; persistent, scope-guarded in-memory rename/archive operations; copied list metadata; published unchanged uncapped bare-array contract for FP-15 and frontend readiness handoff.
