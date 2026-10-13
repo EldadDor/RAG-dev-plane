@@ -2,7 +2,7 @@
 
 **Current status (2026-10-13):** Eldad approved all 17 `worksheets-done` files in the chat. The frozen release contains 47 valid cases (42 answerable / 5 unanswerable); four optional mixed/ambiguous cases are preserved outside scoring. No repeated human signoff is needed.
 
-Use [corpus.frozen.json](corpus.frozen.json) with the comparison runner. See [validation and exclusions](GOLDEN_CASES_VALIDATION.md), [recorded human approval](HUMAN_APPROVAL.md), and [machine validation](golden-cases-validation.json). The dataset passed the actual comparison loader; all 17 PDFs retain their original source hashes.
+Use [corpus.relocated.json](corpus.relocated.json) with the comparison runner. See [validation and exclusions](GOLDEN_CASES_VALIDATION.md), [recorded human approval](HUMAN_APPROVAL.md), and [machine validation](golden-cases-validation.json). The dataset passed the actual comparison loader; all 17 PDFs retain their original source hashes.
 
 `corpus.draft.json` and `reference-review-2026-10-11` are historical drafts. The current `golden-cases/*.jsonl` files are populated, frozen and hashed. The user explicitly chose to copy, commit and push the source corpus and review artifacts in this repository; extraction run outputs remain outside Git.
 

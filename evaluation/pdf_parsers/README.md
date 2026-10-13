@@ -2,14 +2,14 @@
 
 **Task:** RAG-A-01
 **Last reviewed:** 2026-10-13
-**Status:** User-approved corpus frozen; earlier runs retained. PDFium revision approved on 2026-10-13; paired corpus runs and 124-output audit complete. Separate telemetry revalidation covers exact UTF8 export and export-time clamping warnings. See [the comparison](../../docs/Comparison_Preparation/PDFIUM_COMPARISON.md).
+**Status:** User-approved corpus frozen; earlier runs retained. PDFium revision approved on 2026-10-13; paired corpus runs and 124-output audit complete. Separate telemetry revalidation covers exact UTF8 export and export-time clamping warnings. See [the comparison](corpus/PDFIUM_COMPARISON.md).
 
 Copy `corpus.example.json` to a private directory outside the repository and
 replace its empty document list with permitted local PDFs. The user explicitly
 chose to copy, commit and push the supplied corpus/review artifacts under
-`docs/Comparison_Preparation`, and approved every worksheet on 2026-10-13.
-That corpus now has a validated `corpus.frozen.json` and 47 cases across 17 PDFs;
-see [the release report](../../docs/Comparison_Preparation/GOLDEN_CASES_VALIDATION.md).
+`evaluation/pdf_parsers/corpus`, and approved every worksheet on 2026-10-13.
+That corpus now has a validated original `corpus.frozen.json` and location-only `corpus.relocated.json` and 47 cases across 17 PDFs;
+see [the release report](corpus/GOLDEN_CASES_VALIDATION.md).
 Other private corpora and extraction run outputs remain outside Git. The
 comparison command requires an explicit output directory outside every Git
 checkout. `corpus.example.json` remains a template, not a runnable benchmark.
@@ -98,7 +98,7 @@ The approved Tesseract option is explicit:
   --max-memory-mib 8192 --timeout 180 --warm-runs 3
 ```
 
-The user approved the [backend revision](../../docs/Comparison_Preparation/PDF_BACKEND_REVISION.md)
+The user approved the [backend revision](corpus/PDF_BACKEND_REVISION.md)
 on 2026-10-13. Both new Docling treatments explicitly use `--pdf-backend pypdfium2`;
 omit the OCR arguments for its paired no-OCR treatment. The original default
 `docling_parse` remains selectable. Backend selection/class and pypdfium2 version
@@ -163,7 +163,7 @@ an upload cutoff of 2026-10-11. The direct pins are Docling 2.137.0 with EasyOCR
 and pypdf 6.12.1. On 2026-10-13 all 113 pins installed into the isolated
 experiment environment, native imports passed, and local Heron/TableFormer
 artifacts passed an offline smoke. See the
-[runtime results](../../docs/Comparison_Preparation/DOCLING_RUNTIME_RESULTS.md).
+[runtime results](corpus/DOCLING_RUNTIME_RESULTS.md).
 
 Reproduce the metadata-only wheel check without changing the application lock:
 

@@ -9,7 +9,7 @@ The human-approved references are frozen and the pypdf baseline has run. The use
 ## Proposed scope
 
 - Environment: `E:/Workspace/AI_Stuff/Pdf_Examples/Parser_Experiment/venv` using the existing CPython 3.14 interpreter.
-- Package source: [frozen Windows requirements](../../evaluation/pdf_parsers/requirements-windows-py314.txt), 113 pins, including Docling 2.137.0, EasyOCR 1.7.2 and pypdf 6.12.1. The application environment and lockfile are unchanged.
+- Package source: [frozen Windows requirements](../requirements-windows-py314.txt), 113 pins, including Docling 2.137.0, EasyOCR 1.7.2 and pypdf 6.12.1. The application environment and lockfile are unchanged.
 - Model artifacts: `E:/Workspace/AI_Stuff/Pdf_Examples/Parser_Experiment/models/docling` and `.../models/easyocr`. Resolve exact required official model revisions, review package/model licenses, download compatible permitted artifacts, and record every file hash before use. Prove Hebrew/English compatibility; unsupported language/native-wheel combinations fail explicitly.
 - Results: fresh directories under `E:/Workspace/AI_Stuff/Pdf_Examples/Comparison_Runs`, outside Git.
 - Execution: CPU only, serial workers, maximum **8 GiB lifetime peak working set per worker**, **180 seconds per initialization/extraction**, **50 MiB per source**, **200 pages per source**, one cold and three warm passes. This machine reports 63.78 GiB physical RAM; 8 GiB is a proposed experiment ceiling, not a measured Docling requirement.

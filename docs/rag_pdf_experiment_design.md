@@ -3,7 +3,7 @@
 **Task:** RAG-A-02
 **Last reviewed:** 2026-10-13
 **Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
-and validated offline. Tesseract and PDFium G2 revisions were approved on 2026-10-13; smoke and both frozen-corpus treatments are complete, with 124 available outputs audited. Separate telemetry validation addresses exact text export and export-time clamping warnings. Source-reviewed regressions prevent a universal default switch; see the [PDFium comparison](Comparison_Preparation/PDFIUM_COMPARISON.md).
+and validated offline. Tesseract and PDFium G2 revisions were approved on 2026-10-13; smoke and both frozen-corpus treatments are complete, with 124 available outputs audited. Separate telemetry validation addresses exact text export and export-time clamping warnings. Source-reviewed regressions prevent a universal default switch; see the [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md).
 
 ## Approved decision
 
@@ -158,16 +158,16 @@ manifest with 47 valid cases passed the existing loader; four optional
 mixed/ambiguous cases are retained outside scoring. The real pypdf baseline
 completed 68 cold/warm passes with source/reference snapshot and offset/page
 consistency checks. Manual quality inspection remains distinct from extraction
-completion. See [the corpus release](Comparison_Preparation/GOLDEN_CASES_VALIDATION.md)
-and [the concrete candidate setup request](Comparison_Preparation/DOCLING_RUNTIME_PREPARATION.md).
+completion. See [the corpus release](../evaluation/pdf_parsers/corpus/GOLDEN_CASES_VALIDATION.md)
+and [the concrete candidate setup request](../evaluation/pdf_parsers/corpus/DOCLING_RUNTIME_PREPARATION.md).
 Candidate installation/model preparation and the resource budget were approved
 on 2026-10-13. All 113 package pins installed, CPU/native imports passed and
 immutable Heron/TableFormer artifacts passed an offline synthetic smoke. See
-[runtime evidence](Comparison_Preparation/DOCLING_RUNTIME_RESULTS.md).
+[runtime evidence](../evaluation/pdf_parsers/corpus/DOCLING_RUNTIME_RESULTS.md).
 EasyOCR 1.7.2 excludes Hebrew; the user approved the
-[Tesseract OCR revision](Comparison_Preparation/HEBREW_OCR_DESIGN.md), now prepared
-and tested. [Native decoder fault evidence](Comparison_Preparation/TESSERACT_RUNTIME_RESULTS.md)
-led to the [explicit PDF backend revision](Comparison_Preparation/PDF_BACKEND_REVISION.md),
+[Tesseract OCR revision](../evaluation/pdf_parsers/corpus/HEBREW_OCR_DESIGN.md), now prepared
+and tested. [Native decoder fault evidence](../evaluation/pdf_parsers/corpus/TESSERACT_RUNTIME_RESULTS.md)
+led to the [explicit PDF backend revision](../evaluation/pdf_parsers/corpus/PDF_BACKEND_REVISION.md),
 approved and implemented on 2026-10-13. Both new treatments select pinned PDFium
 with unchanged budgets and no fallback. The original no-OCR results and coordinate-partial remediation
 are retained in the runtime report; quality scoring remains pending.

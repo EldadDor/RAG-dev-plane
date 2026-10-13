@@ -65,12 +65,12 @@ results; existing application ingestion and Python runtime remain intact.
 
 ## Why a new design decision is requested
 
-The approved [Stage A design](../rag_pdf_experiment_design.md) states: “If any
+The approved [Stage A design](../../../docs/rag_pdf_experiment_design.md) states: “If any
 native dependency fails, present a supported-runtime local worker with a
 versioned JSON boundary as a revised G2 decision instead of silently switching.”
 This revision retains the existing worker/JSON boundary and pinned Python,
 explicitly changing only the PDF backend/treatments. The repository's
-[G2 rule](../../.codex/AGENTS.md) also covers a public CLI shape change.
+[G2 rule](../../../.codex/AGENTS.md) also covers a public CLI shape change.
 
 **Approval decision:** The user explicitly approved G2 for PDFium selection and
 paired no-OCR/OCR validation/corpus runs on 2026-10-13. Tesseract preparation
