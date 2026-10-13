@@ -26,7 +26,7 @@
 
 **Runtime files changed:** Experiment options/Docling adapter, comparison runner, focused tests; preparation/start/design/protocol documents; runtime/no-OCR/Tesseract results and explicit backend revision; current/backlog/task records. Approved worksheets/PDFs/JSONL/frozen manifest unchanged. Models, native runtime and extraction/review artifacts remain outside Git.
 
-**Delivery:** PDFium implementation/results ready for the already-authorized local commit; whitespace check passed. G3 push/merge and G4 phase closure are not approved.
+**Delivery:** PDFium implementation, tested fixes and comparison evidence committed locally in `1a85278` (`RAG-B-OCR: validate PDFium treatments and preserve export provenance`). Staged whitespace check passed; all 16 task files included, with frozen source/reference/worksheet bytes untouched. G3 push/merge and G4 phase closure are not approved.
 
 **Decision / follow-up:** Keep production pypdf unchanged. Continue fact/cell/label/RTL fidelity work using existing cases before Stage C selection; no repeated worksheet approval or new questions required. Flagged pdf-007-q3's stale source-page description without rewriting frozen bytes. Native geometry and model reading order remain unresolved; omission/warnings expose these limitations rather than repair them.
 
