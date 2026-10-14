@@ -18,7 +18,7 @@ from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 from app.loaders.pdf_extraction import (
     ExtractedAsset, ExtractionBlock, ExtractionError, ExtractionOptions,
-    ExtractionResult, SourceBox, assemble, create_parser,
+    ExtractionResult, SourceBox, assemble, block_id, create_parser,
 )
 from app.loaders.pdf_loader import PDFLoader
 from app.loaders.pdf_parsers.docling_adapter import DoclingAdapter
@@ -173,7 +173,7 @@ def fake_conversion(*, status="success", missing_image=False, missing_page=False
     picture.get_image = lambda doc: None if missing_image else Image()
     doc = SimpleNamespace(
         pages={n: SimpleNamespace(size=SimpleNamespace(width=300, height=400)) for n in (1, 2)},
-        iterate_items=lambda: iter([(heading, 0), (table, 1), (picture, 1)]),
+        iterate_items=lambda *, traverse_pictures=False: iter([(heading, 0), (table, 1), (picture, 1)]),
         export_to_dict=lambda: {"synthetic": True},
     )
     return SimpleNamespace(status=status, document=doc, errors=[])
@@ -211,6 +211,41 @@ def test_docling_mapping_preserves_tables_locations_and_assets_and_reuses_conver
     assert pdfium_result.assembled_text == result.assembled_text
     with pytest.raises(ExtractionError, match="fixed"):
         adapter.extract(source, replace(options, max_pages=100))
+
+
+def test_docling_picture_children_retain_searchable_facts_with_provenance(tmp_path):
+    source = pdf(tmp_path / "source.pdf")
+    converted = fake_conversion()
+    parents = list(converted.document.iterate_items())
+    child = SimpleNamespace(
+        label="text", text="1 קובייה עבור הגרסה למתחילים", self_ref="#/texts/child",
+        prov=parents[-1][0].prov,
+    )
+    visits = []
+
+    def iterate_items(*, traverse_pictures=False):
+        visits.append(traverse_pictures)
+        yield from parents
+        if traverse_pictures:
+            yield child, 2
+
+    converted.document.iterate_items = iterate_items
+    options = ExtractionOptions()
+    adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=lambda *a, **k: converted),
+                             versions={"docling": "fake"})
+    result = adapter.extract(source, options)
+    assert visits == [True]
+    children = [b for b in result.blocks if b.payload["source_ref"] == child.self_ref]
+    assert len(children) == 1
+    assert children[0].pages == [2] and children[0].boxes[0].page == 2
+    assert result.assembled_text[children[0].start:children[0].end] == child.text
+    assert result.assets[0].block_id == result.blocks[2].block_id
+    legacy_identity = adapter.identity.replace(
+        "picture_children_export_clamp_pages_without_boxes_v4", "export_clamp_pages_without_boxes_v3"
+    )
+    assert all(b.block_id != block_id(result.source_sha256, legacy_identity, b.ordinal)
+               for b in result.blocks)
+    result.validate()
 
 
 @pytest.mark.parametrize("stage", ["conversion", "export"])
@@ -265,7 +300,7 @@ def test_docling_invalid_upstream_box_retains_text_as_explicit_partial(tmp_path,
     assert result.blocks[1].boxes  # Valid provenance for other blocks is retained.
     assert any("invalid box on page 1" in warning for warning in result.warnings)
     assert result.raw is upstream_raw
-    assert result.settings["normalization_policy"] == "export_clamp_pages_without_boxes_v3"
+    assert result.settings["normalization_policy"] == "picture_children_export_clamp_pages_without_boxes_v4"
     result.normalized("fixture")  # Partial output still meets strict normalized-box validation.
 
 

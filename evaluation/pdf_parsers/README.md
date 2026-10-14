@@ -146,10 +146,16 @@ returns. Read with `read_bytes().decode("utf-8")` for offset-sensitive checks;
 universal-newline reading can change parser text. Original corpus exports used
 Windows LF-to-CRLF translation; their lossless audit and exact-text companion
 files are recorded in the comparison report. Original files are retained.
-Normalization policy `export_clamp_pages_without_boxes_v3` captures warnings
+The original telemetry normalization policy `export_clamp_pages_without_boxes_v3` captures warnings
 through conversion and export. Upstream-clamped pages produce partial results
 with normalized boxes omitted; text/page IDs and raw output remain available.
 Raw coordinates may already be clamped, so they do not recover original geometry.
+
+On 2026-10-14, `picture_children_export_clamp_pages_without_boxes_v4` additionally
+traverses text nested under pictures, which the default Docling iterator omitted.
+It changes processing/block identity and retains the existing clamping disclosure.
+47 focused tests and 31 saved-export replays passed; no model treatments were rerun.
+See [the original-case scorecard and correction evidence](corpus/EXTRACTION_SCORECARD.md).
 
 Failed or partial extraction returns exit code 1. Exit code 0 establishes extraction
 completion only; manual rubric inspection and paired RAG evaluation remain pending.

@@ -107,7 +107,7 @@ class DoclingAdapter:
             self.converter, pipeline_settings = converter, {"test_converter": True}
         self.versions = versions if versions is not None else _versions()
         self.settings = {"options": asdict(options), "effective_pipeline": pipeline_settings,
-                         "normalization_policy": "export_clamp_pages_without_boxes_v3"}
+                         "normalization_policy": "picture_children_export_clamp_pages_without_boxes_v4"}
         self.identity = json.dumps({"versions": self.versions, "settings": self.settings}, sort_keys=True)
 
     def extract(self, path: Path, options: ExtractionOptions) -> ExtractionResult:
@@ -158,7 +158,9 @@ class DoclingAdapter:
         blocks: list[ExtractionBlock] = []
         assets: list[ExtractedAsset] = []
         headings: list[tuple[int, str]] = []
-        for item, depth in document.iterate_items():
+        # Diagram labels and even list/table content can be nested under pictures.
+        # Docling's default iterator visits captions but skips those other children.
+        for item, depth in document.iterate_items(traverse_pictures=True):
             label = getattr(item.label, "value", item.label)
             kind = {"table": "table", "picture": "image", "formula": "equation"}.get(label, "text")
             if label in {"section_header", "title"}:

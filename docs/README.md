@@ -21,7 +21,7 @@ default reading; use targeted lookup when the task explicitly needs them.
 | Parked design | [Azure deployment](AZURE_DEPLOYMENT_PLAN.md) | Activating the parked office/Azure work; validate old assumptions before reuse. |
 | Coordination | [Handoff rules](agent_handoff/README.md) and the relevant direction/decision file | The task depends on or changes the other team's contract. |
 | History | [Completed phases](complete_phases.md) | Phase synchronization, approved closure, or a specific historical question. |
-| Experiment evidence | [Corpus entry point](../evaluation/pdf_parsers/corpus/README.md), [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md), [runner protocol](../evaluation/pdf_parsers/README.md) | Corpus/scoring/parser work. Do not recursively read worksheets, previews, drafts or results. Follow only evidence needed for the current issue. |
+| Experiment evidence | [Case scorecard](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md), [corpus entry point](../evaluation/pdf_parsers/corpus/README.md), [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md), [runner protocol](../evaluation/pdf_parsers/README.md) | Corpus/scoring/parser work. Do not recursively read worksheets, previews, drafts or results. Follow only evidence needed for the current issue. |
 
 ## Keep plans small during development
 

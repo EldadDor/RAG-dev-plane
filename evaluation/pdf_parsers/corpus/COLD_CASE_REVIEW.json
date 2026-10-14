@@ -1,0 +1,2200 @@
+{
+  "task": "RAG-B-SCORE",
+  "date": "2026-10-14",
+  "reviewer": "Codex qualitative review against human-approved facts; not independent human adjudication",
+  "method": "One cold output per treatment/case; reference-order R retained, P partial/reconstruction/corruption, M missing, U timeout, X invalid descriptive reference fact. Harmless whitespace/punctuation spacing and Unicode compatibility ligatures tolerated; no reordered words or arbitrary text repairs. No substring-only auto-grading.",
+  "original_manifest_sha256": "a84483eabfeeba04232dc365709f9e8bec26b9c2b195983e5f9b94dc4126abdd",
+  "relocated_manifest_sha256": "4f3894c85830e1622982e6e2fa4787322dfa55f63b0e380527552663845048f1",
+  "denominators": {
+    "all_cases": 47,
+    "answerable_cases": 42,
+    "reserved_negatives": 5,
+    "original_fact_groups": 153,
+    "excluded_reference_fact_groups": 1,
+    "eligible_fact_groups": 152
+  },
+  "aggregate": {
+    "pypdf": {
+      "complete_valid_fact_cases": 36,
+      "fact_groups": {
+        "R": 139,
+        "P": 9,
+        "X": 1,
+        "M": 4
+      }
+    },
+    "no_ocr": {
+      "complete_valid_fact_cases": 30,
+      "fact_groups": {
+        "R": 109,
+        "M": 25,
+        "P": 6,
+        "X": 1,
+        "U": 12
+      }
+    },
+    "ocr": {
+      "complete_valid_fact_cases": 29,
+      "fact_groups": {
+        "R": 104,
+        "M": 21,
+        "P": 6,
+        "U": 21,
+        "X": 1
+      }
+    }
+  },
+  "integrity": {
+    "normalized_outputs_verified": 192,
+    "source_and_reference_snapshots_verified": 51,
+    "cold_warm_text_and_ids_stable": true
+  },
+  "cases": [
+    {
+      "id": "pdf-001-q1",
+      "fact_count": 2,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "Mistake title and LAZY business-code initialization statement retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "5854bc22966c41e0cf1eba9d6cb4e01a8e57db7ad1a28df3834f4bc4d061e7a5",
+        "no_ocr": "6504e29b263616a40b4ddf9086ab68e0de2a5f2811d0d0d131b887054f394f50",
+        "ocr": "6504e29b263616a40b4ddf9086ab68e0de2a5f2811d0d0d131b887054f394f50"
+      }
+    },
+    {
+      "id": "pdf-001-q2",
+      "fact_count": 3,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "JPQL limits, Query interface and both numeric methods retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "44feb2ddf1da15772d7a17247b7d735656f426fc61a793a843828c64614f68f4",
+        "no_ocr": "b6f6ad996a94ad22f0649d0b01423d2e4f6409448b809ad3f9dc413732a6c0e0",
+        "ocr": "b6f6ad996a94ad22f0649d0b01423d2e4f6409448b809ad3f9dc413732a6c0e0"
+      }
+    },
+    {
+      "id": "pdf-001-q3",
+      "status": "reserved_for_assigned_document_retrieval",
+      "facts": 0
+    },
+    {
+      "id": "pdf-002-q1",
+      "fact_count": 4,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRMR",
+        "ocr": "RRMR"
+      },
+      "review_note": "Beginner-die quantity/label is absent in both Docling page-1 texts; pypdf retains all four component facts.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "aca431a69e7b65cf18c4b9d84dc1fdbc0274125b8676b65899700800e3cf16c9",
+        "no_ocr": "205b8b7c5721e350904d4bcd051d465469c23a78b31a3ab113a9d290ddc8bb57",
+        "ocr": "154e806adc9765354976f7a8df1e3d750d2dffbf3fe98335e829502461d96a98"
+      }
+    },
+    {
+      "id": "pdf-002-q2",
+      "fact_count": 4,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "All answer-check facts retained. Docling puts answer checking before play sequence; this fact score does not certify section order.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "5928a27f02a2652e6ac5a97e5b6988209f033518c28a0c906c28188b27450a26",
+        "no_ocr": "ad6edf0e1f8e79551afea6da1ded2aa4331b5ae4c46cf9c143429efdf2dec158",
+        "ocr": "be842c919375a426cd6d9aa48553c54542b0269eb76bddebd5f26452a5cbcef1"
+      }
+    },
+    {
+      "id": "pdf-002-q3",
+      "status": "reserved_for_assigned_document_retrieval",
+      "facts": 0
+    },
+    {
+      "id": "pdf-003-q1",
+      "fact_count": 17,
+      "pages": [
+        8
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRRRRRRRRRRPRRR",
+        "no_ocr": "MMMMMMMMMMMMMMMMM",
+        "ocr": "MMMMMMMMMMMMMMMMM"
+      },
+      "review_note": "All Docling diagram leader labels absent from page-8 text. pypdf retains 16 labels; Touchscreen Way/f_inding is corrupted. Diagram edges are not scored.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "8be58c95c36008795932b6282607208cb10ecfc11bcc623ec7ae3287b7dd16f2",
+        "no_ocr": "1e66104f1132ff91424aeed0ae0d9338249351c22a8ed21ca7d6bb4d3932f952",
+        "ocr": "1e66104f1132ff91424aeed0ae0d9338249351c22a8ed21ca7d6bb4d3932f952"
+      }
+    },
+    {
+      "id": "pdf-003-q2",
+      "fact_count": 4,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "PRRR",
+        "ocr": "PRRR"
+      },
+      "review_note": "Docling replaces characters in differentiated with a control character; the first compound purpose fact is partial. Other purpose facts retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "91cbb5c14cfc92b80b9e0fe07d9eee5b7a14983bec9eb4be8f2f54478bf71940",
+        "no_ocr": "3184f51e9f6db1d50afa4158272e1c39bfd8d2ff6975485afa0da9416e891ce6",
+        "ocr": "3184f51e9f6db1d50afa4158272e1c39bfd8d2ff6975485afa0da9416e891ce6"
+      }
+    },
+    {
+      "id": "pdf-003-q3",
+      "status": "reserved_for_assigned_document_retrieval",
+      "facts": 0
+    },
+    {
+      "id": "pdf-004-q1",
+      "fact_count": 4,
+      "pages": [
+        24
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "ETS history, production, gauge and robust/all-metal/handmade facts retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "462148616d03867ff1fd2f636dfcf868e82384d0a1d0cff5bfe5de5870ac8bad",
+        "no_ocr": "f8a841acaa992e5443da26e3900ca2fbd0dbc778fddcd882952b962a4f6baa4b",
+        "ocr": "f8a841acaa992e5443da26e3900ca2fbd0dbc778fddcd882952b962a4f6baa4b"
+      }
+    },
+    {
+      "id": "pdf-004-q2",
+      "fact_count": 5,
+      "pages": [
+        33
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRR",
+        "no_ocr": "RRRRR",
+        "ocr": "RRRRR"
+      },
+      "review_note": "Kopecky identity, century, eighth generation, circus and international examples retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "d35d8e6f122cc9bc0cbca231df4d3c58749c403d5a341928adc7719e739053a8",
+        "no_ocr": "f146a1fd7bbb5065f541c2b4c2e95969ceca20126613a48327b3e4a4794191ed",
+        "ocr": "f146a1fd7bbb5065f541c2b4c2e95969ceca20126613a48327b3e4a4794191ed"
+      }
+    },
+    {
+      "id": "pdf-004-q3",
+      "fact_count": 2,
+      "pages": [
+        3
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "MM",
+        "ocr": "MM"
+      },
+      "review_note": "Docling page 3 contains CONTENT heading without the requested entry title or page number.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "b830e633fed1e8608d3a32ef1bc36a5a20e419436687aa61320e5b5f8e0ce83f",
+        "no_ocr": "655ab11879dabb7b889bd9f7f6759cb52994fca59522562c74b4bf74fca0853d",
+        "ocr": "655ab11879dabb7b889bd9f7f6759cb52994fca59522562c74b4bf74fca0853d"
+      }
+    },
+    {
+      "id": "pdf-005-q1",
+      "fact_count": 3,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "Project file names, 500-line rule and conversation rule retained; Docling inserts punctuation spacing.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "5667ec74be80eca3ea0e3e03b95234db2f011f8790f667baefc4b4a172700d11",
+        "no_ocr": "38836fc0cb2478074c9490e504e9c71e4e9798d7d7768e9642c434f123ab3f58",
+        "ocr": "38836fc0cb2478074c9490e504e9c71e4e9798d7d7768e9642c434f123ab3f58"
+      }
+    },
+    {
+      "id": "pdf-005-q2",
+      "fact_count": 3,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "Planning purpose, suggested prompt and new-conversation instruction retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "8ad2e446befb84a17d97d0215503299755235f7b16c5de3b001090d977b4a083",
+        "no_ocr": "bf27bab5ee46c99e41f72dc28911a67d0d09fba9f2a8f8b3e06e15e542fcbe44",
+        "ocr": "bf27bab5ee46c99e41f72dc28911a67d0d09fba9f2a8f8b3e06e15e542fcbe44"
+      }
+    },
+    {
+      "id": "pdf-005-q3",
+      "fact_count": 3,
+      "pages": [
+        5
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "External knowledge, Supabase and Brave capabilities retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ffd7e8829245ee8b661783858c02741a3da5fb760bbcc916a3a02a7d2c4cd283",
+        "no_ocr": "cc9db199d757c4285c6c7ab007dbed7a5535cb5e84cda22d870d22158eef83d1",
+        "ocr": "cc9db199d757c4285c6c7ab007dbed7a5535cb5e84cda22d870d22158eef83d1"
+      }
+    },
+    {
+      "id": "pdf-006-q1",
+      "fact_count": 4,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "UUUU"
+      },
+      "review_note": "CHR.02/H95 header and 950/620/380/355 rows align in pypdf text and Docling table. OCR cold run timed out.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "9fee0a90bbd3ffd75eaaabe481375a1e87a87ea2af929cc95cb972d5b9239ee6",
+        "no_ocr": "a2c0c2c9694a10b630a65b17e345036bb8dd30cb825cefeae12d86bb85f6ad42"
+      }
+    },
+    {
+      "id": "pdf-006-q2",
+      "fact_count": 2,
+      "pages": [
+        6
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "UU"
+      },
+      "review_note": "600-mm table header and last width 2000 are associated with MTB.R.206 in available text. OCR timeout.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "2cb449f8dd4b0fc196060123f2584983eb9cf6af96b236a1e8bb34bc4e8d48ce",
+        "no_ocr": "0860b6d010a0e1ccb4f542e847107fd1b113bf9991cd16b643e445cfd0433311"
+      }
+    },
+    {
+      "id": "pdf-006-q3",
+      "fact_count": 3,
+      "pages": [
+        6
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "UUU"
+      },
+      "review_note": "All grouped feature/packaging/upgrade content retained. Groups are indivisible facts, not separate cell counts. OCR timeout.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "2cb449f8dd4b0fc196060123f2584983eb9cf6af96b236a1e8bb34bc4e8d48ce",
+        "no_ocr": "0860b6d010a0e1ccb4f542e847107fd1b113bf9991cd16b643e445cfd0433311"
+      }
+    },
+    {
+      "id": "pdf-007-q1",
+      "fact_count": 2,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "PP",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "pypdf reverses Hebrew word order and splits words; both Docling treatments retain logical prose. Partial means reconstruction is needed, not absent tokens.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "98bc176ace01d6e2895ffb91a50f773852b33fa31a5e87eda4f427ea59b09c16",
+        "no_ocr": "6e416af250c5d384c6d7d83c8263edd837d0e6a7a6cd4ca64ed38181ea080275",
+        "ocr": "6e416af250c5d384c6d7d83c8263edd837d0e6a7a6cd4ca64ed38181ea080275"
+      }
+    },
+    {
+      "id": "pdf-007-q2",
+      "fact_count": 5,
+      "pages": [
+        5
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "PPPPP",
+        "no_ocr": "RRRRR",
+        "ocr": "RRRRR"
+      },
+      "review_note": "pypdf disorder affects prose/footnote reading and number association; Docling retains the statements and 18/35 percent comparisons with punctuation noise.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "23b940b49c9fb1ec6d221331d28cd6b49b35c2f43a31cbbb4ad4b746fa2e67f0",
+        "no_ocr": "bb8891b8d85f156e41cb515abf01260e28d07de7a3a2eb93542d24a81ef0466e",
+        "ocr": "bb8891b8d85f156e41cb515abf01260e28d07de7a3a2eb93542d24a81ef0466e"
+      }
+    },
+    {
+      "id": "pdf-007-q3",
+      "fact_count": 2,
+      "pages": [
+        5
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RX",
+        "no_ocr": "RX",
+        "ocr": "RX"
+      },
+      "review_note": "Egan/U.S. Catholic/Nov 1997/page 25 retained. Exclude fact 2 because its source-page description contradicts approved page-5 evidence; frozen bytes unchanged.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "23b940b49c9fb1ec6d221331d28cd6b49b35c2f43a31cbbb4ad4b746fa2e67f0",
+        "no_ocr": "bb8891b8d85f156e41cb515abf01260e28d07de7a3a2eb93542d24a81ef0466e",
+        "ocr": "bb8891b8d85f156e41cb515abf01260e28d07de7a3a2eb93542d24a81ef0466e"
+      }
+    },
+    {
+      "id": "pdf-008-q1",
+      "fact_count": 2,
+      "pages": [
+        10
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "2000 m free field and external 10-30 VDC retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "963f452e86e6363df1f0bf2f65ffe2ee6686daa4db07a9d9b0e7435182d098de",
+        "no_ocr": "93087cae3a0ae86ca1da052eeccdb397984aa80083e84c021fbb234b4b086aaf",
+        "ocr": "93087cae3a0ae86ca1da052eeccdb397984aa80083e84c021fbb234b4b086aaf"
+      }
+    },
+    {
+      "id": "pdf-008-q2",
+      "fact_count": 4,
+      "pages": [
+        12
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "Ethernet/CAN/analog/browser configuration retained despite interleaved diagram text. Original page-12 geometry is not accepted by this text score.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "b5ecf21f70892336e7b2175f2d687b88d22287356c9b2d8d64fc99acc343bced",
+        "no_ocr": "d899461f94ea93c4b9e02b09fe2f3c888ff023d7a00632184748b4c22ebe2a7b",
+        "ocr": "d899461f94ea93c4b9e02b09fe2f3c888ff023d7a00632184748b4c22ebe2a7b"
+      }
+    },
+    {
+      "id": "pdf-008-q3",
+      "status": "reserved_for_assigned_document_retrieval",
+      "facts": 0
+    },
+    {
+      "id": "pdf-009-q1",
+      "fact_count": 2,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "Maven commands and successful command-line compilation prerequisite retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "1d7a7c9ad2f44a4d4e419b9dd745f4fbae362f0030b331d4feed197601ed48dd",
+        "no_ocr": "5d936feef41e1ca6b7a90e05c76aa6eace10358274186bf82e2ca84bff0db58a",
+        "ocr": "b0ffa30e0d0bbb3947cf7d4f86c80bc5926bc3624025f7411d56652be342ba39"
+      }
+    },
+    {
+      "id": "pdf-009-q2",
+      "fact_count": 2,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "Compiler-specific 1024m value and settings path retained; not confused with MAVEN_OPTS.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "1d7a7c9ad2f44a4d4e419b9dd745f4fbae362f0030b331d4feed197601ed48dd",
+        "no_ocr": "5d936feef41e1ca6b7a90e05c76aa6eace10358274186bf82e2ca84bff0db58a",
+        "ocr": "b0ffa30e0d0bbb3947cf7d4f86c80bc5926bc3624025f7411d56652be342ba39"
+      }
+    },
+    {
+      "id": "pdf-009-q3",
+      "fact_count": 3,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "CRM 1536m, JIDI 1024m and per-server -Xmx association retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "1d7a7c9ad2f44a4d4e419b9dd745f4fbae362f0030b331d4feed197601ed48dd",
+        "no_ocr": "5d936feef41e1ca6b7a90e05c76aa6eace10358274186bf82e2ca84bff0db58a",
+        "ocr": "b0ffa30e0d0bbb3947cf7d4f86c80bc5926bc3624025f7411d56652be342ba39"
+      }
+    },
+    {
+      "id": "pdf-010-q1",
+      "fact_count": 1,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "M",
+        "no_ocr": "M",
+        "ocr": "R"
+      },
+      "review_note": "Only OCR retains Metro Manila weather row. Extra y token does not alter the requested weather meaning; exact transcription does not pass.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ad3708d5a9abe531bba720ce4c75de6cf73d36650a179934ae87eaa74ecc6057",
+        "no_ocr": "daf341c86d273a5882267450e2f8a33ed442e3362c335430914f5bd093e369cb",
+        "ocr": "f05f92e7da4c4fe689c92f939daa25da0248a840dbdea453a05c3409aa41ae9c"
+      }
+    },
+    {
+      "id": "pdf-010-q2",
+      "fact_count": 3,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "MMM",
+        "no_ocr": "MMM",
+        "ocr": "RRR"
+      },
+      "review_note": "Only OCR retains the Northern/Central Luzon row with exact intensity, direction and 1.5-2.8 m range.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ad3708d5a9abe531bba720ce4c75de6cf73d36650a179934ae87eaa74ecc6057",
+        "no_ocr": "daf341c86d273a5882267450e2f8a33ed442e3362c335430914f5bd093e369cb",
+        "ocr": "f05f92e7da4c4fe689c92f939daa25da0248a840dbdea453a05c3409aa41ae9c"
+      }
+    },
+    {
+      "id": "pdf-010-q3",
+      "status": "reserved_for_assigned_document_retrieval",
+      "facts": 0
+    },
+    {
+      "id": "pdf-011-q1",
+      "fact_count": 2,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "Double Zero row retains 5.3 percent and $5.30 with column association.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "c020c8cec3a5d4d1a7f8d52853b9750f9fe88cfc02194669d83d0069ba111ea9",
+        "no_ocr": "f0d334fb821348d70bd155cc1bf80f9b9f66b5f8245ba43caa64f41ed8fda04e",
+        "ocr": "f0d334fb821348d70bd155cc1bf80f9b9f66b5f8245ba43caa64f41ed8fda04e"
+      }
+    },
+    {
+      "id": "pdf-011-q2",
+      "fact_count": 3,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "Average strategy, typical offering and operator/actual variation caveats retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "cf558a338d952b33c006617465b170f921f7b69e480b195e5fbb51ceeebf51ae",
+        "no_ocr": "f541d85e433cf377eab7a0a2abb7d10c9971204aac82cb7172b8db62d3b8c334",
+        "ocr": "f541d85e433cf377eab7a0a2abb7d10c9971204aac82cb7172b8db62d3b8c334"
+      }
+    },
+    {
+      "id": "pdf-011-q3",
+      "fact_count": 4,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "Percentage interpretation, average reasonable-period loss, no guarantee and other factors retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "c020c8cec3a5d4d1a7f8d52853b9750f9fe88cfc02194669d83d0069ba111ea9",
+        "no_ocr": "f0d334fb821348d70bd155cc1bf80f9b9f66b5f8245ba43caa64f41ed8fda04e",
+        "ocr": "f0d334fb821348d70bd155cc1bf80f9b9f66b5f8245ba43caa64f41ed8fda04e"
+      }
+    },
+    {
+      "id": "pdf-012-q1",
+      "fact_count": 3,
+      "pages": [
+        1
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "PRM",
+        "ocr": "PRM"
+      },
+      "review_note": "Docling omits diagram labels. Caption partially supports adaptation flow and explicitly small LoRA adapter; base-plus-adapter output relationship absent. pypdf labels retain the requested stages, not certified graph edges.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "81f770a79184c0cd28ef3dfb2b3675e029158feb9ef89964325960193ab57624",
+        "no_ocr": "2b70d758be7cd8292f83e9b67a8af3a07d135aa8aacdbf46fb2efa15e255a73e",
+        "ocr": "2b70d758be7cd8292f83e9b67a8af3a07d135aa8aacdbf46fb2efa15e255a73e"
+      }
+    },
+    {
+      "id": "pdf-012-q2",
+      "fact_count": 3,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "2x, 70 percent, 50-90 percent and HF/TRL method names retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ca628d2afd6e9b69a58a486a46cc98ff751562402a3aad5a0392aee652811ca8",
+        "no_ocr": "2232c3f8f361913aa59a779911266798e92f8210a378fc4240bbfaac3263d4af",
+        "ocr": "2232c3f8f361913aa59a779911266798e92f8210a378fc4240bbfaac3263d4af"
+      }
+    },
+    {
+      "id": "pdf-012-q3",
+      "fact_count": 4,
+      "pages": [
+        13
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "8192 and all dataset/sample-count associations retained; Docling flattens code and adds punctuation spacing. Executable code syntax is not scored.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "f11cea76a1cae8abbf4a4ad1c542f35515e5a704aa612b73b824db6a5ec93edf",
+        "no_ocr": "e7caa3ff490200db0993115640949b9bb88ab946079ba4bd1c754c8143e362ad",
+        "ocr": "e7caa3ff490200db0993115640949b9bb88ab946079ba4bd1c754c8143e362ad"
+      }
+    },
+    {
+      "id": "pdf-013-q1",
+      "fact_count": 2,
+      "pages": [
+        4
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "All seven named symbol/color pairs identifiable; pypdf concatenates adjacent pair boundaries. Count derived from seven listed pairs, not a printed numeral.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "47fd37ed60ee7a06ea49bf61936e840efd7ba3bd1a94147b4a282eee5c9970b0",
+        "no_ocr": "439840bd86ebd6606a697a8695ab6136df749d1bac2a5001659aa850aa8946f2",
+        "ocr": "17b19862950388c192baadbbb3b7c4a7cde6b6d271e66d0d9460c8e57da396b2"
+      }
+    },
+    {
+      "id": "pdf-013-q2",
+      "fact_count": 6,
+      "pages": [
+        5,
+        6
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RPRRRR",
+        "no_ocr": "RRRRRR",
+        "ocr": "RRRRRR"
+      },
+      "review_note": "pypdf loses the beginning of the setup instruction; pathway/aside fragments remain, so fact 2 is partial. Remaining solo/play/covering facts retained. Docling setup is complete.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "06146c22d5b4d1f546541bee09408ee34d5c8cf8c015b887fd5252d9aa665463",
+        "no_ocr": "b1fffc5b09c8877447802336d3ad2285e890bdd31c219bdc31923d305d139273",
+        "ocr": "b1fffc5b09c8877447802336d3ad2285e890bdd31c219bdc31923d305d139273"
+      }
+    },
+    {
+      "id": "pdf-014-q1",
+      "fact_count": 5,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRR",
+        "no_ocr": "RRRRP",
+        "ocr": "RRRRP"
+      },
+      "review_note": "Docling splits the LLM alternatives continuation into stage-6 row, impairing stage-5 association for fact 5; other four facts retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "9769a1a50bef374dbfcc4bfceac5454e70e884e9e10933f6552c9bc7df8853f7",
+        "no_ocr": "7dcd6b8fb1b1c21dc83e8a5ef8a95f758be3eb75beb45aeb1fb833b78430471f",
+        "ocr": "7dcd6b8fb1b1c21dc83e8a5ef8a95f758be3eb75beb45aeb1fb833b78430471f"
+      }
+    },
+    {
+      "id": "pdf-014-q2",
+      "fact_count": 4,
+      "pages": [
+        4,
+        5,
+        6
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRR",
+        "no_ocr": "RRRR",
+        "ocr": "RRRR"
+      },
+      "review_note": "Both February dates/events and stage-3 professional-development explanation retained across pages 4-6.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ca26a0deb579a52616c5eaf3e82a9a25e628d42246b732f52f552d1c47969782",
+        "no_ocr": "c8c9859687026a5ef6d44c095343d19dcb1103aa9a6cccd267acd8c2df9406a1",
+        "ocr": "c8c9859687026a5ef6d44c095343d19dcb1103aa9a6cccd267acd8c2df9406a1"
+      }
+    },
+    {
+      "id": "pdf-015-q1",
+      "fact_count": 2,
+      "pages": [
+        7
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RR",
+        "no_ocr": "RR",
+        "ocr": "RR"
+      },
+      "review_note": "7 Boom and divisible-by/contains-7 condition with 40 bonus retained. +40- sign placement has RTL artifacts; no exact-character fidelity claim.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "ce2b494dad16756658050d6b6ed797e80094dac641339c8e04c199469a881a4c",
+        "no_ocr": "1f3e2cfcb4d52daa3998e6d8543abf4f64b65779ba06a72d475b6f3967d31e0d",
+        "ocr": "1f3e2cfcb4d52daa3998e6d8543abf4f64b65779ba06a72d475b6f3967d31e0d"
+      }
+    },
+    {
+      "id": "pdf-015-q2",
+      "fact_count": 5,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRR",
+        "no_ocr": "PRRPP",
+        "ocr": "PRRPP"
+      },
+      "review_note": "Docling reverses introductory Hebrew instruction and emits Item New Add, Form Web and aspx.Default. Type/Browse facts retained; affected sequence/identity facts partial.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "b70274e817b5bfee128e476ad61f3cdcc6c0df4097b8ae2e7eab304cb0c755ab",
+        "no_ocr": "1f02b342a322efa9220a11eb0f61e6a2242d5a72eea12683cb8f9f930810ebd7",
+        "ocr": "5ad43526df8d9e7ae75e1b45b9237859b2d1881ea36cc8502bd5e2f80d84aa3c"
+      }
+    },
+    {
+      "id": "pdf-016-q1",
+      "fact_count": 3,
+      "pages": [
+        57
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "UUU",
+        "ocr": "UUU"
+      },
+      "review_note": "pypdf reproduction row aligns with virus/bacteria/fungi headers; both Docling cold runs timed out.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "2dc0e24d59acabbdebb710c3b09a95aaf85ba1b7f884135e83742a394f5e90c9"
+      }
+    },
+    {
+      "id": "pdf-016-q2",
+      "fact_count": 6,
+      "pages": [
+        88
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRRR",
+        "no_ocr": "UUUUUU",
+        "ocr": "UUUUUU"
+      },
+      "review_note": "pypdf gibberellin promoter/suppressor row retains six approved effects; both Docling runs timed out.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "cd2bdf38371ccdbc763ffabf3ff39b1422493daff24d31cd261a4632e58a1019"
+      }
+    },
+    {
+      "id": "pdf-016-q3",
+      "fact_count": 3,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "UUU",
+        "ocr": "UUU"
+      },
+      "review_note": "pypdf Chapter B, bonsai and Jerusalem/Nisan/March 2008 retained; both Docling runs timed out.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "4ad6bdf3903632bdd0f01e614e0a32b59aadbbeaf50d9da0207d8a28c6de216d"
+      }
+    },
+    {
+      "id": "pdf-017-q1",
+      "fact_count": 3,
+      "pages": [
+        2
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRR",
+        "no_ocr": "RRR",
+        "ocr": "RRR"
+      },
+      "review_note": "Double-agent team, face-up orientation and adding to proper pile retained.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "6bde6deb78d2792a4de080145693c6f142fdb90718a809752b1cbac7f34c65da",
+        "no_ocr": "154135cf8f1636ed710b134dfae1f2aa25287eea9103bfde85338cc0dc63b319",
+        "ocr": "154135cf8f1636ed710b134dfae1f2aa25287eea9103bfde85338cc0dc63b319"
+      }
+    },
+    {
+      "id": "pdf-017-q2",
+      "fact_count": 6,
+      "pages": [
+        3
+      ],
+      "facts_in_reference_order": {
+        "pypdf": "RRRRRR",
+        "no_ocr": "RRRRRR",
+        "ocr": "RRRRRR"
+      },
+      "review_note": "Grid/key, four color meanings and 25 cards in 5x5 retained; other non-reference 9/8 text-order defects are outside this coverage score.",
+      "reviewed_page_text_sha256": {
+        "pypdf": "637706c0260c24f4d6313430e735e012773ece3e2ccfa21155a10b63ed952a96",
+        "no_ocr": "fb5f9f03d51eac5deb670f6ad57cf2d3010e180de8d6220146b151d83caf4a6a",
+        "ocr": "fb5f9f03d51eac5deb670f6ad57cf2d3010e180de8d6220146b151d83caf4a6a"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-001",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-001/pypdf/cold/normalized.json",
+      "sha256": "d236b6fd5e3e654986be2012a82796fcfe60ea202f83408b2603e41916953f4b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-001",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-001/pypdf/warm-1/normalized.json",
+      "sha256": "d236b6fd5e3e654986be2012a82796fcfe60ea202f83408b2603e41916953f4b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-001",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-001/pypdf/warm-2/normalized.json",
+      "sha256": "d236b6fd5e3e654986be2012a82796fcfe60ea202f83408b2603e41916953f4b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-001",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-001/pypdf/warm-3/normalized.json",
+      "sha256": "d236b6fd5e3e654986be2012a82796fcfe60ea202f83408b2603e41916953f4b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-002",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-002/pypdf/cold/normalized.json",
+      "sha256": "eb802250d7673e504ca6da03d0a88d55e2726e6184115f4a5d024c1ba307a2ad",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-002",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-002/pypdf/warm-1/normalized.json",
+      "sha256": "eb802250d7673e504ca6da03d0a88d55e2726e6184115f4a5d024c1ba307a2ad",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-002",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-002/pypdf/warm-2/normalized.json",
+      "sha256": "eb802250d7673e504ca6da03d0a88d55e2726e6184115f4a5d024c1ba307a2ad",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-002",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-002/pypdf/warm-3/normalized.json",
+      "sha256": "eb802250d7673e504ca6da03d0a88d55e2726e6184115f4a5d024c1ba307a2ad",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-003",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-003/pypdf/cold/normalized.json",
+      "sha256": "6527a2fef2c996be7ed601468b799be1fd8ac68a98cda59b40da840ff478f56b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-003",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-003/pypdf/warm-1/normalized.json",
+      "sha256": "6527a2fef2c996be7ed601468b799be1fd8ac68a98cda59b40da840ff478f56b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-003",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-003/pypdf/warm-2/normalized.json",
+      "sha256": "6527a2fef2c996be7ed601468b799be1fd8ac68a98cda59b40da840ff478f56b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-003",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-003/pypdf/warm-3/normalized.json",
+      "sha256": "6527a2fef2c996be7ed601468b799be1fd8ac68a98cda59b40da840ff478f56b",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-004",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-004/pypdf/cold/normalized.json",
+      "sha256": "ca9d4d2363dbc347bd7d042672b154673cfba601c46891b9ac01a44f05911dda",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-004",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-004/pypdf/warm-1/normalized.json",
+      "sha256": "ca9d4d2363dbc347bd7d042672b154673cfba601c46891b9ac01a44f05911dda",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-004",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-004/pypdf/warm-2/normalized.json",
+      "sha256": "ca9d4d2363dbc347bd7d042672b154673cfba601c46891b9ac01a44f05911dda",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-004",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-004/pypdf/warm-3/normalized.json",
+      "sha256": "ca9d4d2363dbc347bd7d042672b154673cfba601c46891b9ac01a44f05911dda",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-005",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-005/pypdf/cold/normalized.json",
+      "sha256": "9bdb09253c7ff52c7ec1cb26ef2cfb820de6b6bca2c0d35edc33ad0f194b6bac",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-005",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-005/pypdf/warm-1/normalized.json",
+      "sha256": "9bdb09253c7ff52c7ec1cb26ef2cfb820de6b6bca2c0d35edc33ad0f194b6bac",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-005",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-005/pypdf/warm-2/normalized.json",
+      "sha256": "9bdb09253c7ff52c7ec1cb26ef2cfb820de6b6bca2c0d35edc33ad0f194b6bac",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-005",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-005/pypdf/warm-3/normalized.json",
+      "sha256": "9bdb09253c7ff52c7ec1cb26ef2cfb820de6b6bca2c0d35edc33ad0f194b6bac",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-006",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-006/pypdf/cold/normalized.json",
+      "sha256": "a6ca3a297e01c4f02f6ece7b20346e48b6fa411051b3908ac6322ec3c33ed018",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-006",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-006/pypdf/warm-1/normalized.json",
+      "sha256": "a6ca3a297e01c4f02f6ece7b20346e48b6fa411051b3908ac6322ec3c33ed018",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-006",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-006/pypdf/warm-2/normalized.json",
+      "sha256": "a6ca3a297e01c4f02f6ece7b20346e48b6fa411051b3908ac6322ec3c33ed018",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-006",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-006/pypdf/warm-3/normalized.json",
+      "sha256": "a6ca3a297e01c4f02f6ece7b20346e48b6fa411051b3908ac6322ec3c33ed018",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-007",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-007/pypdf/cold/normalized.json",
+      "sha256": "a3c06b7172ce58e29e053302a61eea429f688d9e9f9cfca6aa4e69711596c802",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-007",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-007/pypdf/warm-1/normalized.json",
+      "sha256": "a3c06b7172ce58e29e053302a61eea429f688d9e9f9cfca6aa4e69711596c802",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-007",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-007/pypdf/warm-2/normalized.json",
+      "sha256": "a3c06b7172ce58e29e053302a61eea429f688d9e9f9cfca6aa4e69711596c802",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-007",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-007/pypdf/warm-3/normalized.json",
+      "sha256": "a3c06b7172ce58e29e053302a61eea429f688d9e9f9cfca6aa4e69711596c802",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-008",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-008/pypdf/cold/normalized.json",
+      "sha256": "3fd3d7c6cc91d31912529bf5ca5ada4cf1896be942cd7e081c4c013c6bcf547c",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-008",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-008/pypdf/warm-1/normalized.json",
+      "sha256": "3fd3d7c6cc91d31912529bf5ca5ada4cf1896be942cd7e081c4c013c6bcf547c",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-008",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-008/pypdf/warm-2/normalized.json",
+      "sha256": "3fd3d7c6cc91d31912529bf5ca5ada4cf1896be942cd7e081c4c013c6bcf547c",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-008",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-008/pypdf/warm-3/normalized.json",
+      "sha256": "3fd3d7c6cc91d31912529bf5ca5ada4cf1896be942cd7e081c4c013c6bcf547c",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-009",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-009/pypdf/cold/normalized.json",
+      "sha256": "67d7c1ce34933f2dad59e8a7a9d6769a63187485a5de3ead1901e43834ba549a",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-009",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-009/pypdf/warm-1/normalized.json",
+      "sha256": "67d7c1ce34933f2dad59e8a7a9d6769a63187485a5de3ead1901e43834ba549a",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-009",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-009/pypdf/warm-2/normalized.json",
+      "sha256": "67d7c1ce34933f2dad59e8a7a9d6769a63187485a5de3ead1901e43834ba549a",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-009",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-009/pypdf/warm-3/normalized.json",
+      "sha256": "67d7c1ce34933f2dad59e8a7a9d6769a63187485a5de3ead1901e43834ba549a",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-010",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-010/pypdf/cold/normalized.json",
+      "sha256": "12c535060251d964008be302c5626f8e3c826e1284e8dc86e9cbeebf8b97c320",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-010",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-010/pypdf/warm-1/normalized.json",
+      "sha256": "12c535060251d964008be302c5626f8e3c826e1284e8dc86e9cbeebf8b97c320",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-010",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-010/pypdf/warm-2/normalized.json",
+      "sha256": "12c535060251d964008be302c5626f8e3c826e1284e8dc86e9cbeebf8b97c320",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-010",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-010/pypdf/warm-3/normalized.json",
+      "sha256": "12c535060251d964008be302c5626f8e3c826e1284e8dc86e9cbeebf8b97c320",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-011",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-011/pypdf/cold/normalized.json",
+      "sha256": "1e7b9978bc63d2f8e467d366e10e4bc082a78f8850cf0094d5c5c34e2225d484",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-011",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-011/pypdf/warm-1/normalized.json",
+      "sha256": "1e7b9978bc63d2f8e467d366e10e4bc082a78f8850cf0094d5c5c34e2225d484",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-011",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-011/pypdf/warm-2/normalized.json",
+      "sha256": "1e7b9978bc63d2f8e467d366e10e4bc082a78f8850cf0094d5c5c34e2225d484",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-011",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-011/pypdf/warm-3/normalized.json",
+      "sha256": "1e7b9978bc63d2f8e467d366e10e4bc082a78f8850cf0094d5c5c34e2225d484",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-012",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-012/pypdf/cold/normalized.json",
+      "sha256": "3f9fe84abf118220683935473fa28a4399574fafcefc691861067c64990ce8e6",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-012",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-012/pypdf/warm-1/normalized.json",
+      "sha256": "3f9fe84abf118220683935473fa28a4399574fafcefc691861067c64990ce8e6",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-012",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-012/pypdf/warm-2/normalized.json",
+      "sha256": "3f9fe84abf118220683935473fa28a4399574fafcefc691861067c64990ce8e6",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-012",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-012/pypdf/warm-3/normalized.json",
+      "sha256": "3f9fe84abf118220683935473fa28a4399574fafcefc691861067c64990ce8e6",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-013",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-013/pypdf/cold/normalized.json",
+      "sha256": "5408fea934fcced703e3aef1bbcea281067fe52b8532cf0f8c67b6eba40d9596",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-013",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-013/pypdf/warm-1/normalized.json",
+      "sha256": "5408fea934fcced703e3aef1bbcea281067fe52b8532cf0f8c67b6eba40d9596",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-013",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-013/pypdf/warm-2/normalized.json",
+      "sha256": "5408fea934fcced703e3aef1bbcea281067fe52b8532cf0f8c67b6eba40d9596",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-013",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-013/pypdf/warm-3/normalized.json",
+      "sha256": "5408fea934fcced703e3aef1bbcea281067fe52b8532cf0f8c67b6eba40d9596",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-014",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-014/pypdf/cold/normalized.json",
+      "sha256": "4ca090b83c28cec7d084f3da37b25751913cca071a0091fc350fe76e0a37338e",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-014",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-014/pypdf/warm-1/normalized.json",
+      "sha256": "4ca090b83c28cec7d084f3da37b25751913cca071a0091fc350fe76e0a37338e",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-014",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-014/pypdf/warm-2/normalized.json",
+      "sha256": "4ca090b83c28cec7d084f3da37b25751913cca071a0091fc350fe76e0a37338e",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-014",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-014/pypdf/warm-3/normalized.json",
+      "sha256": "4ca090b83c28cec7d084f3da37b25751913cca071a0091fc350fe76e0a37338e",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-015",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-015/pypdf/cold/normalized.json",
+      "sha256": "be6d2a7e70bd7312e55ae9a85bbe8fc48ec06ab9452901f5f36cade91656b5c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-015",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-015/pypdf/warm-1/normalized.json",
+      "sha256": "be6d2a7e70bd7312e55ae9a85bbe8fc48ec06ab9452901f5f36cade91656b5c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-015",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-015/pypdf/warm-2/normalized.json",
+      "sha256": "be6d2a7e70bd7312e55ae9a85bbe8fc48ec06ab9452901f5f36cade91656b5c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-015",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-015/pypdf/warm-3/normalized.json",
+      "sha256": "be6d2a7e70bd7312e55ae9a85bbe8fc48ec06ab9452901f5f36cade91656b5c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-016",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-016/pypdf/cold/normalized.json",
+      "sha256": "f5ab4c2e744cdb1155ac23563f4984713c9e2ca46691b2f0c92d8fc3654bd301",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-016",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-016/pypdf/warm-1/normalized.json",
+      "sha256": "f5ab4c2e744cdb1155ac23563f4984713c9e2ca46691b2f0c92d8fc3654bd301",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-016",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-016/pypdf/warm-2/normalized.json",
+      "sha256": "f5ab4c2e744cdb1155ac23563f4984713c9e2ca46691b2f0c92d8fc3654bd301",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-016",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-016/pypdf/warm-3/normalized.json",
+      "sha256": "f5ab4c2e744cdb1155ac23563f4984713c9e2ca46691b2f0c92d8fc3654bd301",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-017",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-017/pypdf/cold/normalized.json",
+      "sha256": "6016e7889905c604ab184fa9ab4cd356a2646873ce699909469c7f04fc3c7ecf",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-017",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-017/pypdf/warm-1/normalized.json",
+      "sha256": "6016e7889905c604ab184fa9ab4cd356a2646873ce699909469c7f04fc3c7ecf",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-017",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-017/pypdf/warm-2/normalized.json",
+      "sha256": "6016e7889905c604ab184fa9ab4cd356a2646873ce699909469c7f04fc3c7ecf",
+      "status": "completed"
+    },
+    {
+      "treatment": "pypdf",
+      "document_id": "pdf-017",
+      "path": "pypdf-baseline-2026-10-13-r2/pdf-017/pypdf/warm-3/normalized.json",
+      "sha256": "6016e7889905c604ab184fa9ab4cd356a2646873ce699909469c7f04fc3c7ecf",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-001/docling/cold/normalized.json",
+      "sha256": "8eb38f4dca5858083ec9f1100649d64166a785a4669c223de2038d1fc4c136de",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-001/docling/warm-1/normalized.json",
+      "sha256": "8eb38f4dca5858083ec9f1100649d64166a785a4669c223de2038d1fc4c136de",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-001/docling/warm-2/normalized.json",
+      "sha256": "8eb38f4dca5858083ec9f1100649d64166a785a4669c223de2038d1fc4c136de",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-001/docling/warm-3/normalized.json",
+      "sha256": "8eb38f4dca5858083ec9f1100649d64166a785a4669c223de2038d1fc4c136de",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-002/docling/cold/normalized.json",
+      "sha256": "64505ca68b2450fa18f4db4fd87e9907cbf4aa06f3d29ac8ce6b9040f8c38618",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-002/docling/warm-1/normalized.json",
+      "sha256": "64505ca68b2450fa18f4db4fd87e9907cbf4aa06f3d29ac8ce6b9040f8c38618",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-002/docling/warm-2/normalized.json",
+      "sha256": "64505ca68b2450fa18f4db4fd87e9907cbf4aa06f3d29ac8ce6b9040f8c38618",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-002/docling/warm-3/normalized.json",
+      "sha256": "64505ca68b2450fa18f4db4fd87e9907cbf4aa06f3d29ac8ce6b9040f8c38618",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-003/docling/cold/normalized.json",
+      "sha256": "21119ab37117d2adb21e571136b0aa3074080dcba569824abcd29b6d52fe73d3",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-003/docling/warm-1/normalized.json",
+      "sha256": "21119ab37117d2adb21e571136b0aa3074080dcba569824abcd29b6d52fe73d3",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-003/docling/warm-2/normalized.json",
+      "sha256": "21119ab37117d2adb21e571136b0aa3074080dcba569824abcd29b6d52fe73d3",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-003/docling/warm-3/normalized.json",
+      "sha256": "21119ab37117d2adb21e571136b0aa3074080dcba569824abcd29b6d52fe73d3",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-004/docling/cold/normalized.json",
+      "sha256": "33fad10f1e43e10be7becd9ea7085fa4ba6cdc2936983a2fa5c3dda028a3c822",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-004/docling/warm-1/normalized.json",
+      "sha256": "33fad10f1e43e10be7becd9ea7085fa4ba6cdc2936983a2fa5c3dda028a3c822",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-004/docling/warm-2/normalized.json",
+      "sha256": "33fad10f1e43e10be7becd9ea7085fa4ba6cdc2936983a2fa5c3dda028a3c822",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-004/docling/warm-3/normalized.json",
+      "sha256": "33fad10f1e43e10be7becd9ea7085fa4ba6cdc2936983a2fa5c3dda028a3c822",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-005/docling/cold/normalized.json",
+      "sha256": "99b5c02bb5cdc24ebfb8f31248a55e85545942d17eeabc500bf6e5b1a1b10847",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-005/docling/warm-1/normalized.json",
+      "sha256": "99b5c02bb5cdc24ebfb8f31248a55e85545942d17eeabc500bf6e5b1a1b10847",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-005/docling/warm-2/normalized.json",
+      "sha256": "99b5c02bb5cdc24ebfb8f31248a55e85545942d17eeabc500bf6e5b1a1b10847",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-005/docling/warm-3/normalized.json",
+      "sha256": "99b5c02bb5cdc24ebfb8f31248a55e85545942d17eeabc500bf6e5b1a1b10847",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-006",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-006/docling/cold/normalized.json",
+      "sha256": "9d2f175c92163a1633a16f8e803199d757a15a5b0840dae5782b2ad7375b4159",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-006",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-006/docling/warm-1/normalized.json",
+      "sha256": "9d2f175c92163a1633a16f8e803199d757a15a5b0840dae5782b2ad7375b4159",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-006",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-006/docling/warm-2/normalized.json",
+      "sha256": "9d2f175c92163a1633a16f8e803199d757a15a5b0840dae5782b2ad7375b4159",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-006",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-006/docling/warm-3/normalized.json",
+      "sha256": "9d2f175c92163a1633a16f8e803199d757a15a5b0840dae5782b2ad7375b4159",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-007/docling/cold/normalized.json",
+      "sha256": "da052ca2c6392a15cb2ee564b88f9f8d07da4ddffaa5b78ecf99c8b81182cfb5",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-007/docling/warm-1/normalized.json",
+      "sha256": "da052ca2c6392a15cb2ee564b88f9f8d07da4ddffaa5b78ecf99c8b81182cfb5",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-007/docling/warm-2/normalized.json",
+      "sha256": "da052ca2c6392a15cb2ee564b88f9f8d07da4ddffaa5b78ecf99c8b81182cfb5",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-007/docling/warm-3/normalized.json",
+      "sha256": "da052ca2c6392a15cb2ee564b88f9f8d07da4ddffaa5b78ecf99c8b81182cfb5",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-008/docling/cold/normalized.json",
+      "sha256": "20c2a820c58800f0486cc5136a234d101778a913341fc322e8ac3ca7881dae38",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-008/docling/warm-1/normalized.json",
+      "sha256": "20c2a820c58800f0486cc5136a234d101778a913341fc322e8ac3ca7881dae38",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-008/docling/warm-2/normalized.json",
+      "sha256": "20c2a820c58800f0486cc5136a234d101778a913341fc322e8ac3ca7881dae38",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-008/docling/warm-3/normalized.json",
+      "sha256": "20c2a820c58800f0486cc5136a234d101778a913341fc322e8ac3ca7881dae38",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-009/docling/cold/normalized.json",
+      "sha256": "c6149cb5b436ad7cc88dba199f844304cc466dc595340006bfb48aa6c8edb38b",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-009/docling/warm-1/normalized.json",
+      "sha256": "c6149cb5b436ad7cc88dba199f844304cc466dc595340006bfb48aa6c8edb38b",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-009/docling/warm-2/normalized.json",
+      "sha256": "c6149cb5b436ad7cc88dba199f844304cc466dc595340006bfb48aa6c8edb38b",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-009/docling/warm-3/normalized.json",
+      "sha256": "c6149cb5b436ad7cc88dba199f844304cc466dc595340006bfb48aa6c8edb38b",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-010/docling/cold/normalized.json",
+      "sha256": "3b84ff4163850d0f61f425159468b3942669c5fb492c42f0ced0b451ddaf299c",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-010/docling/warm-1/normalized.json",
+      "sha256": "3b84ff4163850d0f61f425159468b3942669c5fb492c42f0ced0b451ddaf299c",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-010/docling/warm-2/normalized.json",
+      "sha256": "3b84ff4163850d0f61f425159468b3942669c5fb492c42f0ced0b451ddaf299c",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-010/docling/warm-3/normalized.json",
+      "sha256": "3b84ff4163850d0f61f425159468b3942669c5fb492c42f0ced0b451ddaf299c",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-011/docling/cold/normalized.json",
+      "sha256": "08d87e54d07820f8970cb92f383d99da58acb5030cd9433c0a39f59680087b09",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-011/docling/warm-1/normalized.json",
+      "sha256": "08d87e54d07820f8970cb92f383d99da58acb5030cd9433c0a39f59680087b09",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-011/docling/warm-2/normalized.json",
+      "sha256": "08d87e54d07820f8970cb92f383d99da58acb5030cd9433c0a39f59680087b09",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-011/docling/warm-3/normalized.json",
+      "sha256": "08d87e54d07820f8970cb92f383d99da58acb5030cd9433c0a39f59680087b09",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-012/docling/cold/normalized.json",
+      "sha256": "89c41bea1c7299ea0a7b81cb0d986b4a75802125ad730d9ba9cc3d5e5b0392ba",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-012/docling/warm-1/normalized.json",
+      "sha256": "89c41bea1c7299ea0a7b81cb0d986b4a75802125ad730d9ba9cc3d5e5b0392ba",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-012/docling/warm-2/normalized.json",
+      "sha256": "89c41bea1c7299ea0a7b81cb0d986b4a75802125ad730d9ba9cc3d5e5b0392ba",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-012/docling/warm-3/normalized.json",
+      "sha256": "89c41bea1c7299ea0a7b81cb0d986b4a75802125ad730d9ba9cc3d5e5b0392ba",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-013/docling/cold/normalized.json",
+      "sha256": "081ec35c629d42f5a379607dbefc8e77ad01a011c70bb936a2061dbcf38bc7b7",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-013/docling/warm-1/normalized.json",
+      "sha256": "081ec35c629d42f5a379607dbefc8e77ad01a011c70bb936a2061dbcf38bc7b7",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-013/docling/warm-2/normalized.json",
+      "sha256": "081ec35c629d42f5a379607dbefc8e77ad01a011c70bb936a2061dbcf38bc7b7",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-013/docling/warm-3/normalized.json",
+      "sha256": "081ec35c629d42f5a379607dbefc8e77ad01a011c70bb936a2061dbcf38bc7b7",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-014/docling/cold/normalized.json",
+      "sha256": "9d6713db01cb55e0848aa19acef97a69c4360ad9b5806b3624bafd88477fef42",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-014/docling/warm-1/normalized.json",
+      "sha256": "9d6713db01cb55e0848aa19acef97a69c4360ad9b5806b3624bafd88477fef42",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-014/docling/warm-2/normalized.json",
+      "sha256": "9d6713db01cb55e0848aa19acef97a69c4360ad9b5806b3624bafd88477fef42",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-014/docling/warm-3/normalized.json",
+      "sha256": "9d6713db01cb55e0848aa19acef97a69c4360ad9b5806b3624bafd88477fef42",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-015/docling/cold/normalized.json",
+      "sha256": "9b69fd0fe28a922c27d5184bf1c82dc12b5704553caf997fa2054f4ba36487f8",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-015/docling/warm-1/normalized.json",
+      "sha256": "9b69fd0fe28a922c27d5184bf1c82dc12b5704553caf997fa2054f4ba36487f8",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-015/docling/warm-2/normalized.json",
+      "sha256": "9b69fd0fe28a922c27d5184bf1c82dc12b5704553caf997fa2054f4ba36487f8",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-015/docling/warm-3/normalized.json",
+      "sha256": "9b69fd0fe28a922c27d5184bf1c82dc12b5704553caf997fa2054f4ba36487f8",
+      "status": "partial"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-016",
+      "availability": "timeout",
+      "report_sha256": "ea9dd3f41e4aa3938dbc7d30db2df8a3cfcfef30b99708c673d6f79484fbc273"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-017/docling/cold/normalized.json",
+      "sha256": "3ab258a3433d80b318dea552806aa2fe67adb4a89dd7aa4fc03e4d3830e1c983",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-017/docling/warm-1/normalized.json",
+      "sha256": "3ab258a3433d80b318dea552806aa2fe67adb4a89dd7aa4fc03e4d3830e1c983",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-017/docling/warm-2/normalized.json",
+      "sha256": "3ab258a3433d80b318dea552806aa2fe67adb4a89dd7aa4fc03e4d3830e1c983",
+      "status": "completed"
+    },
+    {
+      "treatment": "no_ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-no-ocr-2026-10-13/pdf-017/docling/warm-3/normalized.json",
+      "sha256": "3ab258a3433d80b318dea552806aa2fe67adb4a89dd7aa4fc03e4d3830e1c983",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-001/docling/cold/normalized.json",
+      "sha256": "9cf34cb318fd2606a6f8f90765ee1ef8c6ae84654be6b4e3658a34b85ef83c81",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-001/docling/warm-1/normalized.json",
+      "sha256": "9cf34cb318fd2606a6f8f90765ee1ef8c6ae84654be6b4e3658a34b85ef83c81",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-001/docling/warm-2/normalized.json",
+      "sha256": "9cf34cb318fd2606a6f8f90765ee1ef8c6ae84654be6b4e3658a34b85ef83c81",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-001",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-001/docling/warm-3/normalized.json",
+      "sha256": "9cf34cb318fd2606a6f8f90765ee1ef8c6ae84654be6b4e3658a34b85ef83c81",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-002/docling/cold/normalized.json",
+      "sha256": "734275690c30ab1e0aaee19b60c50c98789be6ed333350e37565b8d3fdd3010a",
+      "status": "partial"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-002/docling/warm-1/normalized.json",
+      "sha256": "734275690c30ab1e0aaee19b60c50c98789be6ed333350e37565b8d3fdd3010a",
+      "status": "partial"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-002/docling/warm-2/normalized.json",
+      "sha256": "734275690c30ab1e0aaee19b60c50c98789be6ed333350e37565b8d3fdd3010a",
+      "status": "partial"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-002",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-002/docling/warm-3/normalized.json",
+      "sha256": "734275690c30ab1e0aaee19b60c50c98789be6ed333350e37565b8d3fdd3010a",
+      "status": "partial"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-003/docling/cold/normalized.json",
+      "sha256": "815d9f83ff6b12d7a48219a4e2ff5be96512ee1e0a7c1804f237b5c4b536fbe8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-003/docling/warm-1/normalized.json",
+      "sha256": "815d9f83ff6b12d7a48219a4e2ff5be96512ee1e0a7c1804f237b5c4b536fbe8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-003/docling/warm-2/normalized.json",
+      "sha256": "815d9f83ff6b12d7a48219a4e2ff5be96512ee1e0a7c1804f237b5c4b536fbe8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-003",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-003/docling/warm-3/normalized.json",
+      "sha256": "815d9f83ff6b12d7a48219a4e2ff5be96512ee1e0a7c1804f237b5c4b536fbe8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-004/docling/cold/normalized.json",
+      "sha256": "832b9b71a0d3a43e090125a916e8c1c46431e7ce4f8799df00f4d0b3e411e8a3",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-004/docling/warm-1/normalized.json",
+      "sha256": "832b9b71a0d3a43e090125a916e8c1c46431e7ce4f8799df00f4d0b3e411e8a3",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-004/docling/warm-2/normalized.json",
+      "sha256": "832b9b71a0d3a43e090125a916e8c1c46431e7ce4f8799df00f4d0b3e411e8a3",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-004",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-004/docling/warm-3/normalized.json",
+      "sha256": "832b9b71a0d3a43e090125a916e8c1c46431e7ce4f8799df00f4d0b3e411e8a3",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-005/docling/cold/normalized.json",
+      "sha256": "a37dbe2b5a95885b404852a38d518447e721288bef5582e84e5b5f40ff81700a",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-005/docling/warm-1/normalized.json",
+      "sha256": "a37dbe2b5a95885b404852a38d518447e721288bef5582e84e5b5f40ff81700a",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-005/docling/warm-2/normalized.json",
+      "sha256": "a37dbe2b5a95885b404852a38d518447e721288bef5582e84e5b5f40ff81700a",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-005",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-005/docling/warm-3/normalized.json",
+      "sha256": "a37dbe2b5a95885b404852a38d518447e721288bef5582e84e5b5f40ff81700a",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-006",
+      "availability": "timeout",
+      "report_sha256": "6c48557009e5dfe19bf2e7348efe3806f53d17d5744b0be81189c30d0afeca65"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-007/docling/cold/normalized.json",
+      "sha256": "28f160bd8de0fd45bffe6e28c13c5a3abb11956e02eb71e27dbb3268e16259c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-007/docling/warm-1/normalized.json",
+      "sha256": "28f160bd8de0fd45bffe6e28c13c5a3abb11956e02eb71e27dbb3268e16259c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-007/docling/warm-2/normalized.json",
+      "sha256": "28f160bd8de0fd45bffe6e28c13c5a3abb11956e02eb71e27dbb3268e16259c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-007",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-007/docling/warm-3/normalized.json",
+      "sha256": "28f160bd8de0fd45bffe6e28c13c5a3abb11956e02eb71e27dbb3268e16259c2",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-008/docling/cold/normalized.json",
+      "sha256": "1d4559b6cb57bb7c5411b2b7f80f6dd8bc238d9bd98d5f82264f942e1429f6c4",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-008/docling/warm-1/normalized.json",
+      "sha256": "1d4559b6cb57bb7c5411b2b7f80f6dd8bc238d9bd98d5f82264f942e1429f6c4",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-008/docling/warm-2/normalized.json",
+      "sha256": "1d4559b6cb57bb7c5411b2b7f80f6dd8bc238d9bd98d5f82264f942e1429f6c4",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-008",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-008/docling/warm-3/normalized.json",
+      "sha256": "1d4559b6cb57bb7c5411b2b7f80f6dd8bc238d9bd98d5f82264f942e1429f6c4",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-009/docling/cold/normalized.json",
+      "sha256": "7d429c0021955ec59a1d972806bd2c1f17a33594df5ba4efb18f32a03ad5eac8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-009/docling/warm-1/normalized.json",
+      "sha256": "7d429c0021955ec59a1d972806bd2c1f17a33594df5ba4efb18f32a03ad5eac8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-009/docling/warm-2/normalized.json",
+      "sha256": "7d429c0021955ec59a1d972806bd2c1f17a33594df5ba4efb18f32a03ad5eac8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-009",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-009/docling/warm-3/normalized.json",
+      "sha256": "7d429c0021955ec59a1d972806bd2c1f17a33594df5ba4efb18f32a03ad5eac8",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-010/docling/cold/normalized.json",
+      "sha256": "b4da60fef1795fe7c8ef1ea014942378a67b9468c3b482aedf27d0651a1ec054",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-010/docling/warm-1/normalized.json",
+      "sha256": "b4da60fef1795fe7c8ef1ea014942378a67b9468c3b482aedf27d0651a1ec054",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-010/docling/warm-2/normalized.json",
+      "sha256": "b4da60fef1795fe7c8ef1ea014942378a67b9468c3b482aedf27d0651a1ec054",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-010",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-010/docling/warm-3/normalized.json",
+      "sha256": "b4da60fef1795fe7c8ef1ea014942378a67b9468c3b482aedf27d0651a1ec054",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-011/docling/cold/normalized.json",
+      "sha256": "3eba5e1b8b24d2b760a4919828a0855e2638b63d4d45c619b3ff7cec46bb4b1c",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-011/docling/warm-1/normalized.json",
+      "sha256": "3eba5e1b8b24d2b760a4919828a0855e2638b63d4d45c619b3ff7cec46bb4b1c",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-011/docling/warm-2/normalized.json",
+      "sha256": "3eba5e1b8b24d2b760a4919828a0855e2638b63d4d45c619b3ff7cec46bb4b1c",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-011",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-011/docling/warm-3/normalized.json",
+      "sha256": "3eba5e1b8b24d2b760a4919828a0855e2638b63d4d45c619b3ff7cec46bb4b1c",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-012/docling/cold/normalized.json",
+      "sha256": "8ea4a75729822a7419c9a66c49bd7e7b7cff3d4dd1b899e21b685cab571b8a59",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-012/docling/warm-1/normalized.json",
+      "sha256": "8ea4a75729822a7419c9a66c49bd7e7b7cff3d4dd1b899e21b685cab571b8a59",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-012/docling/warm-2/normalized.json",
+      "sha256": "8ea4a75729822a7419c9a66c49bd7e7b7cff3d4dd1b899e21b685cab571b8a59",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-012",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-012/docling/warm-3/normalized.json",
+      "sha256": "8ea4a75729822a7419c9a66c49bd7e7b7cff3d4dd1b899e21b685cab571b8a59",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-013/docling/cold/normalized.json",
+      "sha256": "5d8656a119a4baea2cf7dfad1bbf5fc496aaeddfcff60720f30d318dcce78d34",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-013/docling/warm-1/normalized.json",
+      "sha256": "5d8656a119a4baea2cf7dfad1bbf5fc496aaeddfcff60720f30d318dcce78d34",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-013/docling/warm-2/normalized.json",
+      "sha256": "5d8656a119a4baea2cf7dfad1bbf5fc496aaeddfcff60720f30d318dcce78d34",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-013",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-013/docling/warm-3/normalized.json",
+      "sha256": "5d8656a119a4baea2cf7dfad1bbf5fc496aaeddfcff60720f30d318dcce78d34",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-014/docling/cold/normalized.json",
+      "sha256": "7e13cf560f841f581dfe1a5f060383e596a91de665c1c5596e963ead9f2f8e47",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-014/docling/warm-1/normalized.json",
+      "sha256": "7e13cf560f841f581dfe1a5f060383e596a91de665c1c5596e963ead9f2f8e47",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-014/docling/warm-2/normalized.json",
+      "sha256": "7e13cf560f841f581dfe1a5f060383e596a91de665c1c5596e963ead9f2f8e47",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-014",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-014/docling/warm-3/normalized.json",
+      "sha256": "7e13cf560f841f581dfe1a5f060383e596a91de665c1c5596e963ead9f2f8e47",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-015/docling/cold/normalized.json",
+      "sha256": "0b53b890392c17dfb6c1b32cf7b64d63c30c62b4b792d45d57ef1fcccc71c15d",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-015/docling/warm-1/normalized.json",
+      "sha256": "0b53b890392c17dfb6c1b32cf7b64d63c30c62b4b792d45d57ef1fcccc71c15d",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-015/docling/warm-2/normalized.json",
+      "sha256": "0b53b890392c17dfb6c1b32cf7b64d63c30c62b4b792d45d57ef1fcccc71c15d",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-015",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-015/docling/warm-3/normalized.json",
+      "sha256": "0b53b890392c17dfb6c1b32cf7b64d63c30c62b4b792d45d57ef1fcccc71c15d",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-016",
+      "availability": "timeout",
+      "report_sha256": "6c48557009e5dfe19bf2e7348efe3806f53d17d5744b0be81189c30d0afeca65"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-017/docling/cold/normalized.json",
+      "sha256": "a88e203f487a4d8226af75accec540b7f930d23dd452128b8261319723409520",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-017/docling/warm-1/normalized.json",
+      "sha256": "a88e203f487a4d8226af75accec540b7f930d23dd452128b8261319723409520",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-017/docling/warm-2/normalized.json",
+      "sha256": "a88e203f487a4d8226af75accec540b7f930d23dd452128b8261319723409520",
+      "status": "completed"
+    },
+    {
+      "treatment": "ocr",
+      "document_id": "pdf-017",
+      "path": "docling-pdfium-ocr-2026-10-13/pdf-017/docling/warm-3/normalized.json",
+      "sha256": "a88e203f487a4d8226af75accec540b7f930d23dd452128b8261319723409520",
+      "status": "completed"
+    }
+  ],
+  "limits": [
+    "Extraction-text coverage only; no answers/retrieval produced",
+    "No CER: references are selective evidence, not complete page transcripts",
+    "No whole-page/table/geometry/diagram-topology or aggregate RTL certification",
+    "Original treatments scored; separate pdf-008 policy fix not relabeled",
+    "Assistant qualitative grades are auditable and may need owner adjudication"
+  ]
+}

@@ -1,11 +1,16 @@
 # RAG PDF extraction experiment — Stage A design
 
 **Task:** RAG-A-02
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-14
 **Status:** G2 approved by the user on 2026-10-10; extraction-only tooling implemented
 and validated offline. Tesseract and PDFium G2 revisions were approved on 2026-10-13; smoke and both frozen-corpus treatments are complete, with 124 available outputs audited. Separate telemetry validation addresses exact text export and export-time clamping warnings. Source-reviewed regressions prevent a universal default switch; see the [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md).
 
 ## Approved decision
+
+**Fidelity follow-up:** [Original-case review and adapter correction](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md)
+completed on 2026-10-14. Existing picture-child text is now retained by normalization
+v4; saved-export replay is separate from model execution. Glyph/table/RTL/resource
+limitations remain and pypdf stays the production default.
 
 User approved the extraction-only adapter boundary and comparison command for Stage B.
 Use internal normalized results, a pypdf baseline and a lazily imported Docling

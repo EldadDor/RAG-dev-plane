@@ -1,5 +1,9 @@
 # Paired PDFium no-OCR / Hebrew-English OCR comparison
 
+**Follow-up 2026-10-14:** [Original-case scorecard and picture-child correction](EXTRACTION_SCORECARD.md).
+The counts below remain the original execution evidence. The new adapter policy
+was checked by saved-export replay, not by rerunning or relabeling these treatments.
+
 **Task:** RAG-B-OCR
 **Last reviewed:** 2026-10-13
 **Status:** Both original PDFium corpus treatments and paired integrity audit completed: no-OCR 13 complete / 3 partial / 1 timeout; OCR 14 complete / 1 partial / 2 timeouts. All 124 available outputs are stable and integrity-checked. Eight separately identified telemetry passes verify the final export/provenance fixes; keep pypdf as production default.
