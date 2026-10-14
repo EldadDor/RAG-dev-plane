@@ -1,6 +1,6 @@
 # Next Frontend Phases
 
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-14
 **Status:** Candidates only; activate a selected item through G1.
 
 | Order | Phase | Objective | Key dependency |
