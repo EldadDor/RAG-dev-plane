@@ -1,19 +1,21 @@
 # Historical preparation retirement proposal
 
-**State:** Review only; no files moved to archive or deleted.
-**Owner decision:** Choose the exact files below before archival.
+**State:** Completed — all 19 listed files archived on 2026-10-14.
+**Owner decision:** User explicitly approved this exact list.
+**Verification:** All destination SHA-256 values matched originals; sources are absent.
+See [retirement audit](retirement-validation.json) for exact destinations and hashes.
 
 The runnable release is corpus.relocated.json with golden-cases/*.jsonl and
 PDFs/*.pdf. START_HERE identifies corpus.draft.json as historical; its original
 worksheet instructions are completed. Approved submissions in worksheets-done/
 and the reference-review provenance are retained.
 
-Propose archiving these 19 files, preserving their relative paths under
+Archived these 19 files, preserving their relative paths under
 docs/archive/evaluation/pdf_parsers/corpus/. The two draft files are superseded
 by the frozen release/current inventory; blank preparation worksheets have been
-superseded by approved submissions. Before moving, replace START_HERE's live
-draft references with this retirement record and check the selected destinations
-for collisions. No external storage or deletion is proposed.
+superseded by approved submissions. START_HERE now points to this retirement
+record; all selected destinations were checked for collisions before moving.
+No files were deleted or placed in external storage.
 
 - corpus.draft.json
 - inventory.draft.json

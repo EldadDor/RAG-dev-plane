@@ -4,7 +4,7 @@
 
 Use [corpus.relocated.json](corpus.relocated.json) with the comparison runner. See [validation and exclusions](GOLDEN_CASES_VALIDATION.md), [recorded human approval](HUMAN_APPROVAL.md), and [machine validation](golden-cases-validation.json). The dataset passed the actual comparison loader; all 17 PDFs retain their original source hashes.
 
-`corpus.draft.json` and `reference-review-2026-10-11` are historical drafts. The current `golden-cases/*.jsonl` files are populated, frozen and hashed. The user explicitly chose to copy, commit and push the source corpus and review artifacts in this repository; extraction run outputs remain outside Git.
+The original preparation drafts and blank worksheets were [archived with owner approval](RETIREMENT_PROPOSAL.md). `reference-review-2026-10-11` remains historical review evidence. The current `golden-cases/*.jsonl` files are populated, frozen and hashed. The user explicitly chose to copy, commit and push the source corpus and review artifacts in this repository; extraction run outputs remain outside Git.
 
 ## Original worksheet instructions (completed)
 
@@ -41,7 +41,7 @@ All 17 PDFs opened successfully; they contain 313 pages. Source-byte hashes and 
 
 The corpus includes English, Hebrew, mixed Hebrew/English, tables, diagrams, columns and an image-only document for OCR. A confirmed document mixing scanned and selectable-text pages has not been established. Malformed/encrypted fixtures remain separate from these real files.
 
-`corpus.draft.json` is retained for preparation traceability. It is not the executable manifest. Use the frozen manifest linked above.
+Preparation traceability is retained in the [retirement record](RETIREMENT_PROPOSAL.md). Use the relocated manifest linked above for current runs.
 
 ## What follows your golden cases
 

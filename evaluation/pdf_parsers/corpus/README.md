@@ -11,11 +11,11 @@ locations and adds relocation provenance; the question set needs no new approval
 
 | Need | Entry point |
 | --- | --- |
-| Current result and remaining fidelity work | [PDFium comparison](PDFIUM_COMPARISON.md) |
+| Current result and remaining fidelity work | [Original case review and adapter correction](EXTRACTION_SCORECARD.md), [PDFium execution](PDFIUM_COMPARISON.md) |
 | Approved reference release | [Case validation](GOLDEN_CASES_VALIDATION.md), [approval](HUMAN_APPROVAL.md) |
 | Parser commands and budgets | [Runner protocol](../README.md) |
 | Move verification and original/derived hashes | [Relocation audit](relocation-validation.json) |
-| Proposed historical cleanup | [Retirement proposal](RETIREMENT_PROPOSAL.md) |
+| Completed historical cleanup | [Retirement record](RETIREMENT_PROPOSAL.md), [archive audit](retirement-validation.json) |
 
 `PDFs/`, `golden-cases/` and `worksheets-done/` hold sources, scored references
 and approved submissions. Read only the document/case needed for the task.
@@ -26,7 +26,9 @@ Use the derived manifest above for current commands.
 
 The 229 original files were hashed before and after the move. Navigation edits
 affect START_HERE, two design/preparation documents and Git attributes; the audit
-records each original/current hash. The original frozen manifest, all PDFs,
+records each original/current hash at relocation. The later retirement audit
+locates the 19 archived drafts/templates; START_HERE subsequently received navigation edits.
+The original frozen manifest, all PDFs,
 references, worksheets and machine evidence remain byte-identical.
 
 On another checkout, regenerate location fields from the original snapshot rather

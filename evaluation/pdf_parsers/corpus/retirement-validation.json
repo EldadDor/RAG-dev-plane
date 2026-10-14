@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-14",
+  "approval": "User approved exact 19-file proposal",
+  "files": [
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\corpus.draft.json",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\corpus.draft.json",
+      "sha256": "f51cd613e2587a7d0a37fbf98fb1790b7333c806260ff0bc3e8504c10470e56c"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\inventory.draft.json",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\inventory.draft.json",
+      "sha256": "369e215c14f86c125014d54b8bc9e978890e42da8f12ac5a537cb287a91a2efc"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-001.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-001.md",
+      "sha256": "8b099400de022e7f8440e54fe795b05fc1a709476afda9e3fa08a10df0e9375f"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-002.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-002.md",
+      "sha256": "8b7d12a8543d5d6d0887854181c5d4d384900485e7ed18e3a80c52dbdb9527cd"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-003.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-003.md",
+      "sha256": "97eebee205c3746e671f12678ff99f4f49f56bd2b0199e7033786eefa804a069"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-004.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-004.md",
+      "sha256": "7015be2b78c49c52e88230b67727c2c8a0a84a4b81c8ab5d91e5fc327a722f3f"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-005.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-005.md",
+      "sha256": "56fec4993d4efd19e5fa8f9e96707299312b552b4348500db150ea5ccbad8566"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-006.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-006.md",
+      "sha256": "e291368e1c0d11efcbe8405f8acfc4ea3f7a68cd47dfe61be1f94344f7a883f4"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-007.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-007.md",
+      "sha256": "a613e0bcc2445b1e0fb871dce2aea29b26e71f90058b49afc8729aead64e29b6"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-008.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-008.md",
+      "sha256": "5b9354dd4c312ca3ab188678c4bd7279ea1f8aadbbd2ccc147196075c25c9a4f"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-009.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-009.md",
+      "sha256": "eac55482271a6312a220f991904c891d922716eff16c7db3bdcf8b60be43743b"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-010.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-010.md",
+      "sha256": "1b36a85b6513f406ebfe7bf5d87e0de881cef074cbfdc959eddbbde24dbda17e"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-011.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-011.md",
+      "sha256": "5f0c051274d21b6df02ca33fb70d4a5b2a8bed37da1983186d3737a286f3baac"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-012.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-012.md",
+      "sha256": "c85961ef3478fadbbe71d3cb13641c786a7d76a54ad3a59f0d5264f97bd1a1ed"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-013.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-013.md",
+      "sha256": "e90e1801cfe097a7f8ae09e197f230a708b2caa16ea4ddfdece9861e73c41bfe"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-014.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-014.md",
+      "sha256": "ec4fc7b2ded06ca8afb9a6462ba7b6a2dbe5871743d5af3fed366bd43a731f27"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-015.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-015.md",
+      "sha256": "55d1b4f2b521c33e7ef7f771eba7db2d5c8c16922cff58acdd2ccf2d18e5ed7a"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-016.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-016.md",
+      "sha256": "168de08c7b5e3d0ba5921d04c8cd1dcfb564aa07476da246771d929f6163dd78"
+    },
+    {
+      "source": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-017.md",
+      "destination": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\docs\\archive\\evaluation\\pdf_parsers\\corpus\\worksheets\\pdf-017.md",
+      "sha256": "e97175fcd8c1d5c9d37eb03819dd088c4516d7402ec8a8830d87b58e3bf4fa40"
+    }
+  ]
+}
