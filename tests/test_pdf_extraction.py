@@ -179,20 +179,26 @@ def fake_conversion(*, status="success", missing_image=False, missing_page=False
     return SimpleNamespace(status=status, document=doc, errors=[])
 
 
-def test_docling_mapping_preserves_tables_locations_and_assets_and_reuses_converter(tmp_path):
+@pytest.mark.parametrize("table_label", ["table", "document_index"])
+def test_docling_mapping_preserves_tables_locations_and_assets_and_reuses_converter(tmp_path, table_label):
     source = pdf(tmp_path / "source.pdf")
     calls = []
 
     def convert(stream, **kwargs):
         calls.append(stream.read())
         assert kwargs == {"raises_on_error": False, "max_num_pages": 200, "max_file_size": 50 * 1024 * 1024}
-        return fake_conversion()
+        converted = fake_conversion()
+        table = list(converted.document.iterate_items())[1][0]
+        table.label = table_label
+        return converted
 
     options = ExtractionOptions()
     adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=convert), versions={"docling": "fake"})
     result = adapter.extract(source, options)
     assert result.status == "completed"
     assert result.blocks[1].pages == [1, 2]
+    assert result.blocks[1].kind == "table" and result.blocks[1].payload["label"] == table_label
+    assert result.blocks[1].source_text == "| Value |\n| -12.50 USD |"
     assert result.blocks[1].payload["table"]["table_cells"][0]["text"] == "-12.50 USD"
     assert result.blocks[1].heading_path == ["דוח"]
     assert result.blocks[1].boxes[0].top == 20
@@ -220,6 +226,8 @@ def test_docling_picture_children_retain_searchable_facts_with_provenance(tmp_pa
     child = SimpleNamespace(
         label="text", text="1 קובייה עבור הגרסה למתחילים", self_ref="#/texts/child",
         prov=parents[-1][0].prov,
+        parent=SimpleNamespace(cref=parents[-1][0].self_ref,
+                               resolve=lambda **kwargs: parents[-1][0]),
     )
     visits = []
 
@@ -238,14 +246,58 @@ def test_docling_picture_children_retain_searchable_facts_with_provenance(tmp_pa
     children = [b for b in result.blocks if b.payload["source_ref"] == child.self_ref]
     assert len(children) == 1
     assert children[0].pages == [2] and children[0].boxes[0].page == 2
+    assert children[0].payload["picture_parent_ref"] == parents[-1][0].self_ref
+    assert children[0].payload["picture_parent_block_id"] == result.assets[0].block_id
+    assert "picture_parent_ref" not in result.blocks[0].payload
     assert result.assembled_text[children[0].start:children[0].end] == child.text
     assert result.assets[0].block_id == result.blocks[2].block_id
     legacy_identity = adapter.identity.replace(
-        "picture_children_export_clamp_pages_without_boxes_v4", "export_clamp_pages_without_boxes_v3"
+        "picture_parent_document_index_export_clamp_pages_without_boxes_v5",
+        "picture_children_export_clamp_pages_without_boxes_v4"
     )
     assert all(b.block_id != block_id(result.source_sha256, legacy_identity, b.ordinal)
                for b in result.blocks)
     result.validate()
+
+
+def test_docling_picture_association_uses_nearest_picture_through_groups(tmp_path):
+    converted = fake_conversion()
+    items = list(converted.document.iterate_items())
+    outer = items[-1][0]
+    inner = SimpleNamespace(**vars(outer))
+    inner.self_ref = "#/pictures/inner"
+    inner.parent = SimpleNamespace(cref=outer.self_ref, resolve=lambda **kwargs: outer)
+    group = SimpleNamespace(self_ref="#/groups/inner", label="list",
+                            parent=SimpleNamespace(cref=inner.self_ref, resolve=lambda **kwargs: inner))
+    child = SimpleNamespace(label="text", text="Graph label", self_ref="#/texts/inner",
+                            prov=inner.prov,
+                            parent=SimpleNamespace(cref=group.self_ref, resolve=lambda **kwargs: group))
+    converted.document.iterate_items = lambda **kwargs: iter(items + [(inner, 2), (child, 4)])
+    options = ExtractionOptions()
+    adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=lambda *a, **k: converted),
+                             versions={"docling": "fake"})
+    result = adapter.extract(pdf(tmp_path / "source.pdf"), options)
+    assert result.blocks[-1].payload["picture_parent_ref"] == inner.self_ref
+    assert result.blocks[-1].payload["picture_parent_block_id"] == result.blocks[-2].block_id
+    assert result.blocks[-2].payload["picture_parent_block_id"] == result.blocks[-3].block_id
+
+
+@pytest.mark.parametrize("defect", ["cycle", "unresolved", "omitted_picture"])
+def test_docling_rejects_invalid_picture_parent_associations(tmp_path, defect):
+    converted = fake_conversion()
+    items = list(converted.document.iterate_items())
+    picture = items[-1][0]
+    child = SimpleNamespace(label="text", text="Label", self_ref="#/texts/child", prov=picture.prov)
+    target = child if defect == "cycle" else None if defect == "unresolved" else picture
+    child.parent = SimpleNamespace(cref=child.self_ref if defect == "cycle" else picture.self_ref,
+                                   resolve=lambda **kwargs: target)
+    visits = items[:-1] if defect == "omitted_picture" else items
+    converted.document.iterate_items = lambda **kwargs: iter(visits + [(child, 2)])
+    options = ExtractionOptions()
+    adapter = DoclingAdapter(options, converter=SimpleNamespace(convert=lambda *a, **k: converted),
+                             versions={"docling": "fake"})
+    with pytest.raises(ExtractionError, match="parent"):
+        adapter.extract(pdf(tmp_path / "source.pdf"), options)
 
 
 @pytest.mark.parametrize("stage", ["conversion", "export"])
@@ -300,7 +352,7 @@ def test_docling_invalid_upstream_box_retains_text_as_explicit_partial(tmp_path,
     assert result.blocks[1].boxes  # Valid provenance for other blocks is retained.
     assert any("invalid box on page 1" in warning for warning in result.warnings)
     assert result.raw is upstream_raw
-    assert result.settings["normalization_policy"] == "picture_children_export_clamp_pages_without_boxes_v4"
+    assert result.settings["normalization_policy"] == "picture_parent_document_index_export_clamp_pages_without_boxes_v5"
     result.normalized("fixture")  # Partial output still meets strict normalized-box validation.
 
 

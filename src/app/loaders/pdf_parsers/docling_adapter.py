@@ -107,7 +107,7 @@ class DoclingAdapter:
             self.converter, pipeline_settings = converter, {"test_converter": True}
         self.versions = versions if versions is not None else _versions()
         self.settings = {"options": asdict(options), "effective_pipeline": pipeline_settings,
-                         "normalization_policy": "picture_children_export_clamp_pages_without_boxes_v4"}
+                         "normalization_policy": "picture_parent_document_index_export_clamp_pages_without_boxes_v5"}
         self.identity = json.dumps({"versions": self.versions, "settings": self.settings}, sort_keys=True)
 
     def extract(self, path: Path, options: ExtractionOptions) -> ExtractionResult:
@@ -162,7 +162,8 @@ class DoclingAdapter:
         # Docling's default iterator visits captions but skips those other children.
         for item, depth in document.iterate_items(traverse_pictures=True):
             label = getattr(item.label, "value", item.label)
-            kind = {"table": "table", "picture": "image", "formula": "equation"}.get(label, "text")
+            kind = {"table": "table", "document_index": "table", "picture": "image",
+                    "formula": "equation"}.get(label, "text")
             if label in {"section_header", "title"}:
                 heading_level = getattr(item, "level", depth)
                 headings = [(level, text) for level, text in headings if level < heading_level]
@@ -175,6 +176,22 @@ class DoclingAdapter:
                 heading_path=[text for _, text in headings],
                 payload={"source_ref": item.self_ref, "label": label},
             )
+            ancestor = item
+            seen = {item.self_ref}
+            while parent := getattr(ancestor, "parent", None):
+                if parent.cref in seen:
+                    raise ExtractionError(f"Cyclic Docling parent reference: {parent.cref}")
+                seen.add(parent.cref)
+                try:
+                    ancestor = parent.resolve(doc=document)
+                except (AttributeError, IndexError, KeyError, ValueError) as exc:
+                    raise ExtractionError(f"Unresolved Docling parent reference: {parent.cref}") from exc
+                if ancestor is None:
+                    raise ExtractionError(f"Unresolved Docling parent reference: {parent.cref}")
+                ancestor_label = getattr(ancestor, "label", None)
+                if getattr(ancestor_label, "value", ancestor_label) == "picture":
+                    block.payload["picture_parent_ref"] = ancestor.self_ref
+                    break
             if not block.pages:
                 warnings.append(f"Block {ordinal} has no page provenance")
                 normalized_status = "partial" if normalized_status == "completed" else normalized_status
@@ -221,6 +238,13 @@ class DoclingAdapter:
                     block.asset_anchor = f"{block.block_id}:{hashlib.sha256(data).hexdigest()}"
                     assets.append(ExtractedAsset(block.asset_anchor, block.block_id, data))
             blocks.append(block)
+        by_ref = {block.payload["source_ref"]: block for block in blocks}
+        for block in blocks:
+            if parent_ref := block.payload.get("picture_parent_ref"):
+                parent_block = by_ref.get(parent_ref)
+                if parent_block is None or parent_block.kind != "image":
+                    raise ExtractionError(f"Picture parent missing from normalized blocks: {parent_ref}")
+                block.payload["picture_parent_block_id"] = parent_block.block_id
         result = ExtractionResult(
             source_sha256=sha256, page_count=page_count, engine="docling",
             versions=self.versions, settings=self.settings, blocks=blocks,

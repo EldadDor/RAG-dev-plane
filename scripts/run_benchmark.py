@@ -23,15 +23,21 @@ async def main() -> None:
     parser.add_argument("--output", required=True, help="Path for the JSON result artifact")
     parser.add_argument("--api-url", default="http://localhost:8000", help="Running API base URL")
     parser.add_argument("--workspace-id", default=None)
+    parser.add_argument("--model-profile", default=None)
+    parser.add_argument("--chunking-profile", default=None)
     parser.add_argument("--top-k", type=int, default=5)
     args = parser.parse_args()
+    if Path(args.output).exists():
+        parser.error("Refusing to overwrite an existing benchmark artifact")
 
     cases = load_golden_cases(args.dataset)
     async with httpx.AsyncClient(base_url=args.api_url, timeout=120) as http_client:
-        api = LiveApiBenchmarkClient(http_client, workspace_id=args.workspace_id)
+        api = LiveApiBenchmarkClient(http_client, workspace_id=args.workspace_id,
+                                     model_profile=args.model_profile, chunking_profile=args.chunking_profile)
         report = await BenchmarkRunner(api, api.answer_function(args.top_k)).run(
             cases,
-            configuration={"api_url": args.api_url, "workspace_id": args.workspace_id},
+            configuration={"api_url": args.api_url, "workspace_id": args.workspace_id,
+                           "model_profile": args.model_profile, "chunking_profile": args.chunking_profile},
             top_k=args.top_k,
         )
     output = write_report(report, args.output)

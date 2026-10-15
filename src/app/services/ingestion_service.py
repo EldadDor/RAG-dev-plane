@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 import hashlib
+from importlib.metadata import PackageNotFoundError, version
 import json
 from pathlib import Path
 from typing import Any
@@ -13,6 +15,7 @@ from app.chunkers.kotlin_code_chunker import chunk_kotlin_document
 from app.chunkers.powerpoint_chunker import chunk_powerpoint_document
 from app.domain.models import Document, IngestedChunk, IngestedDocumentResult, IngestionResult, SourceType
 from app.loaders.registry import UnsupportedFileTypeError, load_directory, load_document
+from app.loaders.prepared_pdf_loader import canonical_hash, pdf_asset_chunk_indexes, pdf_chunk_provenance
 from app.config import Settings
 from app.services.repository_metadata import get_repository_metadata
 from app.chunkers.ids import make_doc_id
@@ -35,10 +38,12 @@ class IngestionService:
             asset_store: AssetStore | None = None,
             model_profile_store: ModelProfileStore | None = None,
             embedding_cache: EmbeddingCache | None = None,
+            document_loader: Callable[[str], Document] | None = None,
     ) -> None:
         self._settings = settings
         self._embedding_client = embedding_client
         self._vector_store = vector_store
+        self._document_loader = document_loader
         self._asset_store = asset_store or InMemoryAssetStore()
         self._model_profile_store = model_profile_store
         self._embedding_cache = embedding_cache
@@ -78,8 +83,10 @@ class IngestionService:
                 storage_key, asset.anchor_id, asset.alt_text, asset.caption,
             ], ensure_ascii=False).encode("utf-8")).hexdigest()
 
-            related_index: int | None = None
-            if valid_chunks:
+            related_indexes: list[int] = []
+            if document.metadata.get("_pdf_blocks") is not None:
+                related_indexes = pdf_asset_chunk_indexes(document, asset, valid_chunks)
+            elif valid_chunks:
                 source_index = asset.source_index if asset.source_index is not None else 0
                 containing = [
                     chunk_index
@@ -89,19 +96,16 @@ class IngestionService:
                     and chunk.start_index <= source_index <= chunk.end_index
                 ]
                 if containing:
-                    related_index = containing[0]
+                    related_indexes = [containing[0]]
                 else:
-                    related_index = min(
+                    related_indexes = [min(
                         valid_chunks,
                         key=lambda item: abs((item[1].start_index or 0) - source_index),
-                    )[0]
+                    )[0]]
+            for related_index in related_indexes:
                 chunk_assets.setdefault(related_index, []).append(asset_id)
 
-            related_chunk_ids = (
-                [self._chunk_id(document.doc_id, profile_name, related_index)]
-                if related_index is not None
-                else []
-            )
+            related_chunk_ids = [self._chunk_id(document.doc_id, profile_name, i) for i in related_indexes]
             records.append(
                 {
                     "asset_id": asset_id,
@@ -163,11 +167,13 @@ class IngestionService:
         protected_doc_ids: list[str] = []
 
         if path.is_dir():
-            documents, skipped = load_directory(source_path, recursive=recursive)
+            documents, skipped = load_directory(source_path, recursive=recursive,
+                                                 **({"document_loader": self._document_loader}
+                                                    if self._document_loader is not None else {}))
             protected_doc_ids = [make_doc_id(item["path"]) for item in skipped]
         else:
             try:
-                documents = [load_document(source_path)]
+                documents = [(self._document_loader or load_document)(source_path)]
             except UnsupportedFileTypeError as exc:
                 raise ValueError(str(exc)) from exc
         repository_context = get_repository_metadata(str(path if path.is_dir() else path.parent))
@@ -208,6 +214,32 @@ class IngestionService:
             total_documents += 1
             present_doc_ids.append(document.doc_id)
             text = (document.content or "").strip()
+            document_metadata = {k: v for k, v in document.metadata.items() if k != "_pdf_blocks"}
+            if document.metadata.get("_pdf_blocks") is not None:
+                extraction_identity = document.metadata["extraction_fingerprint"]
+                chunker_packages = ("langchain-text-splitters", "langchain-core") if profile.provider.lower() in {
+                    "default", "langchain", "recursive-character"} else ("chonkie", "tokenizers", "tiktoken")
+                chunker_versions = {}
+                for package in chunker_packages:
+                    try:
+                        chunker_versions[package] = version(package)
+                    except PackageNotFoundError:
+                        chunker_versions[package] = None
+                processing_fingerprint = canonical_hash({
+                    "extraction": extraction_identity,
+                    "chunker": profile.model_dump(mode="json"),
+                    "chunker_package_versions": chunker_versions,
+                    "chunker_implementation_sha256": hashlib.sha256(
+                        Path(__file__).parents[1].joinpath("chunkers/chunker_adapter.py").read_bytes()
+                    ).hexdigest(),
+                    "publication_policy": "prepared_pdf_provenance_v1",
+                    "publication_implementation_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                    "mapping_implementation_sha256": hashlib.sha256(
+                        Path(__file__).parents[1].joinpath("loaders/prepared_pdf_loader.py").read_bytes()
+                    ).hexdigest(),
+                })
+                document.content_hash = processing_fingerprint
+                document_metadata["processing_fingerprint"] = processing_fingerprint
             content_hash = document.content_hash or hashlib.sha256(text.encode("utf-8")).hexdigest()
             if not dry_run and await vector_store.get_document_hash(document.doc_id, workspace_id, profile_name) == content_hash:
                 document_results.append(IngestedDocumentResult(
@@ -229,7 +261,7 @@ class IngestionService:
                         "source_type": document.source_type.value,
                         "title": document.title,
                         "content_hash": content_hash,
-                        "metadata": {**document.metadata, **repository_context},
+                        "metadata": {**document_metadata, **repository_context},
                     }, [], assets)
                 document_results.append(IngestedDocumentResult(
                     doc_id=document.doc_id, source_path=document.source_path, chunks_indexed=0,
@@ -270,7 +302,7 @@ class IngestionService:
                         "chunking_profile": profile_name, "root_path": root_path,
                         "source_path": document.source_path, "source_type": document.source_type.value,
                         "title": document.title, "content_hash": content_hash,
-                        "metadata": {**document.metadata, **repository_metadata},
+                        "metadata": {**document_metadata, **repository_metadata},
                     }, [], assets)
                 document_results.append(
                     IngestedDocumentResult(
@@ -309,6 +341,7 @@ class IngestionService:
             document_chunks: list[IngestedChunk] = []
             for (chunk_index, chunk), embedding in zip(valid_chunks, embeddings):
                 chunk_text = chunk.text.strip()
+                pdf_provenance = pdf_chunk_provenance(document, chunk.start_index, chunk.end_index)
                 document_chunks.append(
                     IngestedChunk(
                         doc_id=document.doc_id,
@@ -317,10 +350,10 @@ class IngestionService:
                         embedding=embedding,
                         source_path=document.source_path,
                         title=document.title,
-                        page=document.metadata.get("page"),
+                        page=pdf_provenance.get("page", document.metadata.get("page")),
                         section=document.metadata.get("section"),
                         metadata={
-                            **document.metadata,
+                            **document_metadata,
                             **repository_metadata,
                             "workspace_id": workspace_id,
                             "chunking_profile": profile_name,
@@ -339,6 +372,7 @@ class IngestionService:
                             ],
                             **(chunk.metadata or {}),
                             "chunker_metadata": chunk.metadata or {},
+                            **pdf_provenance,
                         },
                     )
                 )
@@ -352,7 +386,7 @@ class IngestionService:
                     "source_type": document.source_type.value,
                     "title": document.title,
                     "content_hash": content_hash,
-                    "metadata": {**document.metadata, **repository_metadata},
+                    "metadata": {**document_metadata, **repository_metadata},
                 },
                 [chunk.to_dict() for chunk in document_chunks],
                 assets,

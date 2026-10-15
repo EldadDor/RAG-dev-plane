@@ -1,0 +1,621 @@
+{
+  "format_version": 1,
+  "reviewed": "2026-10-15",
+  "task": "RAG-C-01",
+  "treatments": {
+    "pypdf": {
+      "workspace_id": "rag-stage-c-pypdf-20261015",
+      "documents_total": 17,
+      "documents_publishable": 17,
+      "documents_indexed": 17,
+      "chunks_indexed": 809,
+      "positive_cases_available": 42,
+      "all_reference_cases": 47,
+      "extraction_counts": {
+        "completed": 17
+      },
+      "extraction_exclusions": [],
+      "ingestion_failures": [],
+      "peak_job_commit_bytes": 0,
+      "actual_models": [
+        [
+          "dictalm2.0-instruct",
+          "bge-m3:latest",
+          "ollama"
+        ]
+      ],
+      "unique_answer_sessions": 42,
+      "returned_citations": 210,
+      "metrics": {
+        "cases": 42,
+        "metrics": {
+          "context_precision": 0.8,
+          "context_recall": 0.9285714285714286,
+          "source_mrr": 0.9166666666666666,
+          "answer_relevance": 0.5696494248983007,
+          "faithfulness": 0.5116679196402862
+        },
+        "source_hits": 39,
+        "stable_retrieval": 42,
+        "failures": [],
+        "median_two_request_latency_ms": 16389.41820000764
+      }
+    },
+    "noocr": {
+      "workspace_id": "rag-stage-c-docling-noocr-20261015",
+      "documents_total": 17,
+      "documents_publishable": 11,
+      "documents_indexed": 11,
+      "chunks_indexed": 432,
+      "positive_cases_available": 28,
+      "all_reference_cases": 47,
+      "extraction_counts": {
+        "completed": 11,
+        "partial": 4,
+        "failed": 2
+      },
+      "extraction_exclusions": [
+        {
+          "document_id": "pdf-002",
+          "status": "partial",
+          "error": null,
+          "runs": [
+            {
+              "run": "cold",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-1",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-2",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-3",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-006",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": []
+        },
+        {
+          "document_id": "pdf-008",
+          "status": "partial",
+          "error": null,
+          "runs": [
+            {
+              "run": "cold",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-1",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-2",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-3",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-010",
+          "status": "partial",
+          "error": null,
+          "runs": [
+            {
+              "run": "cold",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-1",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-2",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-3",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-015",
+          "status": "partial",
+          "error": null,
+          "runs": [
+            {
+              "run": "cold",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-1",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-2",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            },
+            {
+              "run": "warm-3",
+              "status": "partial",
+              "unsupported": [
+                "ocr_disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-016",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": []
+        }
+      ],
+      "ingestion_failures": [
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\9rules.pdf",
+          "reason": "Extraction not publishable: partial",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\gurkan03tableschairs.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\imc_telemetry-solutions_EN-201810_WEB.pdf",
+          "reason": "Extraction not publishable: partial",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\phillippine_weather_PAGASA.pdf",
+          "reason": "Extraction not publishable: partial",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\Technion_programing_casino.pdf",
+          "reason": "Extraction not publishable: partial",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\חוברת חקלאות מוגבר-חגית חלד.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        }
+      ],
+      "peak_job_commit_bytes": 0,
+      "actual_models": [
+        [
+          "dictalm2.0-instruct",
+          "bge-m3:latest",
+          "ollama"
+        ]
+      ],
+      "unique_answer_sessions": 28,
+      "returned_citations": 140,
+      "metrics": {
+        "cases": 28,
+        "metrics": {
+          "context_precision": 0.8071428571428572,
+          "context_recall": 0.9642857142857143,
+          "source_mrr": 0.8958333333333334,
+          "answer_relevance": 0.6697152365449717,
+          "faithfulness": 0.5683825219681173
+        },
+        "source_hits": 27,
+        "stable_retrieval": 28,
+        "failures": [],
+        "median_two_request_latency_ms": 14620.469750021584
+      }
+    },
+    "ocr": {
+      "workspace_id": "rag-stage-c-docling-ocr-20261015",
+      "documents_total": 17,
+      "documents_publishable": 12,
+      "documents_indexed": 12,
+      "chunks_indexed": 327,
+      "positive_cases_available": 29,
+      "all_reference_cases": 47,
+      "extraction_counts": {
+        "completed": 12,
+        "partial": 1,
+        "failed": 4
+      },
+      "extraction_exclusions": [
+        {
+          "document_id": "pdf-002",
+          "status": "partial",
+          "error": null,
+          "runs": [
+            {
+              "run": "cold",
+              "status": "partial",
+              "unsupported": []
+            },
+            {
+              "run": "warm-1",
+              "status": "partial",
+              "unsupported": []
+            },
+            {
+              "run": "warm-2",
+              "status": "partial",
+              "unsupported": []
+            },
+            {
+              "run": "warm-3",
+              "status": "partial",
+              "unsupported": []
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-004",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": [
+            {
+              "run": "cold",
+              "status": "completed",
+              "unsupported": []
+            },
+            {
+              "run": "warm-1",
+              "status": "completed",
+              "unsupported": []
+            },
+            {
+              "run": "warm-2",
+              "status": "completed",
+              "unsupported": []
+            }
+          ]
+        },
+        {
+          "document_id": "pdf-006",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": []
+        },
+        {
+          "document_id": "pdf-008",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": []
+        },
+        {
+          "document_id": "pdf-016",
+          "status": "failed",
+          "error": "Extraction worker exceeded 180 second timeout",
+          "runs": []
+        }
+      ],
+      "ingestion_failures": [
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\9rules.pdf",
+          "reason": "Extraction not publishable: partial",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\Catalogue_of_Czech_TOYS-and-GAMES.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\gurkan03tableschairs.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\imc_telemetry-solutions_EN-201810_WEB.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\RAG-dev-plane\\evaluation\\pdf_parsers\\corpus\\PDFs\\חוברת חקלאות מוגבר-חגית חלד.pdf",
+          "reason": "Extraction not publishable: failed",
+          "extraction_pending": false
+        }
+      ],
+      "peak_job_commit_bytes": 2255339520,
+      "actual_models": [
+        [
+          "dictalm2.0-instruct",
+          "bge-m3:latest",
+          "ollama"
+        ]
+      ],
+      "unique_answer_sessions": 29,
+      "returned_citations": 145,
+      "metrics": {
+        "cases": 29,
+        "metrics": {
+          "context_precision": 0.8482758620689655,
+          "context_recall": 1.0,
+          "source_mrr": 0.9770114942528736,
+          "answer_relevance": 0.6538883040087401,
+          "faithfulness": 0.5645492438595887
+        },
+        "source_hits": 29,
+        "stable_retrieval": 29,
+        "failures": [],
+        "median_two_request_latency_ms": 10073.424600006547
+      }
+    }
+  },
+  "pairs": {
+    "noocr": {
+      "case_ids": [
+        "pdf-001-q1",
+        "pdf-001-q2",
+        "pdf-003-q1",
+        "pdf-003-q2",
+        "pdf-004-q1",
+        "pdf-004-q2",
+        "pdf-004-q3",
+        "pdf-005-q1",
+        "pdf-005-q2",
+        "pdf-005-q3",
+        "pdf-007-q1",
+        "pdf-007-q2",
+        "pdf-007-q3",
+        "pdf-009-q1",
+        "pdf-009-q2",
+        "pdf-009-q3",
+        "pdf-011-q1",
+        "pdf-011-q2",
+        "pdf-011-q3",
+        "pdf-012-q1",
+        "pdf-012-q2",
+        "pdf-012-q3",
+        "pdf-013-q1",
+        "pdf-013-q2",
+        "pdf-014-q1",
+        "pdf-014-q2",
+        "pdf-017-q1",
+        "pdf-017-q2"
+      ],
+      "baseline": {
+        "cases": 28,
+        "metrics": {
+          "context_precision": 0.8142857142857143,
+          "context_recall": 0.9642857142857143,
+          "source_mrr": 0.9464285714285714,
+          "answer_relevance": 0.6361670417819523,
+          "faithfulness": 0.5860748029480062
+        },
+        "source_hits": 27,
+        "stable_retrieval": 28,
+        "failures": [],
+        "median_two_request_latency_ms": 16700.78340001055
+      },
+      "candidate": {
+        "cases": 28,
+        "metrics": {
+          "context_precision": 0.8071428571428572,
+          "context_recall": 0.9642857142857143,
+          "source_mrr": 0.8958333333333334,
+          "answer_relevance": 0.6697152365449717,
+          "faithfulness": 0.5683825219681173
+        },
+        "source_hits": 27,
+        "stable_retrieval": 28,
+        "failures": [],
+        "median_two_request_latency_ms": 14620.469750021584
+      }
+    },
+    "ocr": {
+      "case_ids": [
+        "pdf-001-q1",
+        "pdf-001-q2",
+        "pdf-003-q1",
+        "pdf-003-q2",
+        "pdf-005-q1",
+        "pdf-005-q2",
+        "pdf-005-q3",
+        "pdf-007-q1",
+        "pdf-007-q2",
+        "pdf-007-q3",
+        "pdf-009-q1",
+        "pdf-009-q2",
+        "pdf-009-q3",
+        "pdf-010-q1",
+        "pdf-010-q2",
+        "pdf-011-q1",
+        "pdf-011-q2",
+        "pdf-011-q3",
+        "pdf-012-q1",
+        "pdf-012-q2",
+        "pdf-012-q3",
+        "pdf-013-q1",
+        "pdf-013-q2",
+        "pdf-014-q1",
+        "pdf-014-q2",
+        "pdf-015-q1",
+        "pdf-015-q2",
+        "pdf-017-q1",
+        "pdf-017-q2"
+      ],
+      "baseline": {
+        "cases": 29,
+        "metrics": {
+          "context_precision": 0.7724137931034483,
+          "context_recall": 0.9310344827586207,
+          "source_mrr": 0.9137931034482759,
+          "answer_relevance": 0.5950987344673957,
+          "faithfulness": 0.5348493647251253
+        },
+        "source_hits": 27,
+        "stable_retrieval": 29,
+        "failures": [],
+        "median_two_request_latency_ms": 17128.52720002411
+      },
+      "candidate": {
+        "cases": 29,
+        "metrics": {
+          "context_precision": 0.8482758620689655,
+          "context_recall": 1.0,
+          "source_mrr": 0.9770114942528736,
+          "answer_relevance": 0.6538883040087401,
+          "faithfulness": 0.5645492438595887
+        },
+        "source_hits": 29,
+        "stable_retrieval": 29,
+        "failures": [],
+        "median_two_request_latency_ms": 10073.424600006547
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-index-pypdf-2026-10-15-r1.json",
+      "sha256": "4e312e8c44ffb1dc7076d47e89670fe597296049720eddbdaacc1e774bc96330"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-pypdf-2026-10-15-r1\\availability.json",
+      "sha256": "8962311808bfbe736b7e1edc8b7520b48fedd9c9291022f8392d13eb79a1bf8a"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-pypdf-2026-10-15-r1\\cases.jsonl",
+      "sha256": "2d7cd4d6efbd323b801612b7d5b72e1e38fd5dcc90c9598e147522d080e1fa54"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-benchmark-pypdf-2026-10-15-r1.json",
+      "sha256": "3b70ecc36fa4203c98aa3ac5a5a05687872bfed523db0e499cdaa8fc8d469826"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-responses-pypdf-2026-10-15-r1.json",
+      "sha256": "9285b65ee42e20e8f004aba13b2162e337dfc44d737d40fedd30a509fa070106"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-v5-noocr-2026-10-15-r1\\report.json",
+      "sha256": "3c43dc336294d9168a71ba65ad1ef2c0d8abaf1e8690b4f47dfa59cbc8a4e64b"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-index-noocr-2026-10-15-r1.json",
+      "sha256": "1b1d7c6f30245f7c5372a3268430367c2ff70591aa933951b90a56e0e184de49"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-noocr-2026-10-15-r1\\availability.json",
+      "sha256": "6b8b3bfbaa895e7de09abaaeb923b95239f040d2aec03f713a3bb166e57affb0"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-noocr-2026-10-15-r1\\cases.jsonl",
+      "sha256": "8a128631ce162a2694a8253221c600fccb3605882d765656815e484c37dc03cd"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-benchmark-noocr-2026-10-15-r1.json",
+      "sha256": "254d1a84b3f5aa21f2fb89f699ec4c1b7da4607ba985709bc20dfccbb2a14959"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-responses-noocr-2026-10-15-r1.json",
+      "sha256": "daaa2875252ae30d506e95fcc158211b7119a93115ebd28daf531d0e9d26bab5"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-index-ocr-2026-10-15-r1.json",
+      "sha256": "afc94ec908203e54546539273c418d37ccc77449a9a56dc1be8dbc30140aae7c"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-ocr-2026-10-15-r1\\availability.json",
+      "sha256": "e60308ac4c53fd4993bf85129cfbb77cd7cc3f1962b672163ead314c9243e508"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-dataset-ocr-2026-10-15-r1\\cases.jsonl",
+      "sha256": "dfb6f7689d2f45af1c93e27ea818ee52e7e9f9fd5f1dff3003e6203efbc7b892"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-benchmark-ocr-2026-10-15-r1.json",
+      "sha256": "1ded9ab66fc33d4622747ff7142046df0efebdb3419c478a6e697270a53984cc"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-responses-ocr-2026-10-15-r1.json",
+      "sha256": "82ce55d62bf2e474e1f36da3fc6d619f070470e9baa0247e188e89186dc0d751"
+    },
+    {
+      "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c-v5-ocr-2026-10-15-r1\\report.json",
+      "sha256": "ff9535e06ef400671a295b88e4d43f55446c8511eac73405c71a76d612def047"
+    }
+  ],
+  "checks": {
+    "focused_tests": 95,
+    "full_suite": false,
+    "database_counts_match_ingestion": true,
+    "published_chunks_with_provenance": 1568
+  },
+  "limits": [
+    "Five assigned-document negatives deferred: current API cannot enforce document-only scope",
+    "Previously recorded invalid reference fact omitted only in derived dataset",
+    "Answer relevance and faithfulness are token proxies, no independent human adjudication",
+    "Source Recall and MRR measure document retrieval, not exact fact or citation correctness",
+    "Latency includes two sequential complete chat requests; OCR extraction overlapped indexing and baseline/no-OCR chat",
+    "Fixed resource/time budget; failed and partial outputs excluded, no parser fallback",
+    "No production parser promotion, push/merge or G4 closure"
+  ],
+  "configuration": {
+    "manifest_sha256": "4f3894c85830e1622982e6e2fa4787322dfa55f63b0e380527552663845048f1",
+    "model_profile": "bge-m3",
+    "chunking_profile": "default",
+    "chunk_size": 800,
+    "chunk_overlap": 120,
+    "top_k": 5,
+    "rerank": false,
+    "application_pdf_default": "pypdf"
+  }
+}

@@ -12,13 +12,16 @@ from app.evaluation.models import GoldenCase
 class LiveApiBenchmarkClient:
     """Minimal `/chat` adapter used only by the opt-in local benchmark CLI."""
 
-    def __init__(self, client: httpx.AsyncClient, workspace_id: str | None = None) -> None:
+    def __init__(self, client: httpx.AsyncClient, workspace_id: str | None = None,
+                 model_profile: str | None = None, chunking_profile: str | None = None) -> None:
         self._client = client
         self._workspace_id = workspace_id
+        self._model_profile = model_profile
+        self._chunking_profile = chunking_profile
         self._responses: dict[tuple[str, str | None, str | None, int], dict[str, Any]] = {}
 
     def _key(self, question: str, workspace_id: str | None, chunking_profile: str | None, top_k: int) -> tuple[str, str | None, str | None, int]:
-        return question, workspace_id or self._workspace_id, chunking_profile, top_k
+        return question, workspace_id or self._workspace_id, chunking_profile or self._chunking_profile, top_k
 
     async def _chat(self, case: GoldenCase, top_k: int) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -28,8 +31,10 @@ class LiveApiBenchmarkClient:
         }
         if case.workspace_id or self._workspace_id:
             payload["workspace_id"] = case.workspace_id or self._workspace_id
-        if case.chunking_profile:
-            payload["chunking_profile"] = case.chunking_profile
+        if case.chunking_profile or self._chunking_profile:
+            payload["chunking_profile"] = case.chunking_profile or self._chunking_profile
+        if self._model_profile:
+            payload["model_profile"] = self._model_profile
         response = await self._client.post("/chat", json=payload)
         response.raise_for_status()
         body = response.json()

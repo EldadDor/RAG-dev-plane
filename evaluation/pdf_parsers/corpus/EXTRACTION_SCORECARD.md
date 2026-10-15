@@ -4,6 +4,11 @@
 **Reviewed:** 2026-10-14
 **Decision:** Keep pypdf as production default. A normalization omission is corrected in the experimental Docling adapter.
 
+**Later follow-up:** [v4 text audit and v5 corrections](NORMALIZATION_FIDELITY_REVIEW.md)
+preserve picture-parent links and recover `document_index` tables. The earlier
+upstream-contents diagnosis below is corrected: raw cells existed but were
+normalized as empty text. Original/v4 scores are retained; v5 has no aggregate score.
+
 ## Scope and scoring
 
 Codex reviewed the approved facts against the original cold normalized text on each recorded evidence page. These are assistant qualitative judgments against human-approved references, not independent human adjudication or generated-answer scores. The original runs are preserved. One cold result per case is scored; warm outputs are stability checks, not extra samples.
@@ -32,7 +37,7 @@ Docling Core 2.101.1 defaults iterate_items(traverse_pictures=False), visiting p
 | --- | --- | --- |
 | pdf-002-q1 component facts | 3/4 retained | 4/4; beginner die recovered |
 | pdf-003-q1 diagram labels | 0/17 retained | 16/17 retained, one partial: upstream Wayfinding glyph corruption remains |
-| pdf-004-q3 contents entry/page | 0/2 retained | 0/2; contents text absent on page 3 upstream |
+| pdf-004-q3 contents entry/page | 0/2 retained | 0/2 in v4; raw document-index cells were omitted by adapter mapping, corrected in v5 |
 | pdf-012-q1 fine-tuning diagram facts | 1 retained / 1 partial / 1 missing | 3/3 retained; graph topology not certified |
 
 The replay is a separate treatment. No full-corpus score is assigned to it: newly exposed OCR noise and associations require their own review. [Replay evidence](PICTURE_CHILD_REPLAY.json) records raw/normalized hashes and source-ref counts; detailed outputs stay outside Git. The first failed helper attempt is retained separately; r2 is the successful replay.
@@ -40,7 +45,7 @@ The replay is a separate treatment. No full-corpus score is assigned to it: newl
 ## Remaining fidelity work
 
 1. Review v4 newly exposed text, particularly OCR garbage in pictures, without suppressing real labels. Separate fact coverage from added false text.
-2. Diagnose upstream contents omission and malformed font/glyph decoding. Do not patch text from expected answers or introduce an implicit fallback.
+2. Contents omission diagnosed and corrected in v5 document-index mapping; malformed font/glyph decoding remains. Do not patch text from expected answers or introduce an implicit fallback.
 3. Preserve table row/column links: pdf-014 stage-5 continuation appears in stage-6 row; other tables show merged/shifted cells.
 4. Preserve logical RTL and mixed-script identifiers: Item New Add / Form Web / aspx.Default remain wrong in pdf-015; pdf-002 section order remains wrong.
 5. Retain fixed-budget timeouts and unresolved geometry limits. Complete-case text coverage does not waive provenance/resource gates before Stage C.

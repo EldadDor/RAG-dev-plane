@@ -11,7 +11,8 @@ locations and adds relocation provenance; the question set needs no new approval
 
 | Need | Entry point |
 | --- | --- |
-| Current result and remaining fidelity work | [Original case review and adapter correction](EXTRACTION_SCORECARD.md), [PDFium execution](PDFIUM_COMPARISON.md) |
+| Isolated indexed comparison | [Stage C results](STAGE_C_RESULTS.md), [machine summary](STAGE_C_SUMMARY.json) |
+| Current result and remaining fidelity work | [Normalization fidelity follow-up](NORMALIZATION_FIDELITY_REVIEW.md), [original case review](EXTRACTION_SCORECARD.md), [PDFium execution](PDFIUM_COMPARISON.md) |
 | Approved reference release | [Case validation](GOLDEN_CASES_VALIDATION.md), [approval](HUMAN_APPROVAL.md) |
 | Parser commands and budgets | [Runner protocol](../README.md) |
 | Move verification and original/derived hashes | [Relocation audit](relocation-validation.json) |

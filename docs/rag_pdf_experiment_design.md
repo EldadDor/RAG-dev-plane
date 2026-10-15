@@ -12,6 +12,12 @@ completed on 2026-10-14. Existing picture-child text is now retained by normaliz
 v4; saved-export replay is separate from model execution. Glyph/table/RTL/resource
 limitations remain and pypdf stays the production default.
 
+The [later normalization review](../evaluation/pdf_parsers/corpus/NORMALIZATION_FIDELITY_REVIEW.md)
+adds v5 picture-parent links and preserves `document_index` table cells. The
+contents omission was adapter mapping, not missing upstream data. 52 focused
+tests and 31 in-memory saved-export replays passed; real ingestion remains held
+until laptop-ready confirmation.
+
 User approved the extraction-only adapter boundary and comparison command for Stage B.
 Use internal normalized results, a pypdf baseline and a lazily imported Docling
 candidate. Initially keep the experiment independent of production ingestion.

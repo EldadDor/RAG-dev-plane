@@ -157,6 +157,12 @@ It changes processing/block identity and retains the existing clamping disclosur
 47 focused tests and 31 saved-export replays passed; no model treatments were rerun.
 See [the original-case scorecard and correction evidence](corpus/EXTRACTION_SCORECARD.md).
 
+The later v5 policy `picture_parent_document_index_export_clamp_pages_without_boxes_v5`
+preserves nearest-picture source-ref/block-ID links and serializes `document_index`
+items through the existing table path. 52 focused tests and 31 in-memory saved-document
+replays passed; original outputs remain unchanged. Replay captures raw-loading
+clamping warnings and omits affected boxes. See [fidelity follow-up](corpus/NORMALIZATION_FIDELITY_REVIEW.md).
+
 Failed or partial extraction returns exit code 1. Exit code 0 establishes extraction
 completion only; manual rubric inspection and paired RAG evaluation remain pending.
 

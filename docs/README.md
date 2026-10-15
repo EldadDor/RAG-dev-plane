@@ -1,6 +1,6 @@
 # Documentation in play
 
-**Last reviewed:** 2026-10-14
+**Last reviewed:** 2026-10-15
 
 This is a reading index, not another task board. Start with repository instructions
 and the current/next boards for your area. Open additional documents only when the
@@ -13,6 +13,7 @@ default reading; use targeted lookup when the task explicitly needs them.
 | Next | [Backend next](next_phase.md), [frontend next](frontend/next_phase.md) | Reviewing the next three candidates; these own priority and dependencies. |
 | Parked | [Task overview](task_overview.md) | Prioritizing requests beyond the next three or resolving its pending approvals. |
 | Active design | [PDF experiment design](rag_pdf_experiment_design.md) | Working on the extraction experiment or its approved design boundary. |
+| Retained design | [Stage C ingestion design](rag_stage_c_ingestion_design.md) | Working on the G2-approved RAG-C-01 local selector, publication identity or isolated indexed comparison. |
 | Roadmap | [RAG adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) | Selecting an adoption stage; read the selected stage's sections. |
 | Contract | [Frontend API contract](frontend_architecture.md) | Frontend work as required by its instructions, or changes to shared API behavior. |
 | Reference | [Architecture](architecture.md), [PowerPoint ingestion](powerpoint_ingestion.md) | Changing the relevant runtime/ingestion behavior or its documentation. |
@@ -21,7 +22,7 @@ default reading; use targeted lookup when the task explicitly needs them.
 | Parked design | [Azure deployment](AZURE_DEPLOYMENT_PLAN.md) | Activating the parked office/Azure work; validate old assumptions before reuse. |
 | Coordination | [Handoff rules](agent_handoff/README.md) and the relevant direction/decision file | The task depends on or changes the other team's contract. |
 | History | [Completed phases](complete_phases.md) | Phase synchronization, approved closure, or a specific historical question. |
-| Experiment evidence | [Case scorecard](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md), [corpus entry point](../evaluation/pdf_parsers/corpus/README.md), [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md), [runner protocol](../evaluation/pdf_parsers/README.md) | Corpus/scoring/parser work. Do not recursively read worksheets, previews, drafts or results. Follow only evidence needed for the current issue. |
+| Experiment evidence | [Stage C indexed comparison](../evaluation/pdf_parsers/corpus/STAGE_C_RESULTS.md), [Fidelity follow-up](../evaluation/pdf_parsers/corpus/NORMALIZATION_FIDELITY_REVIEW.md), [case scorecard](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md), [corpus entry point](../evaluation/pdf_parsers/corpus/README.md), [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md), [runner protocol](../evaluation/pdf_parsers/README.md) | Corpus/scoring/parser work. Do not recursively read worksheets, previews, drafts or results. Follow only evidence needed for the current issue. |
 
 ## Keep plans small during development
 

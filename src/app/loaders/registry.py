@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 from app.domain.models import Document, SourceType
@@ -82,6 +83,7 @@ def load_directory(
     directory: str,
     recursive: bool = False,
     max_bytes: int = 50 * 1024 * 1024,
+    document_loader: Callable[[str], Document] | None = None,
 ) -> tuple[list[Document], list[dict]]:
     """
     Load all supported documents from a directory.
@@ -105,7 +107,8 @@ def load_directory(
             ignored_unsupported += 1
             continue
         try:
-            doc = load_document(str(path), max_bytes=max_bytes)
+            doc = (document_loader(str(path)) if document_loader is not None
+                   else load_document(str(path), max_bytes=max_bytes))
             documents.append(doc)
         except (UnsupportedFileTypeError, FileTooLargeError, Exception) as exc:
             skipped.append({"path": str(path), "reason": str(exc)})

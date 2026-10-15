@@ -90,3 +90,22 @@ async def test_live_api_adapter_maps_chat_sources_without_network():
     assert chunks[0].chunk_id == "chunk"
     assert chunks[0].text == "Context"
     assert answer == "Answer"
+
+
+@pytest.mark.asyncio
+async def test_live_adapter_preserves_explicit_model_and_chunking_scope():
+    requests = []
+
+    def responder(request):
+        payload = json.loads(request.content)
+        requests.append(payload)
+        assert payload["workspace_id"] == "isolated"
+        assert payload["model_profile"] == "frozen-model"
+        assert payload["chunking_profile"] == "fixed-chunker"
+        return httpx.Response(200, json={"answer": "scoped answer", "sources": []})
+
+    async with httpx.AsyncClient(base_url="http://test", transport=httpx.MockTransport(responder)) as client:
+        adapter = LiveApiBenchmarkClient(client, "isolated", "frozen-model", "fixed-chunker")
+        await adapter.retrieve("question")
+        answer = await adapter.answer_function(5)(GoldenCase("case", "question", ("fact",)))
+    assert answer == "scoped answer" and len(requests) == 1
