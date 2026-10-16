@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { archiveSession, getDocuments, getSession, getSessions, getWorkspaces, renameSession, streamChat } from './api'
+import { archiveSession, getDocuments, getSession, getSessions, getWorkspaces, normalizeSessions, renameSession, streamChat, type ChatSession } from './api'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -17,6 +17,36 @@ function streamResponse(...chunks: string[]): Response {
 }
 
 describe('API client', () => {
+  it('deduplicates IDs using the newest record, sorts newest first and keeps identical titles with distinct IDs', async () => {
+    const entries = [
+      { session_id: 'z', updated_at: null, title: 'Same title' },
+      { session_id: 'duplicate', updated_at: '2026-10-15T10:00:00Z', title: 'Old title' },
+      { session_id: 'b', updated_at: '2026-10-16T10:00:00Z', title: 'Same title' },
+      { session_id: 'a', updated_at: '2026-10-16T10:00:00Z', title: 'Same title' },
+      { session_id: 'duplicate', updated_at: '2026-10-16T11:00:00Z', title: 'New title' },
+      { session_id: 'A', updated_at: null, title: 'Same title' },
+    ].map((session) => ({ ...session, workspace_id: 'local', last_preview: null }))
+    const fetchMock = vi.fn().mockResolvedValue(Response.json(entries))
+    vi.stubGlobal('fetch', fetchMock)
+    const result = await getSessions('local')
+    expect(result.map((session) => session.sessionId)).toEqual(['duplicate', 'a', 'b', 'A', 'z'])
+    expect(result[0].title).toBe('New title')
+    expect(fetchMock.mock.calls[0][0]).toBe('/chat/sessions?workspace_id=local')
+  })
+
+  it('orders fractional UTC timestamps precisely and puts invalid or missing timestamps last without mutating input', () => {
+    const base: ChatSession = {sessionId: 'base', workspaceId: 'local', title: 'Title', preview: null, updatedAt: null}
+    const input = [
+      {...base, sessionId: 'a', updatedAt: '2026-10-16T10:00:00.123001Z'},
+      {...base, sessionId: 'z', updatedAt: '2026-10-16T10:00:00.123999Z'},
+      {...base, sessionId: 'bad', updatedAt: 'invalid'},
+      {...base, sessionId: 'none'},
+    ]
+    expect(normalizeSessions(input).map((session) => session.sessionId)).toEqual(['z', 'a', 'bad', 'none'])
+    expect(input[0].sessionId).toBe('a')
+    expect(normalizeSessions([])).toEqual([])
+  })
+
   it('maps scoped documents, preserves zero and unknown counts, and encodes opaque pagination', async () => {
     const fetchMock = vi.fn().mockResolvedValue(Response.json({
       workspace_id: 'team / א', scope: { model_profile: 'bge-m3', chunking_profile: 'default' },

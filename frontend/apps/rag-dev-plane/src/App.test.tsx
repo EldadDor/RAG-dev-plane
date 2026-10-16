@@ -189,3 +189,35 @@ describe('FP-14 New chat', () => {
         expectFresh()
     })
 })
+
+describe('FP-15 recent-chat display limit', () => {
+    it('defaults to 10 and switches to 20/50/100 without another fetch or clearing the selected chat', async () => {
+        const sessions = Array.from({length: 105}, (_, index) => ({...session, sessionId: String(index), title: `Chat ${index}`}))
+        vi.mocked(getSessions).mockResolvedValue(sessions)
+        vi.mocked(getSession).mockResolvedValue({...session, title: 'Selected chat'})
+        vi.mocked(streamChat).mockImplementationOnce(async (_request, handlers) => {
+            handlers.onMeta({sessionId: 'old', grounded: false, sources: []})
+        })
+        draft('question'); submit(); await flush()
+        const count = () => nodes(find((n) => n.props.className === 'session-list')).filter((n) => n.type === 'li').length
+        expect(count()).toBe(10)
+        const fetches = vi.mocked(getSessions).mock.calls.length
+        for (const limit of [20, 50, 100, 10]) {
+            find((n) => n.props['aria-label'] === 'Number of recent chats').props.onChange({target: {value: String(limit)}})
+            render()
+            expect(count()).toBe(limit)
+            expect(nodes().some((n) => n.type === 'h1' && n.props.children === 'Selected chat')).toBe(true)
+        }
+        expect(getSessions).toHaveBeenCalledTimes(fetches)
+        newChat()
+        expect(count()).toBe(10)
+        expect(find((n) => n.props['aria-label'] === 'Number of recent chats').props.value).toBe(10)
+    })
+
+    it('offers only supported sizes and ignores unsupported values', () => {
+        const selector = find((n) => n.props['aria-label'] === 'Number of recent chats')
+        expect(nodes(selector).filter((n) => n.type === 'option').map((n) => n.props.value)).toEqual([10, 20, 50, 100])
+        selector.props.onChange({target: {value: '7'}}); render()
+        expect(find((n) => n.props['aria-label'] === 'Number of recent chats').props.value).toBe(10)
+    })
+})

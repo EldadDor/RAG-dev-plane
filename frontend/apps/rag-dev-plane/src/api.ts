@@ -118,9 +118,35 @@ function toSession(session: ApiSession): ChatSession {
     updatedAt: session.updated_at,
   }
 }
+
+// Normalize every list response before applying a display cap in the UI.
+export function normalizeSessions(sessions: ChatSession[]): ChatSession[] {
+  const timestamp = (session: ChatSession) => {
+    const value = session.updatedAt ? Date.parse(session.updatedAt) : NaN
+    return Number.isFinite(value) ? value : -Infinity
+  }
+  const ordered = [...sessions].sort((a, b) => {
+    const left = timestamp(a)
+    const right = timestamp(b)
+    if (left !== right) return left > right ? -1 : 1
+    // Date.parse keeps milliseconds; preserve the backend's finer UTC precision.
+    if (left !== -Infinity) {
+      const fraction = (value: string) => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] ?? '').padEnd(9, '0')
+      const aFraction = fraction(a.updatedAt!)
+      const bFraction = fraction(b.updatedAt!)
+      if (aFraction !== bFraction) return aFraction > bFraction ? -1 : 1
+    }
+    return a.sessionId < b.sessionId ? -1 : a.sessionId > b.sessionId ? 1 : 0
+  })
+  const unique = new Map<string, ChatSession>()
+  for (const session of ordered) {
+    if (!unique.has(session.sessionId)) unique.set(session.sessionId, session)
+  }
+  return [...unique.values()]
+}
 export async function getSessions(workspaceId: string, signal?: AbortSignal): Promise<ChatSession[]> {
   const response = await requestJson<ApiSession[]>(`/chat/sessions?${new URLSearchParams({ workspace_id: workspaceId })}`, { signal })
-  return response.map(toSession)
+  return normalizeSessions(response.map(toSession))
 }
 export async function getSession(sessionId: string, signal?: AbortSignal): Promise<ChatSessionDetail> {
   const response = await requestJson<ApiSessionDetail>(`/chat/sessions/${encodeURIComponent(sessionId)}`, { signal })

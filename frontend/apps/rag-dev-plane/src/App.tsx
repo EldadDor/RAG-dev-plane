@@ -17,6 +17,7 @@ export default function App() {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [workspaceId, setWorkspaceId] = useState('')
     const [sessions, setSessions] = useState<ChatSession[]>([])
+    const [recentChatLimit, setRecentChatLimit] = useState(10)
     const [activeSession, setActiveSession] = useState<ChatSessionDetail | null>(null)
     const [workspaceStatus, setWorkspaceStatus] = useState<'loading' | 'ready' | 'error'>('loading')
     const [sessionsStatus, setSessionsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
@@ -188,6 +189,15 @@ export default function App() {
             setActiveSession({...activeSession, title})
             setSessions((current) => current.map((session) => session.sessionId === activeSession.sessionId ? {...session, title} : session))
             setIsRenaming(false)
+            try {
+                const refreshed = await getSessions(workspaceId)
+                if (generation !== conversationGeneration.current) return
+                setSessions(refreshed)
+            } catch {
+                if (generation !== conversationGeneration.current) return
+                setErrorMessage('Chat renamed, but recent chats could not be refreshed. Retry recent chats to update their order.')
+                setSessionsStatus('error')
+            }
         } catch (error: unknown) {
             if (generation !== conversationGeneration.current) return
             if (error instanceof ApiError && error.code === 'workspace_access_denied') {
@@ -446,10 +456,16 @@ export default function App() {
                     </li>
                 })}</ol>}</div>}
                 {activePane === 'sessions' && !workspaceId && <p className="muted">Select a workspace to view recent chats.</p>}
+                {activePane === 'sessions' && workspaceId && <label className="recent-chat-limit">Show recent chats
+                    <select aria-label="Number of recent chats" value={recentChatLimit} onChange={(event) => {
+                        const limit = Number(event.target.value)
+                        if ([10, 20, 50, 100].includes(limit)) setRecentChatLimit(limit)
+                    }}>{[10, 20, 50, 100].map((limit) => <option key={limit} value={limit}>{limit}</option>)}</select>
+                </label>}
                 {activePane === 'sessions' && workspaceId && sessionsStatus === 'loading' && <p className="muted">Loading recent chats…</p>}
                 {activePane === 'sessions' && workspaceId && sessionsStatus === 'error' && <button className="secondary" type="button" onClick={retrySessions}>Retry recent chats</button>}
                 {activePane === 'sessions' && workspaceId && sessionsStatus === 'ready' && sessions.length === 0 && <p className="muted">No recent chats in this workspace.</p>}
-                {activePane === 'sessions' && sessions.length > 0 && <ul className="session-list">{sessions.map((session) => <li key={session.sessionId}>
+                {activePane === 'sessions' && sessions.length > 0 && <ul className="session-list">{sessions.slice(0, recentChatLimit).map((session) => <li key={session.sessionId}>
                     <button className={activeSession?.sessionId === session.sessionId ? 'session active-session' : 'session'} type="button" aria-current={activeSession?.sessionId === session.sessionId ? 'page' : undefined}
                             onClick={() => void selectSession(session)}><span>{session.title}</span>{session.preview && <small>{session.preview}</small>}</button>
                 </li>)}</ul>}
