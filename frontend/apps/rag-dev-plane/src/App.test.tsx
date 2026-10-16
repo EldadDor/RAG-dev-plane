@@ -1,8 +1,8 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 import type {ReactElement} from 'react'
 
-// Exercise the component's event handlers and delayed requests without a DOM dependency.
-const hooks = vi.hoisted(() => ({slots: [] as unknown[], cursor: 0}))
+// Exercise component state, effects and delayed requests without a DOM dependency.
+const hooks = vi.hoisted(() => ({slots: [] as unknown[], cursor: 0, effects: [] as Array<() => void>}))
 vi.mock('react', () => ({
     useState: (initial: unknown) => {
         const index = hooks.cursor++
@@ -16,22 +16,30 @@ vi.mock('react', () => ({
         if (!(index in hooks.slots)) hooks.slots[index] = {current: initial}
         return hooks.slots[index]
     },
-    useEffect: () => {},
+    useEffect: (effect: () => void | (() => void), dependencies?: unknown[]) => {
+        const index = hooks.cursor++
+        const previous = hooks.slots[index] as {dependencies?: unknown[]; cleanup?: () => void} | undefined
+        if (!previous || !dependencies || dependencies.some((value, i) => !Object.is(value, previous.dependencies?.[i]))) {
+            hooks.effects.push(() => { previous?.cleanup?.(); hooks.slots[index] = {dependencies, cleanup: effect()} })
+        }
+    },
 }))
 vi.mock('./DocumentsPanel', () => ({default: () => null}))
 vi.mock('./api', async (original) => ({
     ...await original<typeof import('./api')>(),
     getSession: vi.fn(), getSessions: vi.fn(), streamChat: vi.fn(),
     renameSession: vi.fn(), archiveSession: vi.fn(),
+    getWorkspaces: vi.fn(), getAccountProfile: vi.fn(), getAccountPreferences: vi.fn(), saveAccountPreferences: vi.fn(),
+    getAuthSession: vi.fn(), logout: vi.fn(), getLoginOptions: vi.fn(), devLogin: vi.fn(),
 }))
 
 import App from './App'
-import {archiveSession, getSession, getSessions, renameSession, streamChat, type ChatSessionDetail, type StreamHandlers} from './api'
+import {archiveSession, getSession, getSessions, renameSession, streamChat, getWorkspaces, getAccountProfile, getAccountPreferences, saveAccountPreferences, getAuthSession, clearAuthentication, logout, getLoginOptions, devLogin, type AccountProfile, type ChatSessionDetail, type StreamHandlers} from './api'
 
 type Element = ReactElement<Record<string, any>>
 let tree: Element
 const session: ChatSessionDetail = {sessionId: 'old', workspaceId: 'local', title: 'Old chat', preview: null, updatedAt: null, summary: null, turns: []}
-function render() { hooks.cursor = 0; tree = App() as Element }
+function render() { hooks.cursor = 0; tree = App() as Element; hooks.effects.splice(0).forEach((effect) => effect()) }
 function nodes(node: unknown = tree): Element[] {
     if (Array.isArray(node)) return node.flatMap((child) => nodes(child))
     if (!node || typeof node !== 'object' || !('props' in node)) return []
@@ -64,16 +72,31 @@ function expectFresh() {
     expect(nodes().some((n) => n.props.role === 'alert')).toBe(false)
 }
 
-beforeEach(() => {
+const profile: AccountProfile = {
+    profile: {display_name: 'Ada', email: null}, workspaces: [{workspace_id: 'local', display_name: 'Local', role: 'owner'}],
+    capabilities: {profile_editable: false, preferences: {read: true, update: true, persistence: 'server', editable_fields: ['recent_chat_limit'], recent_chat_limit_options: [10, 20, 50, 100], recent_chat_limit_default: 10}, logout: {supported: false, reason: 'fixed_local_identity'}},
+}
+beforeEach(async () => {
     hooks.slots = []; hooks.cursor = 0
+    hooks.effects = []
     vi.resetAllMocks()
-    vi.stubGlobal('window', {confirm: vi.fn(() => true)})
+    vi.stubGlobal('window', {confirm: vi.fn(() => true), setTimeout, clearTimeout, location: {assign: vi.fn()}})
+    vi.stubGlobal('document', {visibilityState: 'visible', addEventListener: vi.fn(), removeEventListener: vi.fn()})
+    vi.mocked(getWorkspaces).mockResolvedValue({principalDisplayName: 'Ada', workspaces: [{workspaceId: 'local', displayName: 'Local', role: 'owner'}]})
+    vi.mocked(getAccountProfile).mockResolvedValue(profile)
+    vi.mocked(getAccountPreferences).mockResolvedValue({preferences: {recent_chat_limit: 10}, persistence: 'server'})
+    vi.mocked(saveAccountPreferences).mockImplementation(async (limit) => ({preferences: {recent_chat_limit: limit}, persistence: 'server'}))
+    vi.mocked(getSessions).mockResolvedValue([session])
     render()
+    await flush()
     find((n) => n.type === 'select').props.onChange({target: {value: 'local'}})
     render()
-    vi.mocked(getSessions).mockResolvedValue([session])
+    await flush()
 })
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+    hooks.slots.forEach((slot) => { if (slot && typeof slot === 'object' && 'cleanup' in slot) (slot as {cleanup?: () => void}).cleanup?.() })
+    vi.unstubAllGlobals()
+})
 
 describe('FP-14 New chat', () => {
     it('keeps a declined draft and resets an accepted draft without changing workspace', () => {
@@ -204,7 +227,7 @@ describe('FP-15 recent-chat display limit', () => {
         const fetches = vi.mocked(getSessions).mock.calls.length
         for (const limit of [20, 50, 100, 10]) {
             find((n) => n.props['aria-label'] === 'Number of recent chats').props.onChange({target: {value: String(limit)}})
-            render()
+            await flush()
             expect(count()).toBe(limit)
             expect(nodes().some((n) => n.type === 'h1' && n.props.children === 'Selected chat')).toBe(true)
         }
@@ -219,5 +242,112 @@ describe('FP-15 recent-chat display limit', () => {
         expect(nodes(selector).filter((n) => n.type === 'option').map((n) => n.props.value)).toEqual([10, 20, 50, 100])
         selector.props.onChange({target: {value: '7'}}); render()
         expect(find((n) => n.props['aria-label'] === 'Number of recent chats').props.value).toBe(10)
+    })
+})
+
+function openAccount(panel: 'Profile' | 'Settings') {
+    find((n) => n.props['aria-label'] === 'User menu').props.onClick(); render()
+    button(panel).props.onClick(); render()
+}
+async function gatewayAccount() {
+    vi.mocked(getAccountProfile).mockResolvedValue({...profile, capabilities: {...profile.capabilities, logout: {supported: true, method: 'POST', owner: 'gateway', url: '/auth/logout', scope: 'application'}}})
+    vi.mocked(getAuthSession).mockResolvedValue({authenticated: true, profile: profile.profile, csrf_token: 'test-only', idle_expires_at: '2099-01-01T00:00:00Z', absolute_expires_at: '2099-01-02T00:00:00Z', persistence: 'memory'})
+    openAccount('Profile')
+    button('Refresh account').props.onClick(); await flush()
+}
+
+describe('FP-16 account actions', () => {
+    it('shows trusted read-only profile fields and an explicit unsupported logout state', async () => {
+        openAccount('Profile')
+        expect(nodes().some((n) => n.type === 'dd' && n.props.children === 'Ada')).toBe(true)
+        expect(nodes().some((n) => n.type === 'dd' && n.props.children === 'Not provided')).toBe(true)
+        find((n) => n.props['aria-label'] === 'User menu').props.onClick(); render()
+        button('Sign out').props.onClick(); await flush()
+        expect(logout).not.toHaveBeenCalled()
+        expect(find((n) => n.type === 'select' && n.props['aria-label'] === 'Workspace').props.value).toBe('local')
+        expect(nodes().some((n) => n.type === 'p' && n.props.children === 'This fixed local development identity cannot sign out.')).toBe(true)
+    })
+
+    it('keeps the saved display limit on a failed save and applies confirmed settings with their lifetime', async () => {
+        openAccount('Settings')
+        vi.mocked(saveAccountPreferences).mockRejectedValueOnce(new Error('unavailable'))
+        find((n) => n.props['aria-label'] === 'Account recent chat limit').props.onChange({target: {value: '20'}})
+        await flush()
+        expect(find((n) => n.props['aria-label'] === 'Account recent chat limit').props.value).toBe(10)
+        expect(nodes().some((n) => n.props.children === 'Settings were not saved. Try again.')).toBe(true)
+        vi.mocked(saveAccountPreferences).mockResolvedValueOnce({preferences: {recent_chat_limit: 20}, persistence: 'process'})
+        find((n) => n.props['aria-label'] === 'Account recent chat limit').props.onChange({target: {value: '20'}})
+        await flush()
+        expect(find((n) => n.props['aria-label'] === 'Number of recent chats').props.value).toBe(20)
+        expect(nodes().some((n) => n.props.children === 'Applies across workspaces until the backend process restarts.')).toBe(true)
+    })
+
+    it('disables unsupported preferences and sends no save', async () => {
+        vi.mocked(getAccountProfile).mockResolvedValue({...profile, capabilities: {...profile.capabilities, preferences: {...profile.capabilities.preferences, read: false, update: false, persistence: 'unavailable', editable_fields: []}}})
+        openAccount('Settings'); button('Refresh account').props.onClick(); await flush()
+        const selector = find((n) => n.props['aria-label'] === 'Account recent chat limit')
+        expect(selector.props.disabled).toBe(true)
+        selector.props.onChange({target: {value: '20'}}); await flush()
+        expect(saveAccountPreferences).not.toHaveBeenCalled()
+    })
+
+    it('keeps chat usable when preferences are unavailable and exposes retry without claiming persistence', async () => {
+        vi.mocked(getAccountPreferences).mockRejectedValueOnce(new Error('unavailable'))
+        openAccount('Settings'); button('Refresh account').props.onClick(); await flush()
+        expect(find((n) => n.props['aria-label'] === 'Account recent chat limit').props.disabled).toBe(true)
+        expect(find((n) => n.type === 'textarea').props.disabled).toBe(false)
+        expect(button('Retry account')).toBeDefined()
+        expect(nodes().some((n) => n.props.children === 'Saved preferences are currently unavailable.')).toBe(true)
+    })
+
+    it('retains protected data when logout fails, and clears it on confirmed logout', async () => {
+        await gatewayAccount()
+        vi.mocked(logout).mockRejectedValueOnce(new Error('unavailable')).mockImplementationOnce(async () => clearAuthentication())
+        button('Sign out of application').props.onClick(); await flush()
+        expect(find((n) => n.props['aria-label'] === 'Workspace').props.value).toBe('local')
+        expect(nodes().some((n) => n.props.children === 'Sign out was not confirmed. Your data remains open; try again.')).toBe(true)
+        button('Sign out of application').props.onClick(); await flush()
+        expect(button('Sign in')).toBeDefined()
+        expect(find((n) => n.props['aria-label'] === 'Workspace').props.value).toBe('')
+        expect(nodes().some((n) => n.props.className === 'session-list')).toBe(false)
+        expect(find((n) => n.type === 'textarea').props.value).toBe('')
+    })
+
+    it('aborts an active answer on authentication loss and ignores late protected stream callbacks', async () => {
+        const answer = deferred<void>()
+        let callbacks!: StreamHandlers
+        vi.mocked(streamChat).mockImplementationOnce(async (_request, handlers) => {callbacks = handlers; await answer.promise})
+        draft('private question'); submit()
+        const signal = vi.mocked(streamChat).mock.calls[0][2]
+        clearAuthentication(); render()
+        expect(signal.aborted).toBe(true)
+        callbacks.onAnswer('private late answer'); callbacks.onMeta({sessionId: 'old', grounded: true, sources: []})
+        answer.resolve(); await flush()
+        expect(button('Sign in')).toBeDefined()
+        expect(nodes().some((n) => n.props.className === 'streaming-turns')).toBe(false)
+        expect(find((n) => n.type === 'textarea').props.disabled).toBe(true)
+    })
+
+    it('does not restore settings from a response that arrives after authentication loss', async () => {
+        const saved = deferred<{preferences: {recent_chat_limit: number}; persistence: 'server'}>()
+        vi.mocked(saveAccountPreferences).mockReturnValueOnce(saved.promise)
+        openAccount('Settings')
+        find((n) => n.props['aria-label'] === 'Account recent chat limit').props.onChange({target: {value: '100'}})
+        clearAuthentication(); render()
+        saved.resolve({preferences: {recent_chat_limit: 100}, persistence: 'server'}); await flush()
+        expect(button('Sign in')).toBeDefined()
+        expect(nodes().some((n) => n.props['aria-label'] === 'Account recent chat limit')).toBe(false)
+    })
+
+    it('offers only server-provided dev identities and reloads account/workspaces after confirmed sign-in', async () => {
+        clearAuthentication(); render()
+        vi.mocked(getLoginOptions).mockResolvedValue({provider: 'dev', identities: [{identity: 'test-2', display_name: 'Test identity'}], session_url: '/auth/session', login_url: '/auth/dev-login'})
+        vi.mocked(devLogin).mockResolvedValue({authenticated: true, profile: profile.profile, csrf_token: 'test-only', idle_expires_at: '2099-01-01T00:00:00Z', absolute_expires_at: '2099-01-02T00:00:00Z', persistence: 'memory'})
+        button('Sign in').props.onClick(); await flush()
+        button('Test identity').props.onClick(); await flush(); await flush()
+        expect(devLogin).toHaveBeenCalledWith('test-2', expect.any(AbortSignal))
+        expect(getWorkspaces).toHaveBeenCalledTimes(2)
+        expect(nodes().some((n) => n.props['aria-label'] === 'User menu')).toBe(true)
+        expect(streamChat).not.toHaveBeenCalled()
     })
 })

@@ -1,4 +1,16 @@
 # Frontend → Backend
+## 2026-10-16 — FP-16 account and session UI implemented offline
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** Implementation / Validation
+- **Status:** Implemented and offline-validated; uncommitted, live acceptance pending
+- **Affected contract/files:** Published NP-23/NP-24 account/auth routes; frontend API transport, account UI, document auth-denial handling and Vite `/account` proxy; frontend integration checklist.
+- **Message:** Read-only profile/workspaces, capability-driven 10/20/50/100 preferences and persistence copy, explicit unsupported logout, same-origin Entra/dev-identity sign-in, in-memory CSRF on protected mutations and confirmed application logout are implemented. Authentication loss aborts pending requests/body reads and clears/guards protected account/workspace/chat/document/source/draft state. Session context refreshes once on CSRF denial without mutation replay; workspace denial remains separate. Session expiry/visible-tab checks detect subsequent revocation. No browser identity/provider tokens are introduced.
+- **Validation:** `rtk npm test`: 66 passed (19 added account/session regressions); `rtk npm run build`: TypeScript/production build passed. Tests use mocked transport and component hooks/effects, not browser rendering. Operator acceptance checklist extended for real gateway/cookies/CSRF/SSE/Entra/dev identities.
+- **Action requested:** None for API changes. Retain operator-approved migration/gateway/Nginx/Entra rollout and browser acceptance prerequisites; fixed-local Vite proxy does not validate gateway sessions. No live services, model/database calls, deployment, push/merge or phase closure performed.
+- **Supersedes / follow-up:** Frontend implementation follow-up to NP-23/NP-24 delivery; addresses FP-16 requirements in the 2026-10-03 frontend handoff. Wire contract unchanged.
+
 ## 2026-10-03 — FP-15 through FP-17: account actions and document capabilities
 
 - **From:** Frontend

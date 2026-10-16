@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState, type FormEvent} from 'react'
 import DocumentsPanel from './DocumentsPanel'
-import {ApiError, archiveSession, getSession, getSessions, getWorkspaces, renameSession, streamChat, type ChatSession, type ChatSessionDetail, type SourceReference, type Workspace} from './api'
+import {ApiError, archiveSession, getSession, getSessions, getWorkspaces, renameSession, streamChat, getAccountProfile, getAccountPreferences, saveAccountPreferences, getAuthSession, onAuthenticationLost, logout, getLoginOptions, devLogin, type AccountProfile, type AccountPreferences, type DevLogin, type AuthSession, type ChatSession, type ChatSessionDetail, type SourceReference, type Workspace} from './api'
 
 type Pane = 'sources' | 'sessions'
 type StreamingTurn = { question: string; answer: string; status: 'streaming' | 'cancelled' | 'error' }
@@ -38,6 +38,148 @@ export default function App() {
     const focusComposer = useRef(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const refreshBeforeNextTurn = useRef<string | null>(null)
+    const [accountPane, setAccountPane] = useState<'profile' | 'settings' | null>(null)
+    const [account, setAccount] = useState<AccountProfile | null>(null)
+    const [preferences, setPreferences] = useState<AccountPreferences | null>(null)
+    const [accountBusy, setAccountBusy] = useState(false)
+    const [accountReady, setAccountReady] = useState(false)
+    const [accountMessage, setAccountMessage] = useState('')
+    const [signedOut, setSignedOut] = useState(false)
+    const [loginOptions, setLoginOptions] = useState<DevLogin | null>(null)
+    const [authSession, setAuthSession] = useState<AuthSession | null>(null)
+    const [authEpoch, setAuthEpoch] = useState(0)
+    const authGeneration = useRef(0)
+    const accountController = useRef<AbortController | null>(null)
+
+    function clearProtectedState() {
+        authGeneration.current += 1
+        accountController.current?.abort()
+        invalidateConversation()
+        setAuthEpoch((value) => value + 1)
+        setAccount(null); setPreferences(null); setAccountReady(false); setAccountBusy(false)
+        setAuthSession(null); setLoginOptions(null); setAccountPane(null); setProfileMenuOpen(false)
+        setWorkspaces([]); setWorkspaceId(''); setSessions([]); setActiveSession(null)
+        setSources([]); setExpandedSourceIds(new Set()); setGrounded(null); setStreamingTurn(null)
+        setDraft(''); setRenameTitle(''); setIsRenaming(false); setRecentChatLimit(10)
+        refreshBeforeNextTurn.current = null
+        setWorkspaceStatus('ready'); setSessionsStatus('idle'); setSignedOut(true)
+        setAccountMessage(''); setErrorMessage('You are signed out. Sign in to continue.')
+    }
+
+    async function loadAccount() {
+        accountController.current?.abort()
+        const controller = new AbortController()
+        accountController.current = controller
+        const generation = authGeneration.current
+        const current = () => !controller.signal.aborted && generation === authGeneration.current
+        setAccountBusy(true); setAccountMessage(''); setAccountReady(false); setPreferences(null)
+        try {
+            const profile = await getAccountProfile(controller.signal)
+            if (!current()) return
+            if (profile.capabilities.logout.supported) {
+                const session = await getAuthSession(controller.signal)
+                if (!current() || !session.authenticated) return
+                setAuthSession(session)
+            }
+            setAccount(profile); setSignedOut(false); setAccountReady(true)
+            if (profile.capabilities.preferences.read) {
+                try {
+                    const saved = await getAccountPreferences(controller.signal)
+                    if (!current()) return
+                    setPreferences(saved); setRecentChatLimit(saved.preferences.recent_chat_limit)
+                } catch {
+                    if (current()) setAccountMessage('Settings could not be loaded. Retry account to try again.')
+                }
+            }
+        } catch {
+            if (current()) setAccountMessage('Account information is unavailable. Retry account to continue.')
+        } finally { if (current()) setAccountBusy(false) }
+    }
+
+    async function changeRecentChatLimit(limit: number) {
+        const capability = account?.capabilities.preferences
+        if (!accountReady || !preferences || !capability?.update || !capability.editable_fields.includes('recent_chat_limit') || !capability.recent_chat_limit_options.includes(limit) || accountBusy) return
+        const generation = authGeneration.current
+        const controller = new AbortController()
+        accountController.current = controller
+        setAccountBusy(true); setAccountMessage('')
+        try {
+            const saved = await saveAccountPreferences(limit, controller.signal)
+            if (generation !== authGeneration.current || controller.signal.aborted) return
+            setPreferences(saved); setRecentChatLimit(saved.preferences.recent_chat_limit)
+            setAccountMessage('Settings saved.')
+        } catch (error) {
+            if (generation !== authGeneration.current || controller.signal.aborted) return
+            setAccountMessage(error instanceof ApiError && error.code === 'auth_request_denied' ? 'Session context refreshed. Choose the setting again to retry.' : 'Settings were not saved. Try again.')
+        } finally { if (generation === authGeneration.current && !controller.signal.aborted) setAccountBusy(false) }
+    }
+
+    async function signOut() {
+        setProfileMenuOpen(false)
+        if (!account?.capabilities.logout.supported) {
+            setAccountPane('profile')
+            setAccountMessage('Sign out is unavailable with the current authentication setup.')
+            return
+        }
+        if (accountBusy) return
+        const generation = authGeneration.current
+        const controller = new AbortController()
+        accountController.current = controller
+        setAccountBusy(true); setAccountMessage(''); setAccountPane('profile')
+        try { await logout(controller.signal) }
+        catch {
+            if (generation === authGeneration.current && !controller.signal.aborted) setAccountMessage('Sign out was not confirmed. Your data remains open; try again.')
+        } finally { if (generation === authGeneration.current && !controller.signal.aborted) setAccountBusy(false) }
+    }
+
+    async function signIn(identity?: string) {
+        if (accountBusy) return
+        const generation = authGeneration.current
+        const controller = new AbortController()
+        accountController.current = controller
+        setAccountBusy(true); setAccountMessage('')
+        try {
+            if (identity) {
+                if (!loginOptions?.identities.some((choice) => choice.identity === identity)) return
+                const session = await devLogin(identity, controller.signal)
+                if (generation !== authGeneration.current || controller.signal.aborted) return
+                if (!session.authenticated) throw new Error('Sign-in not confirmed')
+                setAuthSession(session); setSignedOut(false); setLoginOptions(null); setErrorMessage('')
+                retryWorkspaceDiscovery()
+                void loadAccount()
+            } else {
+                const choices = await getLoginOptions(controller.signal)
+                if (generation !== authGeneration.current || controller.signal.aborted) return
+                if (choices) setLoginOptions(choices)
+                else window.location.assign('/auth/login')
+            }
+        } catch {
+            if (generation === authGeneration.current && !controller.signal.aborted) setAccountMessage('Sign-in is unavailable. Try again.')
+        } finally { if (generation === authGeneration.current && !controller.signal.aborted) setAccountBusy(false) }
+    }
+
+    useEffect(() => onAuthenticationLost(clearProtectedState), [])
+    useEffect(() => {
+        void loadAccount()
+        return () => { accountController.current?.abort(); authGeneration.current += 1 }
+    }, [])
+    useEffect(() => {
+        if (!authSession?.authenticated) return
+        const controller = new AbortController()
+        const generation = authGeneration.current
+        const checkSession = () => {
+            void getAuthSession(controller.signal).then((session) => {
+                if (!controller.signal.aborted && generation === authGeneration.current && session.authenticated) setAuthSession(session)
+            }).catch(() => {
+                if (!controller.signal.aborted && generation === authGeneration.current) setAccountMessage('Session could not be checked. Retry account.')
+            })
+        }
+        const onReturn = () => { if (document.visibilityState === 'visible') checkSession() }
+        const expiry = Math.min(Date.parse(authSession.idle_expires_at!), Date.parse(authSession.absolute_expires_at!))
+        const timer = window.setTimeout(checkSession, Math.min(2_147_483_647, Math.max(0, expiry - Date.now())))
+        document.addEventListener('visibilitychange', onReturn)
+        return () => { controller.abort(); window.clearTimeout(timer); document.removeEventListener('visibilitychange', onReturn) }
+    }, [authSession])
 
     function cancelStream(showPartial = false) {
         streamController.current?.abort()
@@ -63,12 +205,15 @@ export default function App() {
 
     useEffect(() => {
         const controller = new AbortController()
+        const generation = authGeneration.current
         getWorkspaces(controller.signal)
             .then((discovery) => {
+                if (controller.signal.aborted || generation !== authGeneration.current) return
                 setWorkspaces(discovery.workspaces);
                 setWorkspaceStatus('ready')
             })
             .catch((error: unknown) => {
+                if (controller.signal.aborted || generation !== authGeneration.current) return
                 if (error instanceof DOMException && error.name === 'AbortError') return
                 setWorkspaceStatus('error')
                 setErrorMessage('Unable to load your workspaces. Try refreshing the page.')
@@ -83,6 +228,7 @@ export default function App() {
     }
 
     async function recoverWorkspaceAccess() {
+        const generation = authGeneration.current
         invalidateConversation()
         setSources([])
         setGrounded(null)
@@ -94,10 +240,12 @@ export default function App() {
         setWorkspaceStatus('loading')
         try {
             const discovery = await getWorkspaces()
+            if (generation !== authGeneration.current) return
             setWorkspaces(discovery.workspaces)
             setWorkspaceStatus('ready')
             setErrorMessage('Your workspace access changed. Choose an available workspace to continue.')
         } catch {
+            if (generation !== authGeneration.current) return
             setWorkspaceStatus('error')
             setErrorMessage('Your workspace access changed, and available workspaces could not be refreshed.')
         }
@@ -112,16 +260,17 @@ export default function App() {
             return
         }
         const controller = new AbortController()
+        const generation = authGeneration.current
         setSessionsStatus('loading')
         setErrorMessage('')
         getSessions(workspaceId, controller.signal)
             .then((availableSessions) => {
-                if (controller.signal.aborted) return
+                if (controller.signal.aborted || generation !== authGeneration.current) return
                 setSessions(availableSessions);
                 setSessionsStatus('ready')
             })
             .catch((error: unknown) => {
-                if (controller.signal.aborted) return
+                if (controller.signal.aborted || generation !== authGeneration.current) return
                 if (error instanceof DOMException && error.name === 'AbortError') return
                 if (error instanceof ApiError && error.code === 'workspace_access_denied') {
                     void recoverWorkspaceAccess()
@@ -180,7 +329,7 @@ export default function App() {
     async function submitRename(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         const title = renameTitle.trim()
-        if (!activeSession || !title) return
+        if (!accountReady || signedOut || !activeSession || !title) return
         const generation = conversationGeneration.current
         setErrorMessage('')
         try {
@@ -216,7 +365,7 @@ export default function App() {
     }
 
     async function archiveActiveSession() {
-        if (!activeSession || !window.confirm('Archive this chat? It will be removed from your recent chats.')) return
+        if (!accountReady || signedOut || !activeSession || !window.confirm('Archive this chat? It will be removed from your recent chats.')) return
         const sessionId = activeSession.sessionId
         const generation = conversationGeneration.current
         setErrorMessage('')
@@ -272,7 +421,7 @@ export default function App() {
     async function submitQuestion(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         const question = draft.trim()
-        if (!workspaceId || !question || streamController.current) return
+        if (!accountReady || signedOut || !workspaceId || !question || streamController.current) return
         invalidateConversation()
         const generation = conversationGeneration.current
         const controller = new AbortController()
@@ -361,44 +510,60 @@ export default function App() {
                 </select></label>
                 <button className="primary" type="button" disabled={!workspaceId} onClick={startNewChat}>New chat</button>
                 <div className="profile-menu">
-                    <button className="avatar" type="button" aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-label="User menu" onClick={() => setProfileMenuOpen((open) => !open)}>U</button>
+                    {signedOut ? <button type="button" disabled={accountBusy} onClick={() => void signIn()}>Sign in</button> : <button className="avatar" type="button" aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-label="User menu" onClick={() => setProfileMenuOpen((open) => !open)}>{account?.profile.display_name.slice(0, 1) || 'U'}</button>}
                     {profileMenuOpen && <div className="profile-menu-panel" role="menu" aria-label="User menu">
-                        <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Profile</button>
-                        <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Settings</button>
-                        <button type="button" role="menuitem" onClick={() => setProfileMenuOpen(false)}>Sign out</button>
+                        <button type="button" role="menuitem" onClick={() => {setAccountPane('profile'); setProfileMenuOpen(false)}}>Profile</button>
+                        <button type="button" role="menuitem" onClick={() => {setAccountPane('settings'); setProfileMenuOpen(false)}}>Settings</button>
+                        <button type="button" role="menuitem" disabled={accountBusy} onClick={() => void signOut()}>Sign out</button>
                     </div>}
                 </div>
             </div>
         </header>
+        <section className="account-area" aria-label="Account" aria-busy={accountBusy}>
+            {accountBusy && <p role="status">Loading account…</p>}
+            {accountMessage && <p role="status">{accountMessage}</p>}
+            {!signedOut && !accountBusy && (!accountReady || (account?.capabilities.preferences.read && !preferences) || (accountMessage && accountMessage !== 'Settings saved.')) && <button type="button" onClick={() => void loadAccount()}>Retry account</button>}
+            {loginOptions && <div aria-label="Local test identities"><p>Choose a local test identity</p>{loginOptions.identities.map((choice) => <button type="button" key={choice.identity} disabled={accountBusy} onClick={() => void signIn(choice.identity)}>{choice.display_name}</button>)}</div>}
+            {accountPane && <div className="account-panel" role="region" aria-label={accountPane === 'profile' ? 'Profile' : 'Settings'}>
+                <div className="account-heading"><h2>{accountPane === 'profile' ? 'Profile' : 'Settings'}</h2><button type="button" disabled={accountBusy} onClick={() => void loadAccount()}>Refresh account</button><button type="button" onClick={() => setAccountPane(null)}>Close account panel</button></div>
+                {account && accountPane === 'profile' && <>
+                    <dl><dt>Name</dt><dd dir="auto">{account.profile.display_name}</dd><dt>Email</dt><dd dir="auto">{account.profile.email || 'Not provided'}</dd></dl>
+                    <p>Profile details and workspace roles are read-only.</p>
+                    <h3>Workspace access</h3>{account.workspaces.length ? <ul>{account.workspaces.map((workspace) => <li key={workspace.workspace_id} dir="auto">{workspace.display_name} — {workspace.role}</li>)}</ul> : <p>No workspace memberships.</p>}
+                    {account.capabilities.logout.supported ? <><p>Sign out ends this application session. Your Microsoft sign-in and other devices are unaffected.</p><button type="button" disabled={accountBusy} onClick={() => void signOut()}>Sign out of application</button></> : <p>{account.capabilities.logout.reason === 'fixed_local_identity' ? 'This fixed local development identity cannot sign out.' : 'Sign out is not configured for this application.'}</p>}
+                </>}
+                {account && accountPane === 'settings' && <>
+                    <label>Recent chats<select aria-label="Account recent chat limit" value={recentChatLimit} disabled={accountBusy || !preferences || !account.capabilities.preferences.update || !account.capabilities.preferences.editable_fields.includes('recent_chat_limit')} onChange={(event) => void changeRecentChatLimit(Number(event.target.value))}>{account.capabilities.preferences.recent_chat_limit_options.map((limit) => <option key={limit} value={limit}>{limit}</option>)}</select></label>
+                    <p>{preferences?.persistence === 'server' ? 'Saved to your account across workspaces and sign-ins.' : preferences?.persistence === 'process' ? 'Applies across workspaces until the backend process restarts.' : 'Saved preferences are currently unavailable.'}</p>
+                    {!account.capabilities.preferences.update && <p>Settings changes are unsupported in this configuration.</p>}
+                </>}
+            </div>}
+        </section>
         <section className="workspace" aria-label="Chat workspace">
-            <DocumentsPanel key={workspaceId} workspaceId={workspaceId} onAccessDenied={(unauthenticated) => {
+            <DocumentsPanel key={`${authEpoch}:${workspaceId}`} workspaceId={workspaceId} onAccessDenied={(unauthenticated) => {
                 invalidateConversation()
                 setSources([])
                 setGrounded(null)
                 setStreamingTurn(null)
                 if (unauthenticated) {
-                    setWorkspaceId('')
-                    setWorkspaces([])
-                    setSessions([])
-                    setActiveSession(null)
-                    setErrorMessage('Sign in again, then reload to continue.')
+                    clearProtectedState()
                 } else void recoverWorkspaceAccess()
             }}/>
             <section className="chat-pane" aria-label="Chat" aria-busy={isSubmitting}>
                 <div className="chat-heading">
                     <div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div>
                     <div className="heading-actions">{activeSession && <>
-                        <button className="secondary" type="button" onClick={() => {
+                        <button className="secondary" type="button" disabled={!accountReady} onClick={() => {
                             setRenameTitle(activeSession.title);
                             setIsRenaming(true)
                         }}>Rename
                         </button>
-                        <button className="destructive" type="button" onClick={() => void archiveActiveSession()}>Archive chat</button>
+                        <button className="destructive" type="button" disabled={!accountReady} onClick={() => void archiveActiveSession()}>Archive chat</button>
                     </>}</div>
                 </div>
                 {isRenaming && activeSession && <form className="rename-form" aria-label="Rename chat" onSubmit={(event) => void submitRename(event)}><label htmlFor="session-title">Chat title</label>
                     <div><input id="session-title" value={renameTitle} onChange={(event) => setRenameTitle(event.target.value)} maxLength={200} autoFocus/>
-                        <button type="submit" disabled={!renameTitle.trim()}>Save</button>
+                        <button type="submit" disabled={!accountReady || !renameTitle.trim()}>Save</button>
                         <button className="secondary" type="button" onClick={() => setIsRenaming(false)}>Cancel</button>
                     </div>
                 </form>}
@@ -429,10 +594,10 @@ export default function App() {
                     </section>}
                 </div>
                 <form className="composer" onSubmit={(event) => void submitQuestion(event)}><label className="sr-only" htmlFor="question">Your question</label><textarea ref={composer} id="question" value={draft} onChange={(event) => setDraft(event.target.value)}
-                                                                                                                                                                         disabled={!workspaceId || isSubmitting}
+                                                                                                                                                                         disabled={!accountReady || !workspaceId || isSubmitting}
                                                                                                                                                                          placeholder="Ask about your developer documentation…"
                                                                                                                                                                          rows={3}/>{isSubmitting ?
-                    <button className="secondary" type="button" onClick={() => cancelStream(true)}>Stop</button> : <button type="submit" disabled={!workspaceId || !draft.trim()}>Send</button>}</form>
+                    <button className="secondary" type="button" onClick={() => cancelStream(true)}>Stop</button> : <button type="submit" disabled={!accountReady || !workspaceId || !draft.trim()}>Send</button>}</form>
             </section>
             <aside className="sessions-pane" aria-label="Recent chats">
                 <div className="pane-tabs" aria-label="Workspace panels">
@@ -457,10 +622,7 @@ export default function App() {
                 })}</ol>}</div>}
                 {activePane === 'sessions' && !workspaceId && <p className="muted">Select a workspace to view recent chats.</p>}
                 {activePane === 'sessions' && workspaceId && <label className="recent-chat-limit">Show recent chats
-                    <select aria-label="Number of recent chats" value={recentChatLimit} onChange={(event) => {
-                        const limit = Number(event.target.value)
-                        if ([10, 20, 50, 100].includes(limit)) setRecentChatLimit(limit)
-                    }}>{[10, 20, 50, 100].map((limit) => <option key={limit} value={limit}>{limit}</option>)}</select>
+                    <select aria-label="Number of recent chats" value={recentChatLimit} disabled={accountBusy || !preferences || !account?.capabilities.preferences.update} onChange={(event) => void changeRecentChatLimit(Number(event.target.value))}>{(account?.capabilities.preferences.recent_chat_limit_options ?? [10, 20, 50, 100]).map((limit) => <option key={limit} value={limit}>{limit}</option>)}</select>
                 </label>}
                 {activePane === 'sessions' && workspaceId && sessionsStatus === 'loading' && <p className="muted">Loading recent chats…</p>}
                 {activePane === 'sessions' && workspaceId && sessionsStatus === 'error' && <button className="secondary" type="button" onClick={retrySessions}>Retry recent chats</button>}

@@ -1,7 +1,7 @@
 # Frontend-to-Backend Integration Test Plan
 
 **Status:** Ready for operator execution
-**Last reviewed:** 2026-09-01
+**Last reviewed:** 2026-10-16
 
 ## Scope and prerequisites
 
@@ -60,3 +60,26 @@ outside of ordinary test chats that can be archived afterward.
   recovery state.
 - Any discrepancy recorded in `docs/agent_handoff/frontend_to_backend.md` with
   endpoint, status/event, reproduction steps, and user-visible result.
+
+## FP-16 account/session acceptance (not executed)
+
+Requires separately approved NP-23 migration 008 and NP-24 gateway/migration 009,
+Nginx and Entra/dev-provider rollout. Use the same Nginx/gateway browser origin
+for the SPA, `/auth`, `/account`, chat and documents. The Vite fixed-local API
+proxy includes `/account` only; it cannot validate gateway sessions or logout.
+No service startup, migration, proxy/tenant configuration or live acceptance was
+performed by FP-16.
+
+| Check | Expected browser/API result |
+| --- | --- |
+| Profile | Trusted display name, nullable email and workspace roles are read-only; no browser identity selectors/headers. No memberships still allows personal settings. |
+| Settings | Load the saved 10/20/50/100 limit, apply across workspaces; save only `recent_chat_limit`. Reload confirms server persistence; process persistence is labelled as ending on process restart. |
+| Unsupported/unavailable settings | Disable unsupported edits; 503/read/save failure exposes retry and never claims a successful save or durable browser fallback. Chat remains usable after preference read failure. |
+| Fixed-local sign out | Explicit unavailable explanation; no simulated logout or local protected-state clearing. |
+| Entra sign-in | Navigate through `/auth/login`, Microsoft and the gateway callback; no client token exchange or manufactured callback parameters. |
+| Local gateway identities | `/auth/login` supplies the choices; bootstrap session CSRF protects `/auth/dev-login`; confirm authenticated session and reload account/workspaces without replaying chat. |
+| Mutation CSRF | Current in-memory `X-CSRF-Token` accompanies chat/stream, rename, archive, preference updates and logout; same-origin cookies; no identity headers or tokens in browser storage/logs. |
+| CSRF rejection | `403 auth_request_denied` refreshes session context once and requires explicit action retry; it does not trigger workspace-loss recovery or automatic mutation replay. |
+| Application logout | Only confirmed 204 clears account/workspaces/chats/documents/sources/drafts and aborts/ignores pending work. Failed 503 retains protected data with retry; Microsoft SSO and other devices are unaffected. |
+| Expiry and other tabs | Check session at earliest advertised expiry and on returning to a visible tab. Anonymous session/API 401 clears protected state. Already admitted backend work may finish, but late browser results must not restore protected content. |
+| Failure boundaries | Separately verify real Nginx/cookies/CSRF/SSE, migration durability and Entra/dev-provider redirects; offline mocks are not deployment evidence. Never capture CSRF/session/provider tokens in evidence. |

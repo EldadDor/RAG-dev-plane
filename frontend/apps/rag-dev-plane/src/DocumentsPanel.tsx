@@ -36,7 +36,9 @@ export default function DocumentsPanel({ workspaceId, onAccessDenied }: { worksp
       setCatalog(result)
     } catch (failure) {
       if (pending.signal.aborted) return
-      if (failure instanceof ApiError && (failure.status === 401 || failure.status === 403)) {
+      if (failure instanceof ApiError && failure.code === 'auth_request_denied') {
+        setError('Session context changed. Retry documents to continue.')
+      } else if (failure instanceof ApiError && (failure.status === 401 || failure.status === 403)) {
         setCatalog(null)
         accessDenied.current(failure.status === 401)
         setError(failure.status === 401 ? 'Sign in again to view documents.' : 'Your access to this workspace changed.')

@@ -1,7 +1,7 @@
 # Current Frontend Work Phase
 
 **Last reviewed:** 2026-10-16
-**Status:** FP-15 implemented and offline-validated; uncommitted. FP-14 delivered locally as c453f01; no push/merge or phase closure performed.
+**Status:** FP-16 implemented and offline-validated; uncommitted, live acceptance pending. FP-15 committed locally as a633351; no push/merge or phase closure performed.
 
 | ID | Task | Status | Gate | Request / evidence |
 | --- | --- | --- | --- | --- |
@@ -24,4 +24,12 @@ Scope: existing API mapping and recent-chat pane. Deduplicate by session ID, ret
 
 | ID | Task | Status | Gate | Request / evidence |
 | --- | --- | --- | --- | --- |
-| FP-15 | Unique recent chats and display limit | Completed | G1 Intake approved | FP-15: User approved next task 2026-10-16. api.ts deduplicates IDs retaining newest record, orders updated_at descending/null last and ordinal ID ties (preserves sub-millisecond UTC precision). App.tsx offers 10/20/50/100, default 10, caps only display and refreshes after rename; styles.css styles selector. api.test.ts/App.test.tsx cover duplicates, same titles, null/invalid timestamps, fine timestamp precision, immutability and supported display limits without refetch/selection loss. rtk npm test: 47 passed; rtk npm run build: TypeScript/production build passed; scoped rtk git diff --check passed. Files: five frontend source/test files and both frontend boards. User explicitly approved FP-15 commit on 2026-10-16; local commit in progress. No push/merge or phase closure approved. No new module/dependency/API shape (G2 not triggered). Browser/live API/model/database checks not run; no services started. Preference persistence remains FP-16. |
+| FP-15 | Unique recent chats and display limit | Completed | G1 Intake approved | FP-15: User approved next task 2026-10-16. api.ts deduplicates IDs retaining newest record, orders updated_at descending/null last and ordinal ID ties (preserves sub-millisecond UTC precision). App.tsx offers 10/20/50/100, default 10, caps only display and refreshes after rename; styles.css styles selector. api.test.ts/App.test.tsx cover duplicates, same titles, null/invalid timestamps, fine timestamp precision, immutability and supported display limits without refetch/selection loss. rtk npm test: 47 passed; rtk npm run build: TypeScript/production build passed; scoped rtk git diff --check passed. Files: five frontend source/test files and both frontend boards. User explicitly approved FP-15 commit on 2026-10-16; committed locally as a633351. No push/merge or phase closure approved. No new module/dependency/API shape (G2 not triggered). Browser/live API/model/database checks not run; no services started. Preference persistence remains FP-16. |
+
+## FP-16 Profile, Settings and Logout
+
+Scope: existing frontend API transport, account menu/panels and preference selector; read-only profile, capability-driven settings, same-origin session/CSRF and real application logout, sign-in and supported local test identities. Existing modules only; no dependencies or backend/API-shape changes. Live gateway/migration/Entra rollout remains operator-owned and unperformed.
+
+| ID | Task | Status | Gate | Request / evidence |
+| --- | --- | --- | --- | --- |
+| FP-16 | Account actions and authentication integration | Completed | G1 Intake approved | FP-16: User explicitly approved 2026-10-16. Existing api.ts/App.tsx implement read-only profile, capability-driven preferences/persistence, same-origin Entra/dev sign-in, in-memory CSRF, confirmed application logout, auth generation/cancellation and expiry/visible-tab checks; DocumentsPanel.tsx distinguishes CSRF from workspace denial; styles.css and Vite account proxy updated. API/App tests now cover hooks/effects and 19 new account/session regressions. rtk npm test: 66 passed; rtk npm run build: TypeScript/production build passed; scoped whitespace checks passed. Shared integration checklist and frontend handoff updated. No new module/dependency/server API shape (G2 not triggered). No commit for FP-16; no push/merge/G4 closure, browser rendering/acceptance, migration/gateway/Nginx/Entra rollout or live API/model/database checks. Those remain operator prerequisites; no services started. |

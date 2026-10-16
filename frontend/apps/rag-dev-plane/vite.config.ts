@@ -10,6 +10,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/account': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
       '/workspaces': {
         target: 'http://localhost:8000',
         changeOrigin: true,

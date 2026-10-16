@@ -29,6 +29,42 @@ type ApiSessionDetail = ApiSession & {
   turns: Array<{ role: 'user' | 'assistant'; content: string; created_at: string }>
 }
 type ApiErrorBody = { code?: unknown; message?: unknown }
+export type AccountProfile = {
+  profile: { display_name: string; email: string | null }
+  workspaces: ApiWorkspace[]
+  capabilities: {
+    profile_editable: false
+    preferences: { read: boolean; update: boolean; persistence: 'server' | 'process' | 'unavailable'; editable_fields: string[]; recent_chat_limit_options: number[]; recent_chat_limit_default: number }
+    logout: { supported: boolean; reason?: string; owner?: string; method?: string; url?: string; scope?: string }
+  }
+}
+export type AccountPreferences = { preferences: { recent_chat_limit: number }; persistence: 'server' | 'process' }
+export type AuthSession = { authenticated: boolean; profile: AccountProfile['profile'] | null; csrf_token: string; idle_expires_at: string | null; absolute_expires_at: string | null; persistence: 'memory' | 'postgres' }
+export type DevLogin = { provider: 'dev'; identities: Array<{ identity: string; display_name: string }>; session_url: '/auth/session'; login_url: '/auth/dev-login' }
+let csrfToken: string | null = null
+let authGeneration = 0
+const pendingRequests = new Set<AbortController>()
+const responseControllers = new WeakMap<Response, AbortController>()
+function releaseResponse(response: Response) {
+  const controller = responseControllers.get(response)
+  if (controller) pendingRequests.delete(controller)
+  responseControllers.delete(response)
+}
+const authListeners = new Set<() => void>()
+export function onAuthenticationLost(listener: () => void): () => void {
+  authListeners.add(listener)
+  return () => { authListeners.delete(listener) }
+}
+export function clearAuthentication(): void {
+  authGeneration += 1
+  csrfToken = null
+  for (const pending of pendingRequests) pending.abort()
+  pendingRequests.clear()
+  for (const listener of authListeners) listener()
+}
+function assertAuthGeneration(generation: number) {
+  if (generation !== authGeneration) throw new DOMException('Request cancelled.', 'AbortError')
+}
 type ApiSourceAsset = { asset_id: string; media_type: string; width?: number | null; height?: number | null; alt_text?: string | null; caption?: string | null; content_url?: string | null }
 type ApiSourceReference = { doc_id: string; chunk_id: string; source_path: string; title: string | null; page: number | null; section: string | null; score: number | null; snippet: string | null; assets?: ApiSourceAsset[] }
 type ApiStreamMeta = { session_id: string; grounded: boolean; sources: ApiSourceReference[]; debug: object | null }
@@ -45,10 +81,29 @@ export class ApiError extends Error {
 }
 
 async function request(path: string, init?: RequestInit): Promise<Response> {
-  const response = await fetch(path, init)
-  if (!response.ok) {
+  const generation = authGeneration
+  const controller = new AbortController()
+  pendingRequests.add(controller)
+  const headers = new Headers(init?.headers)
+  if (csrfToken && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(init?.method ?? 'GET')) headers.set('X-CSRF-Token', csrfToken)
+  let response: Response
+  try {
+    response = await fetch(path, { ...init, headers, credentials: 'same-origin', cache: 'no-store', signal: init?.signal ? AbortSignal.any([init.signal, controller.signal]) : controller.signal })
+    assertAuthGeneration(generation)
+    init?.signal?.throwIfAborted()
+  } catch (error) { pendingRequests.delete(controller); throw error }
+  if (response.body) responseControllers.set(response, controller)
+  else pendingRequests.delete(controller)
+  if (!response.ok && !(init?.redirect === 'manual' && (response.type === 'opaqueredirect' || [302, 303].includes(response.status)))) {
     let body: ApiErrorBody = {}
     try { body = await response.json() as ApiErrorBody } catch { /* Use the status fallback. */ }
+    releaseResponse(response)
+    assertAuthGeneration(generation)
+    if (response.status === 401) clearAuthentication()
+    if (response.status === 403 && body.code === 'auth_request_denied' && path !== '/auth/session') {
+      // Refresh context once, but leave the original action for explicit user retry.
+      try { await getAuthSession() } catch { /* The original safe failure remains actionable. */ }
+    }
     throw new ApiError(
       response.status,
       typeof body.code === 'string' ? body.code : 'unknown_error',
@@ -59,8 +114,74 @@ async function request(path: string, init?: RequestInit): Promise<Response> {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const generation = authGeneration
   const response = await request(path, init)
-  return response.json() as Promise<T>
+  try {
+    const value = await response.json() as T
+    assertAuthGeneration(generation)
+    init?.signal?.throwIfAborted()
+    return value
+  } finally { releaseResponse(response) }
+}
+
+export async function getAccountProfile(signal?: AbortSignal): Promise<AccountProfile> {
+  const value = await requestJson<AccountProfile>('/account/profile', {signal})
+  const preferences = value?.capabilities?.preferences
+  if (!value?.profile || typeof value.profile.display_name !== 'string' || (value.profile.email !== null && typeof value.profile.email !== 'string')
+    || !Array.isArray(value.workspaces) || !value.workspaces.every((item) => typeof item.workspace_id === 'string' && typeof item.display_name === 'string' && ['owner', 'member'].includes(item.role))
+    || !preferences || typeof preferences.read !== 'boolean' || typeof preferences.update !== 'boolean'
+    || !['server', 'process', 'unavailable'].includes(preferences.persistence) || !Array.isArray(preferences.editable_fields)
+    || !Array.isArray(preferences.recent_chat_limit_options) || preferences.recent_chat_limit_options.some((limit) => ![10, 20, 50, 100].includes(limit))
+    || typeof value.capabilities.logout?.supported !== 'boolean') throw new ApiError(500, 'account_protocol_error')
+  if (value.capabilities.logout.supported && (value.capabilities.logout.url !== '/auth/logout' || value.capabilities.logout.method !== 'POST' || value.capabilities.logout.owner !== 'gateway' || value.capabilities.logout.scope !== 'application')) throw new ApiError(500, 'account_protocol_error')
+  return value
+}
+function validatePreferences(value: AccountPreferences): AccountPreferences {
+  if (![10, 20, 50, 100].includes(value?.preferences?.recent_chat_limit) || !['server', 'process'].includes(value.persistence)) throw new ApiError(500, 'account_protocol_error')
+  return value
+}
+export async function getAccountPreferences(signal?: AbortSignal): Promise<AccountPreferences> {
+  return validatePreferences(await requestJson<AccountPreferences>('/account/preferences', {signal}))
+}
+export async function saveAccountPreferences(limit: number, signal?: AbortSignal): Promise<AccountPreferences> {
+  if (![10, 20, 50, 100].includes(limit)) throw new ApiError(422, 'invalid_request')
+  return validatePreferences(await requestJson<AccountPreferences>('/account/preferences', {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({recent_chat_limit: limit}), signal}))
+}
+async function readAuthSession(signal?: AbortSignal, notifyAnonymous = true): Promise<AuthSession> {
+  const generation = authGeneration
+  const value = await requestJson<AuthSession>('/auth/session', {signal})
+  assertAuthGeneration(generation)
+  if (typeof value?.authenticated !== 'boolean' || typeof value.csrf_token !== 'string' || !value.csrf_token || !['memory', 'postgres'].includes(value.persistence)
+    || (value.authenticated && (!value.profile || typeof value.profile.display_name !== 'string' || !Number.isFinite(Date.parse(value.idle_expires_at ?? '')) || !Number.isFinite(Date.parse(value.absolute_expires_at ?? ''))))) throw new ApiError(500, 'auth_protocol_error')
+  if (!value.authenticated && notifyAnonymous) clearAuthentication()
+  csrfToken = value.csrf_token
+  return value
+}
+export async function getAuthSession(signal?: AbortSignal): Promise<AuthSession> { return readAuthSession(signal) }
+export async function logout(signal?: AbortSignal): Promise<void> {
+  if (!csrfToken) await getAuthSession(signal)
+  const generation = authGeneration
+  const response = await request('/auth/logout', {method: 'POST', signal})
+  assertAuthGeneration(generation)
+  if (response.status !== 204) throw new ApiError(500, 'auth_protocol_error')
+  clearAuthentication()
+}
+export async function getLoginOptions(signal?: AbortSignal): Promise<DevLogin | null> {
+  const generation = authGeneration
+  const response = await request('/auth/login', {redirect: 'manual', signal})
+  if (response.type === 'opaqueredirect' || response.status === 302) return null
+  let value: DevLogin
+  try { value = await response.json() as DevLogin } finally { releaseResponse(response) }
+  assertAuthGeneration(generation)
+  if (value?.provider !== 'dev' || value.login_url !== '/auth/dev-login' || value.session_url !== '/auth/session' || !Array.isArray(value.identities)
+    || !value.identities.every((item) => typeof item.identity === 'string' && typeof item.display_name === 'string')) throw new ApiError(500, 'auth_protocol_error')
+  return value
+}
+export async function devLogin(identity: string, signal?: AbortSignal): Promise<AuthSession> {
+  await readAuthSession(signal, false)
+  const response = await request('/auth/dev-login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({identity}), redirect: 'manual', signal})
+  if (response.type !== 'opaqueredirect' && response.status !== 303) throw new ApiError(500, 'auth_protocol_error')
+  return getAuthSession(signal)
 }
 export type IngestedDocument = {
   docId: string; title: string; fileName: string; documentType: string
@@ -200,6 +321,7 @@ function parseEvent(block: string): { name: string; data: string } | null {
 }
 
 export async function streamChat(requestBody: StreamRequest, handlers: StreamHandlers, signal: AbortSignal): Promise<void> {
+  const generation = authGeneration
   const response = await request('/chat/stream', {
     method: 'POST', headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json' },
     body: JSON.stringify({ question: requestBody.question, ...(requestBody.workspaceId ? { workspace_id: requestBody.workspaceId } : {}), ...(requestBody.sessionId ? { session_id: requestBody.sessionId } : {}), include_debug: false }), signal,
@@ -212,6 +334,8 @@ export async function streamChat(requestBody: StreamRequest, handlers: StreamHan
   let completed = false
   let postStartError: ApiError | null = null
   const processBlock = (block: string) => {
+    assertAuthGeneration(generation)
+    if (signal.aborted) throw new DOMException('Request cancelled.', 'AbortError')
     const event = parseEvent(block)
     if (!event || !['answer', 'meta', 'error', 'done'].includes(event.name)) return
     let payload: unknown
@@ -231,6 +355,7 @@ export async function streamChat(requestBody: StreamRequest, handlers: StreamHan
       const error = payload as ApiErrorBody
       terminal = 'error'
       postStartError = new ApiError(200, typeof error.code === 'string' ? error.code : 'stream_interrupted', typeof error.message === 'string' ? error.message : undefined)
+      if (error.code === 'authentication_required') clearAuthentication()
     } else {
       if (completed) throw new ApiError(500, 'stream_protocol_error')
       const reason = (payload as { reason?: unknown })?.reason
@@ -238,14 +363,20 @@ export async function streamChat(requestBody: StreamRequest, handlers: StreamHan
       else throw new ApiError(500, 'stream_protocol_error')
     }
   }
-  while (true) {
-    const { done, value } = await reader.read()
-    buffer += decoder.decode(value, { stream: !done })
-    const blocks = buffer.split(/\r?\n\r?\n/)
-    buffer = blocks.pop() ?? ''
-    for (const block of blocks) processBlock(block)
-    if (done) break
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      buffer += decoder.decode(value, { stream: !done })
+      const blocks = buffer.split(/\r?\n\r?\n/)
+      buffer = blocks.pop() ?? ''
+      for (const block of blocks) processBlock(block)
+      if (done) break
+    }
+    if (!completed) throw new ApiError(500, 'stream_incomplete')
+    if (postStartError) throw postStartError
+  } finally {
+    releaseResponse(response)
+    await reader.cancel().catch(() => {})
+    reader.releaseLock()
   }
-  if (!completed) throw new ApiError(500, 'stream_incomplete')
-  if (postStartError) throw postStartError
 }

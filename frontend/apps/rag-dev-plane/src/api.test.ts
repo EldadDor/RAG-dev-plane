@@ -1,9 +1,148 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { archiveSession, getDocuments, getSession, getSessions, getWorkspaces, normalizeSessions, renameSession, streamChat, type ChatSession } from './api'
+import { archiveSession, getDocuments, getSession, getSessions, getWorkspaces, normalizeSessions, renameSession, streamChat, clearAuthentication, onAuthenticationLost, getAuthSession, getAccountProfile, getAccountPreferences, saveAccountPreferences, logout, getLoginOptions, devLogin, type ChatSession } from './api'
 
 afterEach(() => {
+  clearAuthentication()
   vi.unstubAllGlobals()
+})
+
+const authenticatedSession = {authenticated: true, profile: {display_name: 'Ada', email: null}, csrf_token: 'test-only-csrf', idle_expires_at: '2099-01-01T00:00:00Z', absolute_expires_at: '2099-01-02T00:00:00Z', persistence: 'memory'}
+const anonymousSession = {...authenticatedSession, authenticated: false, profile: null, idle_expires_at: null, absolute_expires_at: null, csrf_token: 'test-bootstrap'}
+const wireProfile = {profile: {display_name: 'Ada', email: null}, workspaces: [], capabilities: {profile_editable: false, preferences: {read: true, update: true, persistence: 'server', editable_fields: ['recent_chat_limit'], recent_chat_limit_options: [10, 20, 50, 100], recent_chat_limit_default: 10}, logout: {supported: false, reason: 'fixed_local_identity'}}}
+
+describe('FP-16 account and session transport', () => {
+  it('reads account capabilities and preferences without identity selectors or cached responses', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json(wireProfile)).mockResolvedValueOnce(Response.json({preferences: {recent_chat_limit: 20}, persistence: 'process'}))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(getAccountProfile()).resolves.toMatchObject({profile: {email: null}})
+    await expect(getAccountPreferences()).resolves.toEqual({preferences: {recent_chat_limit: 20}, persistence: 'process'})
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual(['/account/profile', '/account/preferences'])
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({cache: 'no-store', credentials: 'same-origin'})
+    expect([...new Headers(fetchMock.mock.calls[0][1].headers).keys()]).toEqual([])
+  })
+
+  it('sends the in-memory CSRF token on every protected mutation and only the preference field on save', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json(authenticatedSession))
+      .mockResolvedValueOnce(Response.json({preferences: {recent_chat_limit: 50}, persistence: 'server'}))
+      .mockResolvedValueOnce(Response.json({ok: true}))
+      .mockResolvedValueOnce(new Response(null, {status: 204}))
+      .mockResolvedValueOnce(streamResponse('event: meta\ndata: {"session_id":"s","grounded":false,"sources":[]}\n\nevent: done\ndata: {"reason":"completed"}\n\n'))
+    vi.stubGlobal('fetch', fetchMock)
+    await getAuthSession()
+    await saveAccountPreferences(50)
+    await renameSession('s', 'Title')
+    await archiveSession('s')
+    await streamChat({question: 'Hi'}, {onAnswer: vi.fn(), onMeta: vi.fn()}, new AbortController().signal)
+    for (const [, init] of fetchMock.mock.calls.slice(1)) expect(new Headers(init.headers).get('X-CSRF-Token')).toBe('test-only-csrf')
+    expect(fetchMock.mock.calls[1][1].body).toBe(JSON.stringify({recent_chat_limit: 50}))
+    await expect(saveAccountPreferences(7)).rejects.toMatchObject({status: 422})
+    expect(fetchMock).toHaveBeenCalledTimes(5)
+  })
+
+  it('refreshes denied session context once without replaying the mutation', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({code: 'auth_request_denied'}, {status: 403}))
+      .mockResolvedValueOnce(Response.json(authenticatedSession))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(renameSession('s', 'Title')).rejects.toMatchObject({code: 'auth_request_denied'})
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual(['/chat/sessions/s', '/auth/session'])
+  })
+
+  it('does not treat workspace denial as a session refresh or logout', async () => {
+    const listener = vi.fn()
+    const unsubscribe = onAuthenticationLost(listener)
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({code: 'workspace_access_denied'}, {status: 403}))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(getSessions('local')).rejects.toMatchObject({status: 403})
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
+    unsubscribe()
+  })
+
+  it('clears authentication on 401 and ignores an older response even when fetch ignores cancellation', async () => {
+    let resolveOld!: (value: Response) => void
+    const old = new Promise<Response>((resolve) => {resolveOld = resolve})
+    const fetchMock = vi.fn().mockReturnValueOnce(old).mockResolvedValueOnce(Response.json({code: 'authentication_required'}, {status: 401}))
+    vi.stubGlobal('fetch', fetchMock)
+    const listener = vi.fn()
+    const unsubscribe = onAuthenticationLost(listener)
+    const pending = getSessions('local')
+    await expect(getAccountProfile()).rejects.toMatchObject({status: 401})
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true)
+    resolveOld(Response.json([]))
+    await expect(pending).rejects.toMatchObject({name: 'AbortError'})
+    unsubscribe()
+  })
+
+  it('keeps state on failed logout and clears it only after 204 confirmation', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json(authenticatedSession))
+      .mockResolvedValueOnce(Response.json({code: 'auth_unavailable'}, {status: 503}))
+      .mockResolvedValueOnce(new Response(null, {status: 204}))
+    vi.stubGlobal('fetch', fetchMock)
+    const listener = vi.fn()
+    const unsubscribe = onAuthenticationLost(listener)
+    await getAuthSession()
+    await expect(logout()).rejects.toMatchObject({status: 503})
+    expect(listener).not.toHaveBeenCalled()
+    await logout()
+    expect(listener).toHaveBeenCalledTimes(1)
+    unsubscribe()
+  })
+
+  it('aborts an in-flight response body and ignores its parsed data after auth loss', async () => {
+    let resolveBody!: (value: unknown[]) => void
+    const body = new Promise<unknown[]>((resolve) => {resolveBody = resolve})
+    const response = Response.json([])
+    const parsed = vi.spyOn(response, 'json').mockReturnValue(body)
+    const fetchMock = vi.fn().mockResolvedValue(response)
+    vi.stubGlobal('fetch', fetchMock)
+    const pending = getSessions('local')
+    for (let i = 0; i < 5; i++) await Promise.resolve()
+    expect(parsed).toHaveBeenCalled()
+    clearAuthentication()
+    expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true)
+    resolveBody([])
+    await expect(pending).rejects.toMatchObject({name: 'AbortError'})
+  })
+
+  it('clears protected state on a post-start authentication failure', async () => {
+    const listener = vi.fn()
+    const unsubscribe = onAuthenticationLost(listener)
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(streamResponse('event: error\ndata: {"code":"authentication_required"}\n\nevent: done\ndata: {"reason":"error"}\n\n')))
+    await expect(streamChat({question: 'Hi'}, {onAnswer: vi.fn(), onMeta: vi.fn()}, new AbortController().signal)).rejects.toMatchObject({name: 'AbortError'})
+    expect(listener).toHaveBeenCalledTimes(1)
+    unsubscribe()
+  })
+
+  it('uses a bootstrap token and server-defined local login route, then confirms the resulting session', async () => {
+    const choices = {provider: 'dev', identities: [{identity: 'local-dev', display_name: 'Local Developer'}], session_url: '/auth/session', login_url: '/auth/dev-login'}
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json(choices)).mockResolvedValueOnce(Response.json(anonymousSession))
+      .mockResolvedValueOnce(new Response(null, {status: 303})).mockResolvedValueOnce(Response.json(authenticatedSession))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(getLoginOptions()).resolves.toEqual(choices)
+    await expect(devLogin('local-dev')).resolves.toMatchObject({authenticated: true})
+    expect(fetchMock.mock.calls[2][0]).toBe('/auth/dev-login')
+    expect(fetchMock.mock.calls[2][1].body).toBe('{"identity":"local-dev"}')
+    expect(new Headers(fetchMock.mock.calls[2][1].headers).get('X-CSRF-Token')).toBe('test-bootstrap')
+  })
+
+  it('returns control for normal provider navigation rather than following redirects in fetch', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, {status: 302})))
+    await expect(getLoginOptions()).resolves.toBeNull()
+  })
+
+  it('rejects malformed settings, session tokens and arbitrary logout URLs', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({preferences: {recent_chat_limit: 7}, persistence: 'server'}))
+      .mockResolvedValueOnce(Response.json({...authenticatedSession, csrf_token: ''}))
+      .mockResolvedValueOnce(Response.json({...wireProfile, capabilities: {...wireProfile.capabilities, logout: {supported: true, url: 'https://example.com', method: 'POST', owner: 'gateway', scope: 'application'}}}))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(getAccountPreferences()).rejects.toMatchObject({code: 'account_protocol_error'})
+    await expect(getAuthSession()).rejects.toMatchObject({code: 'auth_protocol_error'})
+    await expect(getAccountProfile()).rejects.toMatchObject({code: 'account_protocol_error'})
+  })
 })
 
 function streamResponse(...chunks: string[]): Response {
@@ -62,7 +201,7 @@ describe('API client', () => {
     expect(result.items.map((item) => item.indexedChunkCount)).toEqual([0, null, null, null, null])
     expect(result.items[0]).toMatchObject({ title: 'מדריך', lastIngestedAt: null, fileName: 'guide.docx' })
     expect(result.page).toMatchObject({ hasMore: true, nextCursor: 'opaque-next', listRevision: '18' })
-    expect(fetchMock).toHaveBeenCalledWith('/workspaces/team%20%2F%20%D7%90/documents?limit=25&cursor=cursor%2B%2F%3D%3F', expect.objectContaining({ signal, cache: 'no-store' }))
+    expect(fetchMock).toHaveBeenCalledWith('/workspaces/team%20%2F%20%D7%90/documents?limit=25&cursor=cursor%2B%2F%3D%3F', expect.objectContaining({ signal: expect.any(AbortSignal), cache: 'no-store', credentials: 'same-origin' }))
   })
 
   it('rejects a different workspace and incomplete pagination rather than displaying protected or partial records', async () => {
