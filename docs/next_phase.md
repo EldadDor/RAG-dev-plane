@@ -5,9 +5,8 @@
 
 | Order | Phase | Objective | Key dependency |
 | --- | --- | --- | --- |
-| 1 | Parser decision and controlled validation | Follow the completed RAG-C-02 review and implemented RAG-C-03 evaluation with independent acceptance, full-chunk citation diagnostics and equal-load resource/latency comparisons. | Explicit G1 activation for remaining work; RAG-C-03 G2 is approved and offline implementation complete; live reload/benchmark need operator approval. User approved retaining pypdf. |
-| 2 | Authentication rollout acceptance (NP-24 carry-over) | Validate real session durability, proxy/Entra login, cookies, logout and SSE recovery. | Explicit activation and operator approval for migrations, role grants, secrets and service/proxy/tenant operations. |
-| 3 | NP-25 Whole-document overview | Define authorized, revision-bound overviews with trustworthy document coverage and generation limits. | G2 source/model-processing/cache design; coordinate preview capabilities with NP-26. |
+| 1 | Authentication rollout acceptance (NP-24 carry-over) | Validate real session durability, proxy/Entra login, cookies, logout and SSE recovery. | Explicit activation and operator approval for migrations, role grants, secrets and service/proxy/tenant operations. |
+| 2 | NP-25 Whole-document overview | Define authorized, revision-bound overviews with trustworthy document coverage and generation limits. | G2 source/model-processing/cache design; coordinate preview capabilities with NP-26. |
 
 Later requests: [parked work](task_overview.md). Expand steps at intake.
 

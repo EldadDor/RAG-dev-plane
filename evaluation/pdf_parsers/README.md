@@ -232,6 +232,32 @@ each case; the paired file retains both requests, answers, citations and order.
 Responses expose shortened snippets, not complete retrieved chunks. First-probe
 retrieval metrics and second-probe answer/snippet proxies remain distinct.
 
+### Parser-decision validation preflight (RAG-C-04)
+
+Do not use a saved retrieval score, `grounded` flag, or shortened citation
+snippet as acceptance evidence. Before an authorized live comparison, verify
+for each treatment that the current workspace publication still matches the
+frozen manifest, model profile, chunking profile, document IDs and nonzero
+chunk counts recorded in its `availability.json`; an old indexed report is not
+current-state evidence. Confirm the refreshed API advertises `document_id` in
+its OpenAPI request schema before submitting a scoped dataset.
+
+Use a new private report and paired-response output for each treatment. Keep
+the same machine, API/provider configuration, model/chunking profile, `top_k`,
+case order, warm-up policy and measured concurrent load across treatments.
+Capture cold/warm timing and peak resource measurements with their method, then
+report unavailable measurements as unavailable rather than comparing partial
+figures. The earlier Stage C latency observations used unequal load and cannot
+select a parser.
+
+Independent review must score the saved paired answers against frozen facts and
+full retrieved chunks, with claim-to-source/page checks for every accepted
+answer. It must treat an assigned-document negative as passing only if the
+response is one of the runner's exact canonical abstentions, and must preserve
+wrong-document, wrong-page, unsupported-extra-claim and malformed/failed cases
+as failures. Keep the pypdf production default until that review and controlled
+measurement provide a separately approved decision basis.
+
 Negatives use `answerable: false`, empty expected facts and an explicit document
 ID. Positive coverage/faithfulness metrics are null for negatives. Exact
 canonical refusal after whitespace normalization scores `abstained=1`; a refusal
