@@ -1,4 +1,42 @@
 # Backend → Frontend
+
+## 2026-10-16 — RAG-C-03 stateless document filter implemented
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change
+- **Status:** G2 approved; implemented/offline-validated, live acceptance pending
+- **Affected contract/files:** `POST /chat`, `POST /chat/stream`;
+  [authoritative API contract](../frontend_architecture.md).
+- **Message:** Optional `document_id` is a 64-character lowercase hex identity
+  filtered before semantic/lexical ranking within existing workspace/profile
+  scope. Explicit document-scoped calls reject non-null `session_id`, bypass
+  memory/persistence and return null session IDs in JSON/SSE meta. Omitted scope
+  retains current behavior. 114 focused offline tests passed; no live reload.
+- **Action requested:** None. Continue omitting `document_id`; no selector UI
+  or scoped conversation feature is requested. Retain existing error recovery.
+- **Supersedes / follow-up:** Supersedes the 2026-10-15 design-only status below.
+
+## 2026-10-15 — Proposed stateless assigned-document chat evaluation
+
+- **From:** Backend
+- **To:** Frontend
+- **Type:** API change
+- **Status:** Proposed; awaiting RAG-C-03 G2 approval, not implemented
+- **Affected contract/files:** Proposed optional `document_id` on `POST /chat`
+  and `POST /chat/stream`; [design](../rag_assigned_document_evaluation_design.md).
+- **Message:** The proposed single-document filter applies before semantic and
+  lexical candidate ranking. Explicit document-scoped calls reject `session_id`,
+  bypass conversation memory/persistence and return `session_id: null`; omitted
+  scope retains existing chat/session behavior. This supports the approved
+  assigned-document benchmark negatives. Production PDF parsing remains pypdf,
+  explicitly retained by the user on 2026-10-15.
+- **Action requested:** None. Continue omitting `document_id`; no selector UI or
+  frontend implementation is requested. Await implementation and publication
+  in the authoritative API contract before depending on the proposed mode.
+- **Supersedes / follow-up:** Follows RAG-C-02 saved-answer review; existing
+  unscoped chat/SSE contracts remain authoritative.
+
 ## 2026-10-03 — NP-24 closed with G4 approval
 
 - **From:** Backend

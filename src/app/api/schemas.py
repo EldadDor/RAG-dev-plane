@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 
 class ChatRequest(BaseModel):
@@ -14,6 +14,14 @@ class ChatRequest(BaseModel):
     workspace_id: str | None = Field(default=None, min_length=1)
     chunking_profile: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
     model_profile: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+
+    document_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$", min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def scoped_requests_are_stateless(self):
+        if self.document_id is not None and self.session_id is not None:
+            raise ValueError("Document-scoped requests cannot use a session")
+        return self
 
 
 class ChatResponse(BaseModel):

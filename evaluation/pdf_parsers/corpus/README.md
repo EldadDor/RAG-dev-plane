@@ -12,6 +12,8 @@ locations and adds relocation provenance; the question set needs no new approval
 | Need | Entry point |
 | --- | --- |
 | Isolated indexed comparison | [Stage C results](STAGE_C_RESULTS.md), [machine summary](STAGE_C_SUMMARY.json) |
+| Assigned-document preparation | [RAG-C-03 paths/counts/hashes](RAG_C03_PREPARATION.json), [runner instructions](../README.md#assigned-document-indexed-evaluation-rag-c-03) |
+| Saved-answer fact and citation review | [RAG-C-02 review](STAGE_C_ANSWER_REVIEW.md), [case judgments and verification](STAGE_C_ANSWER_REVIEW.json) |
 | Current result and remaining fidelity work | [Normalization fidelity follow-up](NORMALIZATION_FIDELITY_REVIEW.md), [original case review](EXTRACTION_SCORECARD.md), [PDFium execution](PDFIUM_COMPARISON.md) |
 | Approved reference release | [Case validation](GOLDEN_CASES_VALIDATION.md), [approval](HUMAN_APPROVAL.md) |
 | Parser commands and budgets | [Runner protocol](../README.md) |

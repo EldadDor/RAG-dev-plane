@@ -58,6 +58,7 @@ SELECT id, content, metadata, source, page_number, chunk_index,
 FROM {schema}.{table}
 WHERE metadata->>'workspace_id' = $3
   AND COALESCE(metadata->>'chunking_profile', 'default') = $4
+  AND ($5::text IS NULL OR metadata->>'doc_id' = $5)
 ORDER BY embedding <=> $1::vector
 LIMIT $2;
 """
@@ -69,6 +70,7 @@ FROM {schema}.{table}
 WHERE to_tsvector('simple', content) @@ websearch_to_tsquery('simple', $1)
   AND metadata->>'workspace_id' = $3
   AND COALESCE(metadata->>'chunking_profile', 'default') = $4
+  AND ($5::text IS NULL OR metadata->>'doc_id' = $5)
 ORDER BY score DESC, id
 LIMIT $2;
 """
@@ -373,24 +375,24 @@ class PgVectorStore:
         if records:
             await conn.executemany(sql, records)
 
-    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
+    async def search(self, query_vector: list[float], limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None, document_id: str | None = None) -> list[RetrievedChunk]:
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, _vec_str(query_vector), limit, workspace_id or "local", chunking_profile or "default")
+            rows = await conn.fetch(sql, _vec_str(query_vector), limit, workspace_id or "local", chunking_profile or "default", document_id)
 
         return [_row_to_retrieved_chunk(row) for row in rows]
 
-    async def search_text(self, query: str, limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None) -> list[RetrievedChunk]:
+    async def search_text(self, query: str, limit: int = 5, workspace_id: str | None = None, chunking_profile: str | None = None, document_id: str | None = None) -> list[RetrievedChunk]:
         """Return exact-term matches, optimized for symbols, paths and error text."""
         if not self._ensured:
             await self.ensure_collection()
 
         sql = _TEXT_SEARCH_SQL.format(schema=self._schema, table=self._table)
         async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, limit, workspace_id or "local", chunking_profile or "default")
+            rows = await conn.fetch(sql, query, limit, workspace_id or "local", chunking_profile or "default", document_id)
         return [_row_to_retrieved_chunk(row) for row in rows]
 
     async def get_document_hash(self, doc_id: str, workspace_id: str, chunking_profile: str = "default") -> str | None:

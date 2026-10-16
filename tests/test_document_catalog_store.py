@@ -178,3 +178,36 @@ async def test_nonrecursive_pg_cleanup_preserves_descendants(tmp_path):
     deleted = [args[0] for sql, args in conn.calls if "DELETE FROM rag.chunks" in sql]
     assert deleted == [["top"]]
     assert conn.fetch.await_args.args[1:6] == (str(tmp_path), "ws", "default", [], "default")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("document_id", [None, "a" * 64])
+async def test_document_search_filters_both_pg_paths_before_limit(document_id):
+    conn = Connection()
+    store = PgVectorStore(Pool(conn), "rag", "isolated_chunks", 3)
+    store._ensured = True
+    await store.search([1, 2, 3], limit=2, workspace_id="ws", chunking_profile="small", document_id=document_id)
+    await store.search_text("question", limit=2, workspace_id="ws", chunking_profile="small", document_id=document_id)
+    for call in conn.fetch.await_args_list:
+        sql, *args = call.args
+        assert "FROM rag.isolated_chunks" in sql
+        assert args[1:] == [2, "ws", "small", document_id]
+        assert sql.index("metadata->>'doc_id' = $5") < sql.index("LIMIT")
+        assert "metadata->>'workspace_id' = $3" in sql
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("document_id", [None, "a" * 64])
+async def test_qdrant_document_scope_is_part_of_query_filter(document_id):
+    from types import SimpleNamespace
+    from app.clients.qdrant_client import QdrantVectorStore
+
+    store = QdrantVectorStore.__new__(QdrantVectorStore)
+    store._client = AsyncMock()
+    store._collection_name = "isolated"
+    store._client.query_points.return_value = SimpleNamespace(points=[])
+    await store.search([1, 2], limit=2, workspace_id="ws", chunking_profile="small", document_id=document_id)
+    kwargs = store._client.query_points.call_args.kwargs
+    filters = {c.key: c.match.value for c in kwargs["query_filter"].must}
+    assert filters == {"workspace_id": "ws", "chunking_profile": "small", **({"doc_id": document_id} if document_id else {})}
+    assert kwargs["limit"] == 2

@@ -1,6 +1,6 @@
 # Documentation in play
 
-**Last reviewed:** 2026-10-15
+**Last reviewed:** 2026-10-16
 
 This is a reading index, not another task board. Start with repository instructions
 and the current/next boards for your area. Open additional documents only when the
@@ -12,6 +12,7 @@ default reading; use targeted lookup when the task explicitly needs them.
 | Current | [Backend current](work_current_phase.md), [frontend current](frontend/work_current_phase.md) | Starting work in that area; these own task scope, gates and concise evidence. |
 | Next | [Backend next](next_phase.md), [frontend next](frontend/next_phase.md) | Reviewing the next three candidates; these own priority and dependencies. |
 | Parked | [Task overview](task_overview.md) | Prioritizing requests beyond the next three or resolving its pending approvals. |
+| Retained design | [Assigned-document evaluation](rag_assigned_document_evaluation_design.md) | Reviewing approved RAG-C-03 rationale/rollback. Implemented request behavior is in the API contract; benchmark use is in the runner protocol. |
 | Active design | [PDF experiment design](rag_pdf_experiment_design.md) | Working on the extraction experiment or its approved design boundary. |
 | Retained design | [Stage C ingestion design](rag_stage_c_ingestion_design.md) | Working on the G2-approved RAG-C-01 local selector, publication identity or isolated indexed comparison. |
 | Roadmap | [RAG adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) | Selecting an adoption stage; read the selected stage's sections. |
@@ -23,6 +24,7 @@ default reading; use targeted lookup when the task explicitly needs them.
 | Coordination | [Handoff rules](agent_handoff/README.md) and the relevant direction/decision file | The task depends on or changes the other team's contract. |
 | History | [Completed phases](complete_phases.md) | Phase synchronization, approved closure, or a specific historical question. |
 | Experiment evidence | [Stage C indexed comparison](../evaluation/pdf_parsers/corpus/STAGE_C_RESULTS.md), [Fidelity follow-up](../evaluation/pdf_parsers/corpus/NORMALIZATION_FIDELITY_REVIEW.md), [case scorecard](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md), [corpus entry point](../evaluation/pdf_parsers/corpus/README.md), [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md), [runner protocol](../evaluation/pdf_parsers/README.md) | Corpus/scoring/parser work. Do not recursively read worksheets, previews, drafts or results. Follow only evidence needed for the current issue. |
+| Current review | [Saved Stage C answer/citation review](../evaluation/pdf_parsers/corpus/STAGE_C_ANSWER_REVIEW.md) | Reviewing exact-fact coverage, wrong-answer examples and citation-support limits after RAG-C-01. |
 
 ## Keep plans small during development
 

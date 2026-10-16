@@ -34,7 +34,7 @@ class RetrievalService:
         self._model_profile_store = model_profile_store
         self._embedding_cache = embedding_cache
 
-    async def retrieve(self, question: str, top_k: int | None = None, workspace_id: str | None = None, chunking_profile: str | None = None, model_profile: str | None = None) -> list[RetrievedChunk]:
+    async def retrieve(self, question: str, top_k: int | None = None, workspace_id: str | None = None, chunking_profile: str | None = None, model_profile: str | None = None, document_id: str | None = None) -> list[RetrievedChunk]:
         vector_store = self._vector_store
         if self._model_profile_store is None:
             embedding = await self._embedding_client.create_embedding(self._settings.embedding_model, question)
@@ -63,16 +63,23 @@ class RetrievalService:
             self._settings.rerank_candidate_k if self._settings.rerank_enabled else 0,
         )
         profile_name, _ = self._settings.chunking_profile(chunking_profile)
-        semantic = await vector_store.search(embedding, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name)
+        semantic = await vector_store.search(embedding, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name, **({"document_id": document_id} if document_id is not None else {}))
+        self._check_document_scope(semantic, document_id)
         # Avoid treating unrelated semantic matches as grounded evidence.
         semantic = [item for item in semantic if item.score >= self._settings.min_retrieval_score]
 
         if not self._settings.hybrid_search_enabled or not isinstance(vector_store, LexicalSearchVectorStore):
             return await self._rerank_or_trim(question, semantic, limit)
 
-        lexical = await vector_store.search_text(question, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name)
+        lexical = await vector_store.search_text(question, limit=candidate_limit, workspace_id=workspace_id or self._settings.default_workspace_id, chunking_profile=profile_name, **({"document_id": document_id} if document_id is not None else {}))
+        self._check_document_scope(lexical, document_id)
         fused = self._reciprocal_rank_fusion(semantic, lexical, candidate_limit)
         return await self._rerank_or_trim(question, fused, limit)
+
+    @staticmethod
+    def _check_document_scope(chunks: list[RetrievedChunk], document_id: str | None) -> None:
+        if document_id is not None and any(c.doc_id != document_id for c in chunks):
+            raise ValueError("Retrieval returned an out-of-scope document")
 
     async def _rerank_or_trim(
         self, question: str, candidates: list[RetrievedChunk], limit: int

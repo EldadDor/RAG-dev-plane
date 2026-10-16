@@ -109,3 +109,94 @@ async def test_live_adapter_preserves_explicit_model_and_chunking_scope():
         await adapter.retrieve("question")
         answer = await adapter.answer_function(5)(GoldenCase("case", "question", ("fact",)))
     assert answer == "scoped answer" and len(requests) == 1
+
+
+@pytest.mark.parametrize("extra", [
+    {"answerable": False}, {"answerable": "false", "document_id": "a" * 64},
+    {"answerable": 0, "document_id": "a" * 64},
+    {"answerable": False, "document_id": "bad"},
+    {"answerable": True, "document_id": "a" * 64},
+    {"answerable": False, "document_id": "a" * 64, "expected_facts": ["fact"]},
+])
+def test_negative_dataset_rejects_inconsistent_scope_and_facts(extra):
+    with pytest.raises(ValueError):
+        GoldenCase.from_dict({"id": "neg", "question": "Absent?", "expected_facts": [], **extra}, 1)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("answer,score,failed", [
+    ("I don't know based on the indexed documents.", 1.0, False),
+    (" I don't have enough information in the indexed documents to answer this question.\n", 1.0, False),
+    ("I don't know based on the indexed documents. It costs $10.", 0.0, False),
+    ("No evidence was found.", 0.0, False), ("", None, True), (None, None, True),
+])
+async def test_negative_abstention_is_separate_strict_and_not_vacuous(answer, score, failed):
+    class Retriever:
+        async def retrieve(self, question, **kwargs):
+            assert kwargs["document_id"] == "a" * 64
+            return []
+
+    async def respond(case):
+        return answer
+
+    case = GoldenCase("neg", "Absent?", (), document_id="a" * 64, answerable=False)
+    result = await BenchmarkRunner(Retriever(), respond).run_case(case)
+    assert result.metrics["abstained"] == score
+    assert result.metrics["answer_relevance"] is None
+    assert result.metrics["faithfulness"] is None
+    assert (result.failure_stage is not None) == failed
+
+
+def scoped_openapi():
+    return {"paths": {"/chat": {"post": {"requestBody": {"content": {"application/json": {
+        "schema": {"$ref": "#/components/schemas/ChatRequest"}}}}}}},
+        "components": {"schemas": {"ChatRequest": {"properties": {"document_id": {}}}}}}
+
+
+@pytest.mark.asyncio
+async def test_scoped_adapter_checks_capability_keys_cache_and_records_both_probes():
+    requests = []
+
+    def responder(request):
+        if request.method == "GET":
+            return httpx.Response(200, json=scoped_openapi())
+        payload = json.loads(request.content)
+        requests.append(payload)
+        return httpx.Response(200, json={"answer": payload["document_id"] + str(len(requests)), "sources": [], "session_id": None, "grounded": False})
+
+    async with httpx.AsyncClient(base_url="http://test", transport=httpx.MockTransport(responder)) as client:
+        api = LiveApiBenchmarkClient(client)
+        for doc in ["a" * 64, "b" * 64]:
+            case = GoldenCase(doc, "Same?", (), document_id=doc, answerable=False)
+            result = await BenchmarkRunner(api, api.answer_function(5)).run_case(case)
+            assert result.answer == doc + str(len(requests))
+            assert result.failure_stage is None
+        assert len(api.response_records) == len(requests) == 4
+        assert [r["request"]["document_id"] for r in api.response_records] == ["a" * 64] * 2 + ["b" * 64] * 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", ["old_server", "leaked_source", "session", "empty_answer", "transport"])
+async def test_negative_adapter_cannot_pass_unsupported_scope_or_bad_responses(failure):
+    def responder(request):
+        if request.method == "GET":
+            schema = scoped_openapi()
+            if failure == "old_server":
+                schema["components"]["schemas"]["ChatRequest"]["properties"].clear()
+            return httpx.Response(200, json=schema)
+        if failure == "transport":
+            return httpx.Response(503)
+        return httpx.Response(200, json={
+            "answer": "" if failure == "empty_answer" else "I don't know based on the indexed documents.",
+            "sources": [{"doc_id": "b" * 64}] if failure == "leaked_source" else [],
+            "session_id": "old" if failure == "session" else None,
+            "grounded": False,
+        })
+
+    async with httpx.AsyncClient(base_url="http://test", transport=httpx.MockTransport(responder)) as client:
+        api = LiveApiBenchmarkClient(client)
+        case = GoldenCase("neg", "Absent?", (), document_id="a" * 64, answerable=False)
+        result = await BenchmarkRunner(api, api.answer_function(5)).run_case(case)
+    assert result.failure_stage is not None
+    assert result.answer is None
+    assert result.metrics.get("abstained") is None

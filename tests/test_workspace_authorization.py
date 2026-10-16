@@ -44,7 +44,9 @@ async def test_workspace_discovery_returns_only_principal_memberships():
 
 
 @pytest.mark.asyncio
-async def test_unauthorized_workspace_is_rejected_before_chat_service():
+@pytest.mark.parametrize("route", ["/chat", "/chat/stream"])
+@pytest.mark.parametrize("document_id", [None, "a" * 64])
+async def test_unauthorized_workspace_is_rejected_before_chat_service(route, document_id):
     chat_service = AsyncMock()
     app.dependency_overrides[get_principal] = lambda: Principal("alice", "Alice")
     app.dependency_overrides[get_workspace_store] = _workspace_store
@@ -52,7 +54,7 @@ async def test_unauthorized_workspace_is_rejected_before_chat_service():
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post(
-            "/chat", json={"question": "Secret?", "workspace_id": "beta"}
+            route, json={"question": "Secret?", "workspace_id": "beta", "document_id": document_id}
         )
 
     assert response.status_code == 403

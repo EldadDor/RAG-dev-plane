@@ -1,0 +1,66 @@
+{
+  "task": "RAG-C-03",
+  "reviewed": "2026-10-16",
+  "status": "prepared_offline_not_live_evaluated",
+  "scope": "assigned_document",
+  "recorded_stage_c_artifact_hashes_verified": 17,
+  "treatments": [
+    {
+      "treatment": "pypdf",
+      "positive_cases": 42,
+      "negative_cases": 5,
+      "total_reference_cases": 47,
+      "unavailable_cases": 0,
+      "artifacts": [
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\pypdf\\cases.jsonl",
+          "sha256": "612d1f689e347811dfb9410163002c6f51de01f722d9eeadbb962f4392f8abdf"
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\pypdf\\availability.json",
+          "sha256": "0ac1dc160832d13548c5e640a072d41673dcb6bd64a25112a363b35c571d9690"
+        }
+      ]
+    },
+    {
+      "treatment": "noocr",
+      "positive_cases": 28,
+      "negative_cases": 2,
+      "total_reference_cases": 47,
+      "unavailable_cases": 17,
+      "artifacts": [
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\noocr\\cases.jsonl",
+          "sha256": "3b9fa4cc968fb3ef9c34fcf1f530c0e667ad91bcc6f7ee01b4493e98a4656581"
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\noocr\\availability.json",
+          "sha256": "539e701dca58b24e94cd3ec1fd2c3b6ce5783964228b561b6df927c61bbc2599"
+        }
+      ]
+    },
+    {
+      "treatment": "ocr",
+      "positive_cases": 29,
+      "negative_cases": 3,
+      "total_reference_cases": 47,
+      "unavailable_cases": 15,
+      "artifacts": [
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\ocr\\cases.jsonl",
+          "sha256": "c944b7457dcac486c32eb79be24fd69530deeed89f39c5b89d123b64641f2150"
+        },
+        {
+          "path": "E:\\Workspace\\AI_Stuff\\Pdf_Examples\\Comparison_Runs\\stage-c03-scoped-datasets-2026-10-16-r1\\ocr\\availability.json",
+          "sha256": "738ad7d44f2fd030da337de75d55dd248e3082e4debddd27e4b6d69df02ef1ee"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No live API/provider/store requests or reingestion",
+    "Availability is from saved ingestion reports; operator must verify current publication before live reruns",
+    "Frozen source/reference bytes unchanged; original Stage C datasets/responses preserved",
+    "Positive proxy and exact negative abstention scores require a new authorized live run"
+  ]
+}

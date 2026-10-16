@@ -14,7 +14,7 @@ from app.loaders.pdf_extraction import ExtractionOptions
 from compare_pdf_parsers import load_manifest, validate_output
 
 
-def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path):
+def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path, *, assigned_document: bool = False):
     manifest_path = manifest_path.resolve()
     manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     _, documents = load_manifest(manifest_path, ExtractionOptions())
@@ -24,7 +24,7 @@ def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path):
     if len({(r["chunking_profile"], r["model_profile"]) for r in reports}) != 1:
         raise ValueError("Paired ingestion profiles must be identical")
     available_sets = [{d["doc_id"] for d in r["ingestion"]["documents"]
-                       if d["chunks_indexed"] > 0 or d.get("skip_reason") == "unchanged"} for r in reports]
+                       if d["chunks_indexed"] > 0} for r in reports]
     available = set.intersection(*available_sets)
     review_path = PROJECT_ROOT / "evaluation/pdf_parsers/corpus/COLD_CASE_REVIEW.json"
     review = json.loads(review_path.read_text(encoding="utf8"))
@@ -43,7 +43,7 @@ def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path):
         doc_id = make_doc_id(source)
         for reference in document["references"]:
             status = "eligible"
-            if not reference["answerable"]:
+            if not reference["answerable"] and not assigned_document:
                 status = "deferred_assigned_document_negative_scope"
             elif doc_id not in available:
                 status = "unavailable_indexed_document"
@@ -53,11 +53,16 @@ def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path):
                              "answerable": reference["answerable"], "status": status,
                              "excluded_fact_indexes": excluded})
             if status == "eligible":
-                if not facts:
+                if reference["answerable"] and not facts:
                     raise ValueError("Eligible answerable case has no valid facts")
-                cases.append({"id": reference["id"], "question": reference["question"],
+                case = {"id": reference["id"], "question": reference["question"],
                               "expected_facts": facts, "expected_source_hints": [source],
-                              "chunking_profile": reports[0]["chunking_profile"]})
+                              "chunking_profile": reports[0]["chunking_profile"]}
+                if assigned_document:
+                    case.update(document_id=doc_id, answerable=reference["answerable"])
+                    if "negative_scope" in reference:
+                        case["negative_scope"] = reference["negative_scope"]
+                cases.append(case)
     if not cases:
         raise ValueError("No eligible indexed cases")
     output = output.resolve()
@@ -71,10 +76,14 @@ def prepare(manifest_path: Path, ingestion_paths: list[Path], output: Path):
                     "reference_review_sha256": hashlib.sha256(review_path.read_bytes()).hexdigest(),
                     "excluded_reference_facts": {k: v for k, v in exclusions.items()
                                                  if any(c["id"] == k for c in coverage)},
+                    "scope": "assigned_document" if assigned_document else "workspace_positive_only",
+                    "positive_cases_eligible": sum(c.get("answerable", True) for c in cases),
+                    "negative_cases_eligible": sum(not c.get("answerable", True) for c in cases),
                     "cases_total": len(coverage), "cases_eligible": len(cases), "cases": coverage,
                     "limits": ["Questions and frozen references remain unchanged; derived facts omit only already recorded reference defects",
-                               "Five assigned-document negatives require document-specific retrieval scope; current chat API/evaluator cannot represent that scope",
-                               "Negative cases are not recast as positive facts and no abstention score is claimed",
+                               "Scoped mode requires an API advertising document_id; negatives remain deferred in workspace mode",
+                               "Negative cases are not positive facts; unavailable documents are not successful abstentions",
+                               "Reports with zero chunks, including unchanged skips without positive counts, do not establish availability",
                                "Existing fact/faithfulness metrics are token proxies, not independently verified answer scores"]}
     (output / "availability.json").write_text(json.dumps(availability, ensure_ascii=False, indent=2) + "\n", encoding="utf8")
     return dataset, availability
@@ -85,9 +94,10 @@ def main(argv=None):
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--ingestion-reports", type=Path, nargs="+", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--assigned-document", action="store_true", help="Include indexed positives/negatives with enforced document scope")
     args = parser.parse_args(argv)
     try:
-        dataset, report = prepare(args.manifest, args.ingestion_reports, args.output_dir)
+        dataset, report = prepare(args.manifest, args.ingestion_reports, args.output_dir, assigned_document=args.assigned_document)
         print(f"Prepared {report['cases_eligible']}/{report['cases_total']} cases: {dataset}")
         return 0
     except (OSError, ValueError, KeyError, TypeError) as exc:

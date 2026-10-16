@@ -14,7 +14,7 @@ from app.evaluation.models import BenchmarkReport, CaseResult, FailureStage, Gol
 class Retriever(Protocol):
     async def retrieve(
         self, question: str, top_k: int | None = None, workspace_id: str | None = None,
-        chunking_profile: str | None = None,
+        chunking_profile: str | None = None, document_id: str | None = None,
     ) -> list[RetrievedChunk]: ...
 
 
@@ -38,13 +38,19 @@ class BenchmarkRunner:
         try:
             first = await self._retriever.retrieve(
                 case.question, top_k=top_k, workspace_id=case.workspace_id, chunking_profile=case.chunking_profile,
+                **({"document_id": case.document_id} if case.document_id is not None else {}),
             )
+            if case.document_id is not None and any(c.doc_id != case.document_id for c in first):
+                raise ValueError("Out-of-scope retrieved document")
             second = await self._retriever.retrieve(
                 case.question, top_k=top_k, workspace_id=case.workspace_id, chunking_profile=case.chunking_profile,
+                **({"document_id": case.document_id} if case.document_id is not None else {}),
             )
+            if case.document_id is not None and any(c.doc_id != case.document_id for c in second):
+                raise ValueError("Out-of-scope retrieved document")
         except Exception as exc:
             return CaseResult(
-                case_id=case.case_id, retrieved_chunk_ids=[], answer=None,
+                case_id=case.case_id, document_id=case.document_id, answerable=case.answerable, retrieved_chunk_ids=[], answer=None,
                 latency_ms=(perf_counter() - started) * 1000, metrics={}, deterministic=False,
                 failure_stage=FailureStage.retrieval, failure_message=str(exc),
             )
@@ -59,6 +65,9 @@ class BenchmarkRunner:
         if self._answer is not None:
             try:
                 answer = await self._answer(case)
+                if not isinstance(answer, str) or not answer.strip():
+                    answer = None
+                    raise ValueError("Benchmark answer must be a nonempty string")
             except Exception as exc:
                 failure_stage = FailureStage.generation
                 failure_message = str(exc)
@@ -67,14 +76,20 @@ class BenchmarkRunner:
             "context_precision": precision,
             "context_recall": recall,
             "source_mrr": source_mrr,
-            "answer_relevance": expected_fact_coverage(answer, case.expected_facts) if answer is not None else None,
-            "faithfulness": faithfulness_proxy(answer, [chunk.text for chunk in first], case.expected_facts) if answer is not None else None,
+            "answer_relevance": expected_fact_coverage(answer, case.expected_facts) if answer is not None and case.answerable else None,
+            "faithfulness": faithfulness_proxy(answer, [chunk.text for chunk in second], case.expected_facts) if answer is not None and case.answerable else None,
         }
+        if not case.answerable:
+            refusals = {
+                "I don't have enough information in the indexed documents to answer this question.",
+                "I don't know based on the indexed documents.",
+            }
+            metrics["abstained"] = float(" ".join(answer.split()) in refusals) if answer is not None else None
         if answer is not None and metrics["answer_relevance"] == 0.0 and first:
             failure_stage = failure_stage or FailureStage.generation
             failure_message = failure_message or "Answer did not cover any verified expected fact despite retrieved context."
         return CaseResult(
-            case_id=case.case_id, retrieved_chunk_ids=chunk_ids, answer=answer,
+            case_id=case.case_id, document_id=case.document_id, answerable=case.answerable, retrieved_chunk_ids=chunk_ids, answer=answer,
             latency_ms=(perf_counter() - started) * 1000, metrics=metrics, deterministic=deterministic,
             failure_stage=failure_stage, failure_message=failure_message,
         )
@@ -82,7 +97,12 @@ class BenchmarkRunner:
     async def run(self, cases: list[GoldenCase], configuration: dict[str, object], top_k: int = 5) -> BenchmarkReport:
         report = BenchmarkReport(configuration={**configuration, "top_k": top_k})
         for case in cases:
-            report.cases.append(await self.run_case(case, top_k=top_k))
+            records = getattr(self._retriever, "response_records", None)
+            start = len(records) if isinstance(records, list) else 0
+            result = await self.run_case(case, top_k=top_k)
+            if isinstance(records, list):
+                result.response_indices = list(range(start, len(records)))
+            report.cases.append(result)
         return report
 
 

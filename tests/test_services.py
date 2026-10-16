@@ -262,3 +262,79 @@ async def test_unavailable_reranker_safely_returns_fused_candidate_order():
     ).retrieve("question")
 
     assert [chunk.chunk_id for chunk in result] == ["first", "second"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("empty", [False, True])
+async def test_document_chat_never_touches_memory_and_streams_null_session(empty):
+    document_id = "a" * 64
+    memory = MagicMock()
+    retrieval = AsyncMock()
+    retrieval.retrieve.return_value = [] if empty else [
+        RetrievedChunk("one", document_id, "guide.pdf", "Scoped context", 0.9)
+    ]
+    chat = AsyncMock()
+    chat.create_chat_completion.return_value = {"choices": [{"message": {"content": "Scoped answer"}}]}
+    service = ChatService(_make_settings(), retrieval, chat, memory)
+    response = await service.answer("Question", document_id=document_id, include_debug=True)
+    assert response.session_id is None and response.grounded is not empty
+    assert response.debug["rewritten_question"] == "Question"
+    events = [e async for e in service.answer_stream("Question", document_id=document_id)]
+    assert any('"session_id": null' in e for e in events)
+    assert not memory.mock_calls
+    assert retrieval.retrieve.call_args.kwargs["document_id"] == document_id
+    if empty:
+        chat.create_chat_completion.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_document_chat_fails_before_generation_for_leaked_context_or_session():
+    retrieval, chat, memory = AsyncMock(), AsyncMock(), MagicMock()
+    retrieval.retrieve.return_value = [RetrievedChunk("bad", "b" * 64, "other.pdf", "secret", 0.9)]
+    service = ChatService(_make_settings(), retrieval, chat, memory)
+    with pytest.raises(ValueError, match="out-of-scope"):
+        await service.answer("Question", document_id="a" * 64)
+    with pytest.raises(ValueError, match="cannot use a session"):
+        await service.answer("Question", document_id="a" * 64, session_id="old")
+    chat.create_chat_completion.assert_not_called()
+    assert not memory.mock_calls
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("leak", [None, "semantic", "lexical"])
+async def test_document_filter_reaches_hybrid_candidates_and_rejects_leaks(leak):
+    wanted = "a" * 64
+    calls = []
+
+    class Store:
+        async def search(self, vector, **kwargs):
+            calls.append(("semantic", kwargs))
+            return [RetrievedChunk("s", "b" * 64 if leak == "semantic" else wanted, "guide.pdf", "s", 0.9)]
+
+        async def search_text(self, query, **kwargs):
+            calls.append(("lexical", kwargs))
+            return [RetrievedChunk("l", "b" * 64 if leak == "lexical" else wanted, "guide.pdf", "l", 0.8)]
+
+    embedding = AsyncMock()
+    embedding.create_embedding.return_value = [0.1]
+    reranker = AsyncMock()
+    reranker.rerank.side_effect = lambda q, chunks: chunks
+    service = RetrievalService(_make_settings(HYBRID_SEARCH_ENABLED="true", RERANK_ENABLED="true"), embedding, Store(), reranker)
+    if leak:
+        with pytest.raises(ValueError, match="out-of-scope"):
+            await service.retrieve("Question", workspace_id="ws", document_id=wanted)
+        reranker.rerank.assert_not_called()
+    else:
+        chunks = await service.retrieve("Question", workspace_id="ws", document_id=wanted)
+        assert len(chunks) == 2
+    assert all(c[1]["document_id"] == wanted and c[1]["workspace_id"] == "ws" for c in calls)
+
+
+@pytest.mark.asyncio
+async def test_scoped_retrieval_does_not_retry_legacy_adapter_unscoped():
+    class OldStore:
+        async def search(self, vector, limit, workspace_id=None, chunking_profile=None):
+            pytest.fail("Must not fall back to unscoped search")
+
+    with pytest.raises(TypeError):
+        await RetrievalService(_make_settings(), AsyncMock(), OldStore()).retrieve("Question", document_id="a" * 64)

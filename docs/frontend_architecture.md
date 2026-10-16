@@ -420,6 +420,25 @@ Content-Type: application/json
 }
 ```
 
+As of RAG-C-03 (2026-10-16), both chat POST routes also accept optional
+`document_id: string | null`, exactly 64 lowercase hexadecimal characters.
+Omitted/null retains the existing workspace-wide conversation behavior.
+An explicit ID restricts semantic and lexical retrieval to that document inside
+the authorized workspace and selected model/chunking scope, before ranking and
+limits. It does not grant workspace access. Missing/no eligible chunks returns
+the existing ungrounded, empty-source refusal; it does not certify index availability.
+
+Document-scoped calls are stateless: omit `session_id` (or send null); any
+non-null session value, including an empty string, yields `422 invalid_request`
+before streaming begins. They do not read/write conversation history, rewrite
+from previous turns or refresh summaries. The response and stream `meta` contain
+`session_id: null`. Callers must not persist that as a reusable conversation ID.
+Out-of-scope retrieval fails before generation through the existing safe 502
+response or SSE error/done sequence. Sources retain 300-character snippets;
+`grounded` still indicates context presence, not factual correctness. The current
+frontend continues omitting `document_id`; no selector UI is required.
+Offline implementation/contract tests pass; live deployment acceptance is pending.
+
 `question` is required and non-empty. `workspace_id` is optional only when the
 server has a configured default workspace. Omit `session_id` to create a new
 chat; pass the `session_id` received in `meta` for the next turn. `top_k` is

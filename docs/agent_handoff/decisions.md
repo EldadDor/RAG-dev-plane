@@ -3,6 +3,18 @@
 Record only explicit product/user approvals that affect both backend and
 frontend. Add newest entries directly below this heading.
 
+## 2026-10-16 — RAG-C-03 document-scope design approved
+
+- **Status:** G2 approved; implementation offline-validated, live acceptance pending.
+- **Decision:** User instructed "Approving G2 for RAG-C-03". Approved optional
+  single-document stateless chat, exact semantic/lexical filtering and separate
+  negative-case evaluation in existing modules. No migration or dependency.
+- **Boundary:** pypdf remains the user-approved default. No frontend selector,
+  scoped session memory, live service reload, benchmark calls, push/merge or
+  phase closure is authorized by this G2 approval.
+- **References:** [Design](../rag_assigned_document_evaluation_design.md),
+  [implemented contract](../frontend_architecture.md).
+
 ## 2026-10-03 — NP-24 phase closure approved
 
 - **Status:** G4 approved; phase closed.

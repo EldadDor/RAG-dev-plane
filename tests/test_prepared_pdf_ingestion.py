@@ -230,7 +230,8 @@ def test_image_budget_rejected_before_ingestion(prepared, limits):
         PreparedPDFLoader(prepared.manifest, prepared.root, "docling-noocr", **limits).load(str(prepared.source))
 
 
-def test_benchmark_derivative_preserves_questions_and_defers_negatives(prepared, monkeypatch):
+@pytest.mark.parametrize("assigned_document", [False, True])
+def test_benchmark_derivative_preserves_questions_and_defers_negatives(prepared, monkeypatch, assigned_document):
     scripts = Path(__file__).parents[1] / "scripts"
     monkeypatch.syspath_prepend(str(scripts))
     from prepare_pdf_benchmark import prepare
@@ -241,7 +242,7 @@ def test_benchmark_derivative_preserves_questions_and_defers_negatives(prepared,
                    "evidence": [{"page": 1, "source_evidence": "A source fact"}],
                    "verified_by": "human", "verified_on": "2026-10-15"},
                   {"id": "unit-negative", "document_id": entry["id"], "question": "Assigned-document negative?",
-                   "answerable": False, "expected_facts": [], "evidence": [], "reason": "Not in assigned source",
+                   "answerable": False, "expected_facts": [], "evidence": [], "reason": "Not in assigned source", "negative_scope": "assigned_document",
                    "verified_by": "human", "verified_on": "2026-10-15"}]
     ref_path = Path(entry["references_path"])
     ref_path.write_text("".join(json.dumps(r) + "\n" for r in references), encoding="utf8")
@@ -253,11 +254,26 @@ def test_benchmark_derivative_preserves_questions_and_defers_negatives(prepared,
     write_json(indexed, {"status": "indexed", "manifest_sha256": hashlib.sha256(prepared.manifest.read_bytes()).hexdigest(),
                          "chunking_profile": "default", "model_profile": "fixed",
                          "ingestion": {"documents": [{"doc_id": make_doc_id(str(prepared.source.resolve())), "chunks_indexed": 1}]}})
-    dataset, coverage = prepare(prepared.manifest, [indexed], prepared.root.parent / "derived-cases")
-    assert json.loads(dataset.read_text())["question"] == "Exact frozen question?"
-    assert coverage["cases_total"] == 2 and coverage["cases_eligible"] == 1
-    assert coverage["cases"][1]["status"] == "deferred_assigned_document_negative_scope"
+    dataset, coverage = prepare(prepared.manifest, [indexed], prepared.root.parent / "derived-cases", assigned_document=assigned_document)
+    rows = [json.loads(line) for line in dataset.read_text().splitlines()]
+    assert rows[0]["question"] == "Exact frozen question?"
+    assert coverage["cases_total"] == 2
+    assert coverage["cases_eligible"] == (2 if assigned_document else 1)
+    assert coverage["cases"][1]["status"] == ("eligible" if assigned_document else "deferred_assigned_document_negative_scope")
+    if assigned_document:
+        from app.evaluation.dataset import load_golden_cases
+        loaded = load_golden_cases(dataset)
+        assert loaded[1].answerable is False and loaded[1].expected_facts == ()
+        assert all(c.document_id == make_doc_id(str(prepared.source.resolve())) for c in loaded)
+        assert coverage["negative_cases_eligible"] == 1
+        assert loaded[1].negative_scope == "assigned_document"
+        assert rows[1]["question"] == references[1]["question"]
     assert ref_path.read_text().splitlines()[1] == json.dumps(references[1])
     with pytest.raises(ValueError, match="already exists"):
-        prepare(prepared.manifest, [indexed], prepared.root.parent / "derived-cases")
+        prepare(prepared.manifest, [indexed], prepared.root.parent / "derived-cases", assigned_document=assigned_document)
+    zero_report = json.loads(indexed.read_text())
+    zero_report["ingestion"]["documents"][0].update(chunks_indexed=0, skip_reason="unchanged")
+    write_json(indexed, zero_report)
+    with pytest.raises(ValueError, match="No eligible indexed cases"):
+        prepare(prepared.manifest, [indexed], prepared.root.parent / "zero-count-cases", assigned_document=assigned_document)
 

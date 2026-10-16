@@ -1,7 +1,7 @@
 # PDF parser comparison corpus
 
 **Task:** RAG-A-01
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-16
 **Status:** User-approved corpus frozen; earlier runs retained. PDFium revision approved on 2026-10-13; paired corpus runs and 124-output audit complete. Separate telemetry revalidation covers exact UTF8 export and export-time clamping warnings. See [the comparison](corpus/PDFIUM_COMPARISON.md).
 
 Copy `corpus.example.json` to a private directory outside the repository and
@@ -192,3 +192,52 @@ requirements into that isolated environment, prove imports, prepare approved
 models and prove warmed offline parsing. Metadata resolution proves compatible
 wheel candidates are published; it does not prove installation, ABI behavior,
 Docling parsing, OCR or Hebrew support. The application runtime remains Python 3.14.
+
+
+## Assigned-document indexed evaluation (RAG-C-03)
+
+The G2-approved optional document scope is implemented and offline-validated.
+pypdf remains the user-approved production default. This does not authorize a
+live API reload, provider calls, reingestion or a new extraction run.
+
+Prepare a new private dataset from the frozen manifest and successful saved
+index reports with `scripts/prepare_pdf_benchmark.py --assigned-document`.
+Omit that switch to retain workspace-wide positive-only preparation. All
+questions/reference bytes stay frozen; only the previously recorded reference
+defect is excluded from derived facts. Zero-chunk reports, including unchanged
+skips without positive counts, do not establish availability. Multiple reports
+select the intersection of their available documents, using identical profiles.
+
+The prepared 2026-10-16 datasets contain 42+5 pypdf, 28+2 no-OCR and 29+3 OCR
+positive+negative cases. [Paths and hashes](corpus/RAG_C03_PREPARATION.json)
+refer to new private files; they do not replace the original Stage C datasets.
+Availability reflects saved publication reports, not a fresh database check.
+
+Before an explicitly authorized live run, verify the running API has the updated
+OpenAPI `document_id` field, workspace access and the intended model/chunking
+publication identity and nonzero counts. Verify no indexing is concurrent and
+that saved ingestion evidence still matches current publication. Missing scoped
+context can otherwise resemble successful abstention. The live adapter checks
+OpenAPI capability, null scoped session IDs, response shape and every returned
+citation's document ID; these do not replace publication-readiness checks.
+
+Use `scripts/run_benchmark.py --dataset <new-cases.jsonl> --output <new-private-report.json>
+--api-url <running-api> --workspace-id <treatment-workspace> --model-profile bge-m3
+--chunking-profile default --top-k 5` after that authorization/preflight.
+Each successful case makes two complete chat requests in fresh/stateless scope.
+`--responses-output` optionally names the paired-response artifact; otherwise it
+is `<output>.responses.json`. Both outputs must be new and outside Git checkouts.
+The report records dataset/response hashes and zero-based response indices for
+each case; the paired file retains both requests, answers, citations and order.
+Responses expose shortened snippets, not complete retrieved chunks. First-probe
+retrieval metrics and second-probe answer/snippet proxies remain distinct.
+
+Negatives use `answerable: false`, empty expected facts and an explicit document
+ID. Positive coverage/faithfulness metrics are null for negatives. Exact
+canonical refusal after whitespace normalization scores `abstained=1`; a refusal
+with added claims scores 0. A noncanonical appropriate refusal also scores 0
+under this strict policy and needs manual review. Empty/malformed/failed calls
+are failures, never successful refusals; unavailable documents stay in separate
+preparation evidence. The report summary separates positive cases, negative
+cases, failures, scored negatives and exact refusals. It does not convert
+retrieved context or the API `grounded` flag into correctness acceptance.

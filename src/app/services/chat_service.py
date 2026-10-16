@@ -27,7 +27,7 @@ class ChatService:
         self._settings = settings
         self._retrieval_service = retrieval_service
         self._chat_client = chat_client
-        self._conversation_store = conversation_store or InMemoryConversationStore(settings.memory_max_turns)
+        self._conversation_store = conversation_store if conversation_store is not None else InMemoryConversationStore(settings.memory_max_turns)
 
     async def _rewrite_question(self, question: str, history: list[ChatTurn], summary: str | None) -> str:
         if not history and not summary:
@@ -72,28 +72,37 @@ class ChatService:
             chunking_profile: str | None = None,
             model_profile: str | None = None,
             owner_id: str = "local-dev",
-    ) -> tuple[ChatResponse, str]:
-        session_id = session_id or str(uuid4())
+            document_id: str | None = None,
+    ) -> tuple[ChatResponse, str | None]:
+        if document_id is not None and session_id is not None:
+            raise ValueError("Document-scoped requests cannot use a session")
         workspace_id = workspace_id or self._settings.default_workspace_id
-        await self._conversation_store.ensure_session(session_id, owner_id, workspace_id, question[:80])
-        history = await self._conversation_store.get(session_id)
-        summary = await self._conversation_store.get_summary(session_id)
-        rewritten_question = await self._rewrite_question(question, history, summary)
+        rewritten_question = question
+        if document_id is None:
+            session_id = session_id or str(uuid4())
+            await self._conversation_store.ensure_session(session_id, owner_id, workspace_id, question[:80])
+            history = await self._conversation_store.get(session_id)
+            summary = await self._conversation_store.get_summary(session_id)
+            rewritten_question = await self._rewrite_question(question, history, summary)
 
         retrieved = await self._retrieval_service.retrieve(
             question=rewritten_question, top_k=top_k, workspace_id=workspace_id,
             chunking_profile=chunking_profile, model_profile=model_profile,
+            **({"document_id": document_id} if document_id is not None else {}),
         )
+        if document_id is not None and any(item.doc_id != document_id for item in retrieved):
+            raise ValueError("Retrieval returned an out-of-scope document")
         if not retrieved:
             answer = "I don't know based on the indexed documents."
-            await self._conversation_store.append(session_id, "user", question)
-            await self._conversation_store.append(session_id, "assistant", answer)
-            await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
-            try:
-                await self._refresh_summary_if_needed(session_id)
-            except Exception:
-                # Memory enrichment must never make an otherwise valid answer fail.
-                pass
+            if document_id is None:
+                await self._conversation_store.append(session_id, "user", question)
+                await self._conversation_store.append(session_id, "assistant", answer)
+                await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
+                try:
+                    await self._refresh_summary_if_needed(session_id)
+                except Exception:
+                    # Memory enrichment must never make an otherwise valid answer fail.
+                    pass
             debug = None
             if include_debug:
                 debug = {
@@ -119,13 +128,14 @@ class ChatService:
         except Exception:
             raise
         else:
-            await self._conversation_store.append(session_id, "user", question)
-            await self._conversation_store.append(session_id, "assistant", answer)
-            await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
-            try:
-                await self._refresh_summary_if_needed(session_id)
-            except Exception:
-                pass
+            if document_id is None:
+                await self._conversation_store.append(session_id, "user", question)
+                await self._conversation_store.append(session_id, "assistant", answer)
+                await self._conversation_store.update_session(session_id, owner_id, workspace_id, answer)
+                try:
+                    await self._refresh_summary_if_needed(session_id)
+                except Exception:
+                    pass
 
         sources = [
             SourceReference(
@@ -186,6 +196,7 @@ class ChatService:
             chunking_profile: str | None = None,
             model_profile: str | None = None,
             owner_id: str = "local-dev",
+            document_id: str | None = None,
     ) -> ChatResponse:
         response, _ = await self._answer_impl(
             question=question,
@@ -196,6 +207,7 @@ class ChatService:
             chunking_profile=chunking_profile,
             model_profile=model_profile,
             owner_id=owner_id,
+            document_id=document_id,
         )
         return response
 
@@ -209,6 +221,7 @@ class ChatService:
             chunking_profile: str | None = None,
             model_profile: str | None = None,
             owner_id: str = "local-dev",
+            document_id: str | None = None,
     ) -> AsyncIterator[str]:
         response, resolved_session_id = await self._answer_impl(
             question=question,
@@ -219,6 +232,7 @@ class ChatService:
             chunking_profile=chunking_profile,
             model_profile=model_profile,
             owner_id=owner_id,
+            document_id=document_id,
         )
         meta = {
             "session_id": resolved_session_id,

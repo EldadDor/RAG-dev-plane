@@ -131,3 +131,52 @@ async def test_local_profile_warm_endpoint_uses_workspace_scoped_dry_run():
     assert response.status_code == 200
     assert response.json()["provider_calls"] == 0
     warmer.warm.assert_awaited_once_with("bge-m3", "default", "local", dry_run=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("route", ["/chat", "/chat/stream"])
+@pytest.mark.parametrize("fields", [
+    {"document_id": "bad"}, {"document_id": "A" * 64},
+    {"document_id": "a" * 64, "session_id": "old"},
+    {"document_id": "a" * 64, "session_id": ""},
+])
+async def test_scoped_chat_validation_rejects_before_streaming(route, fields):
+    from app.dependencies import get_chat_service
+    service = AsyncMock()
+    app.dependency_overrides[get_chat_service] = lambda: service
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(route, json={"question": "Question", **fields})
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 422
+    assert response.json()["code"] == "invalid_request"
+    service.answer.assert_not_called()
+    service.answer_stream.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("route", ["/chat", "/chat/stream"])
+async def test_scoped_chat_routes_forward_document_and_return_stateless_response(route):
+    from app.dependencies import get_chat_service
+    service = AsyncMock()
+    service.answer.return_value = ChatResponse(answer="Scoped", sources=[], grounded=False, session_id=None)
+
+    async def stream(**kwargs):
+        assert kwargs["document_id"] == "a" * 64
+        yield 'event: meta\ndata: {"session_id": null}\n\n'
+        yield 'event: done\ndata: {"reason":"completed"}\n\n'
+
+    service.answer_stream = stream
+    app.dependency_overrides[get_chat_service] = lambda: service
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(route, json={"question": "Question", "document_id": "a" * 64})
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200
+    if route == "/chat":
+        assert response.json()["session_id"] is None
+        assert service.answer.call_args.kwargs["document_id"] == "a" * 64
+    else:
+        assert '"session_id": null' in response.text

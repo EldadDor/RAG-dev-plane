@@ -4,6 +4,12 @@
 **Task:** RAG-C-01 — authorized G2 design and local ingestion.
 **Status:** Authorized isolated experiment complete; production selection remains unresolved.
 
+**Follow-up:** [RAG-C-02 saved-answer review](STAGE_C_ANSWER_REVIEW.md) examines
+all 99 saved second-request answers against approved facts and source evidence.
+Matched OCR fact coverage improves modestly, but incorrect claims, entity/page
+attribution errors and availability loss prevent an overall acceptance claim.
+Original metrics and artifacts below remain unchanged.
+
 ## Fixed scope
 
 Frozen 17 PDFs and 47 reference cases; original questions/source/reference bytes

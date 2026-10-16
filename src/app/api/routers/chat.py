@@ -60,6 +60,7 @@ async def chat(
                 chunking_profile=body.chunking_profile,
                 model_profile=body.model_profile,
                 owner_id=principal.subject,
+                **({"document_id": body.document_id} if body.document_id is not None else {}),
             )
     except SessionScopeError as exc:
         raise HTTPException(status_code=404, detail="Chat session not found") from exc
@@ -103,6 +104,7 @@ async def chat_stream(
                 chunking_profile=body.chunking_profile,
                 model_profile=body.model_profile,
                 owner_id=principal.subject,
+                **({"document_id": body.document_id} if body.document_id is not None else {}),
             ):
                 yield event
         except Exception:
