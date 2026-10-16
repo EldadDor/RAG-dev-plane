@@ -31,15 +31,34 @@ export default function App() {
     const [streamingTurn, setStreamingTurn] = useState<StreamingTurn | null>(null)
     const [profileMenuOpen, setProfileMenuOpen] = useState(false)
     const streamController = useRef<AbortController | null>(null)
+    const sessionController = useRef<AbortController | null>(null)
+    const conversationGeneration = useRef(0)
+    const composer = useRef<HTMLTextAreaElement | null>(null)
+    const focusComposer = useRef(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const refreshBeforeNextTurn = useRef<string | null>(null)
 
     function cancelStream(showPartial = false) {
         streamController.current?.abort()
         streamController.current = null
+        setIsSubmitting(false)
         if (showPartial) setStreamingTurn((current) => current ? {...current, status: 'cancelled'} : current)
     }
 
-    useEffect(() => () => cancelStream(), [])
+    function invalidateConversation() {
+        conversationGeneration.current += 1
+        sessionController.current?.abort()
+        sessionController.current = null
+        cancelStream()
+    }
+
+    useEffect(() => () => invalidateConversation(), [])
+    useEffect(() => {
+        if (focusComposer.current) {
+            focusComposer.current = false
+            composer.current?.focus()
+        }
+    })
 
     useEffect(() => {
         const controller = new AbortController()
@@ -63,6 +82,11 @@ export default function App() {
     }
 
     async function recoverWorkspaceAccess() {
+        invalidateConversation()
+        setSources([])
+        setGrounded(null)
+        setStreamingTurn(null)
+        refreshBeforeNextTurn.current = null
         setWorkspaceId('')
         setSessions([])
         setActiveSession(null)
@@ -91,11 +115,12 @@ export default function App() {
         setErrorMessage('')
         getSessions(workspaceId, controller.signal)
             .then((availableSessions) => {
+                if (controller.signal.aborted) return
                 setSessions(availableSessions);
-                setActiveSession(null);
                 setSessionsStatus('ready')
             })
             .catch((error: unknown) => {
+                if (controller.signal.aborted) return
                 if (error instanceof DOMException && error.name === 'AbortError') return
                 if (error instanceof ApiError && error.code === 'workspace_access_denied') {
                     void recoverWorkspaceAccess()
@@ -116,7 +141,11 @@ export default function App() {
 
     async function selectSession(session: ChatSession) {
         if (!workspaceId) return
-        cancelStream()
+        invalidateConversation()
+        const generation = conversationGeneration.current
+        const controller = new AbortController()
+        sessionController.current = controller
+        setActiveSession(null)
         refreshBeforeNextTurn.current = null
         setStreamingTurn(null)
         setSources([])
@@ -124,11 +153,13 @@ export default function App() {
         setErrorMessage('')
         setProfileMenuOpen(false)
         try {
-            const loadedSession = await getSession(session.sessionId)
+            const loadedSession = await getSession(session.sessionId, controller.signal)
+            if (generation !== conversationGeneration.current || controller.signal.aborted) return
             setActiveSession(loadedSession)
             setRenameTitle(loadedSession.title)
             setIsRenaming(false)
         } catch (error: unknown) {
+            if (generation !== conversationGeneration.current || controller.signal.aborted) return
             if (error instanceof ApiError && error.code === 'workspace_access_denied') {
                 await recoverWorkspaceAccess()
                 return
@@ -140,6 +171,8 @@ export default function App() {
                 return
             }
             setErrorMessage('Unable to load this chat. Try again.')
+        } finally {
+            if (sessionController.current === controller) sessionController.current = null
         }
     }
 
@@ -147,13 +180,16 @@ export default function App() {
         event.preventDefault()
         const title = renameTitle.trim()
         if (!activeSession || !title) return
+        const generation = conversationGeneration.current
         setErrorMessage('')
         try {
             await renameSession(activeSession.sessionId, title)
+            if (generation !== conversationGeneration.current) return
             setActiveSession({...activeSession, title})
             setSessions((current) => current.map((session) => session.sessionId === activeSession.sessionId ? {...session, title} : session))
             setIsRenaming(false)
         } catch (error: unknown) {
+            if (generation !== conversationGeneration.current) return
             if (error instanceof ApiError && error.code === 'workspace_access_denied') {
                 await recoverWorkspaceAccess()
                 return
@@ -172,13 +208,16 @@ export default function App() {
     async function archiveActiveSession() {
         if (!activeSession || !window.confirm('Archive this chat? It will be removed from your recent chats.')) return
         const sessionId = activeSession.sessionId
+        const generation = conversationGeneration.current
         setErrorMessage('')
         try {
             await archiveSession(sessionId)
+            if (generation !== conversationGeneration.current) return
             setSessions((current) => current.filter((session) => session.sessionId !== sessionId))
             setActiveSession(null)
             setIsRenaming(false)
         } catch (error: unknown) {
+            if (generation !== conversationGeneration.current) return
             if (error instanceof ApiError && error.code === 'workspace_access_denied') {
                 await recoverWorkspaceAccess()
                 return
@@ -195,15 +234,20 @@ export default function App() {
     }
 
     function startNewChat() {
-        cancelStream();
+        if ((draft.trim() || streamController.current) && !window.confirm('Start a new chat? This will stop the current answer and discard any unsent draft.')) return
+        invalidateConversation();
         refreshBeforeNextTurn.current = null;
         setActiveSession(null);
         setDraft('');
         setIsRenaming(false);
+        setRenameTitle('');
+        setErrorMessage('');
         setStreamingTurn(null);
         setSources([]);
+        setExpandedSourceIds(new Set());
         setGrounded(null);
         setProfileMenuOpen(false)
+        focusComposer.current = true
     }
 
     function toggleSource(sourceId: string) {
@@ -219,30 +263,39 @@ export default function App() {
         event.preventDefault()
         const question = draft.trim()
         if (!workspaceId || !question || streamController.current) return
-        let sessionId = activeSession?.sessionId
-        if (refreshBeforeNextTurn.current) {
-            try {
-                const refreshedSession = await getSession(refreshBeforeNextTurn.current)
-                setActiveSession(refreshedSession)
-                sessionId = refreshedSession.sessionId
-                refreshBeforeNextTurn.current = null
-            } catch {
-                setErrorMessage('Unable to refresh the interrupted chat. Try again.')
-                return
-            }
-        }
+        invalidateConversation()
+        const generation = conversationGeneration.current
         const controller = new AbortController()
-        let responseSessionId: string | undefined
+        const isCurrent = () => generation === conversationGeneration.current && streamController.current === controller && !controller.signal.aborted
         streamController.current = controller
-        setDraft('')
-        setErrorMessage('')
-        setSources([])
-        setGrounded(null)
-        setStreamingTurn({question, answer: '', status: 'streaming'})
+        setIsSubmitting(true)
+        let sessionId = activeSession?.sessionId
+        let responseSessionId: string | undefined
         try {
+            if (refreshBeforeNextTurn.current) {
+                try {
+                    const refreshedSession = await getSession(refreshBeforeNextTurn.current, controller.signal)
+                    if (!isCurrent()) return
+                    setActiveSession(refreshedSession)
+                    sessionId = refreshedSession.sessionId
+                    refreshBeforeNextTurn.current = null
+                } catch {
+                    if (!isCurrent()) return
+                    setErrorMessage('Unable to refresh the interrupted chat. Try again.')
+                    return
+                }
+            }
+            setDraft('')
+            setErrorMessage('')
+            setSources([])
+            setGrounded(null)
+            setStreamingTurn({question, answer: '', status: 'streaming'})
             await streamChat({question, workspaceId, sessionId}, {
-                onAnswer: (delta) => setStreamingTurn((current) => current ? {...current, answer: current.answer + delta} : current),
+                onAnswer: (delta) => {
+                    if (isCurrent()) setStreamingTurn((current) => current ? {...current, answer: current.answer + delta} : current)
+                },
                 onMeta: (meta) => {
+                    if (!isCurrent()) return
                     responseSessionId = meta.sessionId;
                     refreshBeforeNextTurn.current = meta.sessionId;
                     setSources(meta.sources);
@@ -250,22 +303,27 @@ export default function App() {
                     setGrounded(meta.grounded)
                 },
             }, controller.signal)
-            if (streamController.current !== controller) return
-            const availableSessions = await getSessions(workspaceId)
-            if (streamController.current !== controller) return
+            if (!isCurrent()) return
+            const availableSessions = await getSessions(workspaceId, controller.signal)
+            if (!isCurrent()) return
             setSessions(availableSessions)
             if (responseSessionId) {
-                setActiveSession(await getSession(responseSessionId))
+                const completedSession = await getSession(responseSessionId, controller.signal)
+                if (!isCurrent()) return
+                setActiveSession(completedSession)
                 refreshBeforeNextTurn.current = null
             }
-            if (streamController.current === controller) setStreamingTurn(null)
+            if (isCurrent()) setStreamingTurn(null)
         } catch (error: unknown) {
-            if (streamController.current !== controller) return
+            if (!isCurrent()) return
             if (error instanceof DOMException && error.name === 'AbortError') return
             setStreamingTurn((current) => current ? {...current, status: 'error'} : current)
             setErrorMessage(error instanceof ApiError && error.code === 'upstream_unavailable' ? 'The answer service is temporarily unavailable. Try again when you are ready.' : 'The answer stream could not be completed. Try again when you are ready.')
         } finally {
-            if (streamController.current === controller) streamController.current = null
+            if (streamController.current === controller) {
+                streamController.current = null
+                setIsSubmitting(false)
+            }
         }
     }
 
@@ -280,7 +338,8 @@ export default function App() {
             <a className="brand" href="/" aria-label="Developer knowledge home">Developer knowledge</a>
             <div className="topbar-actions">
                 <label className="workspace-picker"><span>Workspace</span><select aria-label="Workspace" disabled={workspaceStatus !== 'ready'} value={workspaceId} onChange={(event) => {
-                    cancelStream();
+                    invalidateConversation();
+                    setActiveSession(null);
                     refreshBeforeNextTurn.current = null;
                     setStreamingTurn(null);
                     setSources([]);
@@ -303,7 +362,7 @@ export default function App() {
         </header>
         <section className="workspace" aria-label="Chat workspace">
             <DocumentsPanel key={workspaceId} workspaceId={workspaceId} onAccessDenied={(unauthenticated) => {
-                cancelStream()
+                invalidateConversation()
                 setSources([])
                 setGrounded(null)
                 setStreamingTurn(null)
@@ -315,7 +374,7 @@ export default function App() {
                     setErrorMessage('Sign in again, then reload to continue.')
                 } else void recoverWorkspaceAccess()
             }}/>
-            <section className="chat-pane" aria-label="Chat" aria-busy={Boolean(streamController.current)}>
+            <section className="chat-pane" aria-label="Chat" aria-busy={isSubmitting}>
                 <div className="chat-heading">
                     <div><p className="eyebrow">{selectedWorkspace?.displayName ?? 'Internal developer documentation'}</p><h1>{chatTitle}</h1></div>
                     <div className="heading-actions">{activeSession && <>
@@ -359,10 +418,10 @@ export default function App() {
                         </figure>)}</div>
                     </section>}
                 </div>
-                <form className="composer" onSubmit={(event) => void submitQuestion(event)}><label className="sr-only" htmlFor="question">Your question</label><textarea id="question" value={draft} onChange={(event) => setDraft(event.target.value)}
-                                                                                                                                                                         disabled={!workspaceId || Boolean(streamController.current)}
+                <form className="composer" onSubmit={(event) => void submitQuestion(event)}><label className="sr-only" htmlFor="question">Your question</label><textarea ref={composer} id="question" value={draft} onChange={(event) => setDraft(event.target.value)}
+                                                                                                                                                                         disabled={!workspaceId || isSubmitting}
                                                                                                                                                                          placeholder="Ask about your developer documentation…"
-                                                                                                                                                                         rows={3}/>{streamController.current ?
+                                                                                                                                                                         rows={3}/>{isSubmitting ?
                     <button className="secondary" type="button" onClick={() => cancelStream(true)}>Stop</button> : <button type="submit" disabled={!workspaceId || !draft.trim()}>Send</button>}</form>
             </section>
             <aside className="sessions-pane" aria-label="Recent chats">

@@ -1,6 +1,6 @@
 # Project Task Overview
 
-**Last reviewed:** 2026-10-14
+**Last reviewed:** 2026-10-16
 
 Current work and the next three candidates per area live in the
 [backend current board](work_current_phase.md), [backend next phases](next_phase.md),
@@ -30,6 +30,6 @@ These requests are retained for later prioritization; none is activated.
 | Quality / UI | Further semantic-splitter experiments, browser chunking-profile selection and any reranking default change require their own scoped decisions. |
 | Operator acceptance | Fresh-process cursor/catalog acceptance, frontend catalog browser integration and PowerPoint badges need separately scoped follow-up. |
 | Kotlin owner | Runtime parity with approved Python contracts; gateway authorization for profile warming needs a separate design. |
-| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved. [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md) and post-fix audits complete; source samples reject a universal pypdf replacement. Original-case scoring is complete; [v4 correction and residual fidelity work](../evaluation/pdf_parsers/corpus/EXTRACTION_SCORECARD.md) precede Stage C selection. Preserve fixed timeouts. Stage C remains a gated next-phase candidate. Later caches, enrichment, vision and graph work retain separate gates. Coordinate provenance with NP-25/NP-26. |
+| RAG-Anything adoption later stages / backend | [Adoption plan](RAG_ANYTHING_ADOPTION_PLAN.md) approved. [PDFium comparison](../evaluation/pdf_parsers/corpus/PDFIUM_COMPARISON.md) and post-fix audits complete; source samples reject a universal pypdf replacement. Original-case scoring and Stage C indexed comparison/assigned-document implementation are complete; current validation readiness and unresolved fidelity/acceptance limits are tracked in the backend current board. Preserve fixed timeouts and the approved pypdf production default. Later caches, enrichment, vision and graph work retain separate gates. Coordinate provenance with NP-25/NP-26. |
 
 Move a prioritized request into a next-phase slot; define its detailed plan at G1.
