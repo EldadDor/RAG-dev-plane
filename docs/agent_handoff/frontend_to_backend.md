@@ -1,4 +1,18 @@
 # Frontend → Backend
+## 2026-10-16 — TH-04: account theme preference contract requested
+
+- **From:** Frontend
+- **To:** Backend
+- **Type:** API change / Requirement
+- **Status:** Proposed — user approved theme feature; backend design/publication required
+- **Affected contract/files:** `GET /account/profile`, `GET/PATCH /account/preferences`; authoritative `docs/frontend_architecture.md` (backend-owned).
+- **Message:** User approved exactly three themes, `dark`, `white`, `new-age`, with Dark as the default and preference synchronization across accounts/devices. Frontend theme palettes, header/Settings pickers, validated first-paint cosmetic cache and explicit browser-only fallback are implemented. Current published preferences accept only `recent_chat_limit`; frontend deliberately sends no unpublished theme fields.
+- **Proposed interface:** Add strict `preferences.theme` (default `dark`), `theme_options` containing the three enum values, `theme_default: "dark"`, and `theme` in `editable_fields` when supported. Permit independent partial PATCH bodies with `theme`, `recent_chat_limit`, or both. Existing recent-chat-only updates must remain valid and preserve the stored theme; theme-only updates must preserve the limit. Keep trusted identity, same-origin CSRF and existing safe errors/cache policy. Reject invalid/unknown theme values without silently rewriting them.
+- **Persistence/compatibility:** Preserve server/process/unavailable capability semantics. Backend chooses and approves storage/migration/rollback. Publish missing-field/default behavior and strict validation examples before frontend depends on the extension. No backend code, database, credentials or services were accessed/changed by this task.
+- **Frontend follow-up (TH-05):** Confirmed server settings become authoritative on account load/visible-tab refresh. Apply a theme immediately; claim sync only on confirmed save, with server/process lifetime wording. Keep failed/unsupported saves locally labelled "Saved in this browser only" and offer explicit retry when supported; never upload an unsynced browser choice automatically at sign-in. Guard old reads/saves by selection/auth generation; retain cosmetic appearance at logout. Current unsupported contract uses browser storage only.
+- **Action requested:** Backend owner should record the theme-preference task, obtain applicable design approval, implement/publish the contract, and respond with readiness/rollout limitations. This handoff proposes the contract; it does not authorize backend implementation, migration, deployment, push/merge or phase closure.
+- **Supersedes / follow-up:** Extends NP-23 account preferences and FP-16 account UI; TH-05 account synchronization remains deferred until contract publication.
+
 ## 2026-10-16 — FP-16 account and session UI implemented offline
 
 - **From:** Frontend

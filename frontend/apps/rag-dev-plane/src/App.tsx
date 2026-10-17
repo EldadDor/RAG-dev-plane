@@ -4,6 +4,26 @@ import {ApiError, archiveSession, getSession, getSessions, getWorkspaces, rename
 
 type Pane = 'sources' | 'sessions'
 type StreamingTurn = { question: string; answer: string; status: 'streaming' | 'cancelled' | 'error' }
+export const themeOptions = ['dark', 'white', 'new-age'] as const
+export type Theme = typeof themeOptions[number]
+const themeLabels: Record<Theme, string> = {dark: 'Dark', white: 'White', 'new-age': 'New-age'}
+const themeBackgrounds: Record<Theme, string> = {dark: '#0c1322', white: '#f6f8fc', 'new-age': '#0b0f17'}
+export function readTheme(): Theme {
+    try {
+        const cached = window.localStorage.getItem('rag-dev-plane.theme')
+        if (themeOptions.includes(cached as Theme)) return cached as Theme
+    } catch { /* Cosmetic storage is optional. */ }
+    return 'dark'
+}
+export function applyTheme(theme: Theme): boolean {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme === 'white' ? 'light' : 'dark'
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeBackgrounds[theme])
+    try {
+        window.localStorage.setItem('rag-dev-plane.theme', theme)
+        return true
+    } catch { return false }
+}
 
 function formatTimestamp(timestamp: string | null) {
     if (!timestamp) return null
@@ -12,6 +32,20 @@ function formatTimestamp(timestamp: string | null) {
 }
 
 export default function App() {
+    const [theme, setTheme] = useState<Theme>(readTheme)
+    const [themeStored, setThemeStored] = useState(true)
+    useEffect(() => { setThemeStored(applyTheme(theme)) }, [theme])
+
+    function renderThemePicker(location: 'header' | 'settings') {
+        return <fieldset className="theme-picker" aria-label={`${location === 'header' ? 'Header' : 'Settings'} appearance`}>
+            <legend className={location === 'header' ? 'sr-only' : undefined}>Theme</legend>
+            <div className="theme-options">{themeOptions.map((choice) => <label className="theme-option" key={choice}>
+                <input className="sr-only" type="radio" name={`theme-${location}`} value={choice} checked={theme === choice} onChange={() => setTheme(choice)}/>
+                <span className="theme-choice"><span className="theme-preview" data-preview={choice} aria-hidden="true"><span/></span><span>{themeLabels[choice]}</span></span>
+            </label>)}</div>
+            <p className="theme-status" aria-live={location === 'settings' ? 'polite' : 'off'}>{themeStored ? 'Saved in this browser only' : 'Applied for this visit only. Browser storage is unavailable.'}</p>
+        </fieldset>
+    }
     const [activePane, setActivePane] = useState<Pane>('sessions')
     const [draft, setDraft] = useState('')
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
@@ -496,6 +530,7 @@ export default function App() {
         <header className="topbar">
             <a className="brand" href="/" aria-label="Developer knowledge home">Developer knowledge</a>
             <div className="topbar-actions">
+                {renderThemePicker('header')}
                 <label className="workspace-picker"><span>Workspace</span><select aria-label="Workspace" disabled={workspaceStatus !== 'ready'} value={workspaceId} onChange={(event) => {
                     invalidateConversation();
                     setActiveSession(null);
@@ -526,6 +561,10 @@ export default function App() {
             {loginOptions && <div aria-label="Local test identities"><p>Choose a local test identity</p>{loginOptions.identities.map((choice) => <button type="button" key={choice.identity} disabled={accountBusy} onClick={() => void signIn(choice.identity)}>{choice.display_name}</button>)}</div>}
             {accountPane && <div className="account-panel" role="region" aria-label={accountPane === 'profile' ? 'Profile' : 'Settings'}>
                 <div className="account-heading"><h2>{accountPane === 'profile' ? 'Profile' : 'Settings'}</h2><button type="button" disabled={accountBusy} onClick={() => void loadAccount()}>Refresh account</button><button type="button" onClick={() => setAccountPane(null)}>Close account panel</button></div>
+                {accountPane === 'settings' && <section className="theme-settings" aria-label="Appearance settings">
+                    {renderThemePicker('settings')}
+                    <p className="muted">Account theme sync is not available yet.</p>
+                </section>}
                 {account && accountPane === 'profile' && <>
                     <dl><dt>Name</dt><dd dir="auto">{account.profile.display_name}</dd><dt>Email</dt><dd dir="auto">{account.profile.email || 'Not provided'}</dd></dl>
                     <p>Profile details and workspace roles are read-only.</p>

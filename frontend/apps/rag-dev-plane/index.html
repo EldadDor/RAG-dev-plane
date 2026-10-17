@@ -3,7 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d1625" />
+    <meta name="theme-color" content="#0c1322" />
+    <script id="theme-bootstrap">
+      // Apply the cosmetic preference before styles and React can paint.
+      (() => {
+        let theme = 'dark';
+        try {
+          const cached = window.localStorage.getItem('rag-dev-plane.theme');
+          if (['dark', 'white', 'new-age'].includes(cached)) theme = cached;
+        } catch { /* Storage may be unavailable; Dark is the default. */ }
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme === 'white' ? 'light' : 'dark';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', {dark: '#0c1322', white: '#f6f8fc', 'new-age': '#0b0f17'}[theme]);
+      })();
+    </script>
     <title>Developer knowledge</title>
   </head>
   <body>

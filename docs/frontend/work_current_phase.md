@@ -1,11 +1,12 @@
 # Current Frontend Work Phase
 
-**Last reviewed:** 2026-10-16
-**Status:** FP-16 implemented and offline-validated; uncommitted, live acceptance pending. FP-15 committed locally as a633351; no push/merge or phase closure performed.
+**Last reviewed:** 2026-10-17
+**Status:** TH-01–TH-04 complete, uncommitted; TH-05 frontend acceptance complete and account synchronization deferred pending backend contract. FP-16 commit corrected to 10c6280. No new phase closure recorded.
 
 | ID | Task | Status | Gate | Request / evidence |
 | --- | --- | --- | --- | --- |
 | FR-01 | Review backend handoff and current frontend readiness | Completed | G1 Intake approved | FR-01: User requested review 2026-10-16. Static inspection of handoffs, contract, api.ts and App.tsx: RAG-C-03 needs no frontend change; FP-14 stale session-load/draft confirmation gaps; FP-15 dedup/display limit absent; FP-16 menu actions are placeholders and auth/CSRF integration absent. NP-23/24 contracts published; rollout/acceptance pending. Updated both frontend boards. No commit; Git status failed (cannot change to repository root). Tests, type checks, builds, browser/live API/model/database checks not run. |
+| FR-02 | Review current frontend state and tasks | Completed | G1 Intake approved | FR-02: User requested review 2026-10-17. Static boards/contract/handoff/source review confirms browser-only theme implementation; TH-05 awaits published/deployed backend theme and partial-PATCH contract. FP-14/15/16 recorded commits c453f01/a633351/10c6280; TH-01–04 recorded uncommitted; not independently Git-verified. rtk and native scoped Git status/log failed: cannot change to repository root. FP-17 remains parked on NP-25/26; live auth/catalog acceptance and delivery/G4 closure remain separate. Updated both frontend boards; no commit. Tests, type checks, builds, browser/live API/model/database checks not run; no services started. |
 
 Completed history: [sole phase ledger](../complete_phases.md).
 Phase-sync through `0d9431c` (2026-10-15): reviewed commits since the prior review; no frontend implementation commits. DOC-01 is closed in the shared ledger; DOC-03's pending closure is tracked in [task overview](../task_overview.md). No new phase closure was recorded.
@@ -32,4 +33,27 @@ Scope: existing frontend API transport, account menu/panels and preference selec
 
 | ID | Task | Status | Gate | Request / evidence |
 | --- | --- | --- | --- | --- |
-| FP-16 | Account actions and authentication integration | Completed | G1 Intake approved | FP-16: User explicitly approved 2026-10-16. Existing api.ts/App.tsx implement read-only profile, capability-driven preferences/persistence, same-origin Entra/dev sign-in, in-memory CSRF, confirmed application logout, auth generation/cancellation and expiry/visible-tab checks; DocumentsPanel.tsx distinguishes CSRF from workspace denial; styles.css and Vite account proxy updated. API/App tests now cover hooks/effects and 19 new account/session regressions. rtk npm test: 66 passed; rtk npm run build: TypeScript/production build passed; scoped whitespace checks passed. Shared integration checklist and frontend handoff updated. No new module/dependency/server API shape (G2 not triggered). No commit for FP-16; no push/merge/G4 closure, browser rendering/acceptance, migration/gateway/Nginx/Entra rollout or live API/model/database checks. Those remain operator prerequisites; no services started. |
+| FP-16 | Account actions and authentication integration | Completed | G1 Intake approved | FP-16: User explicitly approved 2026-10-16. Existing api.ts/App.tsx implement read-only profile, capability-driven preferences/persistence, same-origin Entra/dev sign-in, in-memory CSRF, confirmed application logout, auth generation/cancellation and expiry/visible-tab checks; DocumentsPanel.tsx distinguishes CSRF from workspace denial; styles.css and Vite account proxy updated. API/App tests now cover hooks/effects and 19 new account/session regressions. rtk npm test: 66 passed; rtk npm run build: TypeScript/production build passed; scoped whitespace checks passed. Shared integration checklist and frontend handoff updated. No new module/dependency/server API shape (G2 not triggered). FP-16 committed locally as 10c6280; no push/merge/G4 closure, browser rendering/acceptance, migration/gateway/Nginx/Entra rollout or live API/model/database checks. Those remain operator prerequisites; no services started. |
+
+## Three-theme styling
+
+User explicitly approved the complete plan on 2026-10-16 (G1). Existing frontend
+modules, root data-theme and local cosmetic cache; no new dependency/module or
+server API change (G2 not triggered for frontend). Dark default; exactly Dark,
+White and New-age. Test cache/storage failure, picker keyboard/state retention,
+semantic contrast, reduced motion, RTL/narrow layouts, TypeScript/build. Backend
+owns account theme contract; do not send unpublished fields. Local commit of TH-01–04 explicitly authorized 2026-10-17. No push/phase closure or live operations authorized.
+
+| ID | Task | Status | Gate | Request / evidence |
+| --- | --- | --- | --- | --- |
+| TH-01 | Semantic theme tokens and badges | Completed | G1 approved | TH-01: styles.css semantic surfaces/text/controls/focus/status/chat/source/badge tokens; documentBadges.ts uses CSS variables without changing labels/thresholds. Palette contrast checks cover text >=4.5:1 and control/focus >=3:1 on tested solid surfaces and both gradient endpoints. No commit. |
+| TH-02 | Dark, White and New-age palettes | Completed | G1 approved | TH-02: exactly three palettes; Dark default, White/pale-gray, New-age violet/cyan with opaque fallbacks and optional glass. Shared line-height, full reduced-motion transition override, long identifier wrapping, 320px overflow fix. Fixture browser visuals at 320/900/1440px, RTL/long files/messages, menus/Settings/sources checked. Screenshots saved outside repo in task visualizations. No commit. |
+| TH-03 | Header/Settings theme pickers and cache | Completed | G1 approved | TH-03: App.tsx native labelled radio groups; index.html validates cosmetic cache before React/styles; root data-theme, color-scheme and theme-color update. Browser-only/visit-only statuses honest under failed storage. App tests and fixture browser verify synchronized pickers, arrow-key selection/focus, draft/workspace/history/stream retention and reload persistence; auth loss retains cosmetic theme. No account theme calls or new module/dependency. No commit. |
+| TH-04 | Backend theme preference proposal | Completed | G1 approved | TH-04: newest frontend_to_backend.md entry requests strict theme enum/default/capabilities, independent partial PATCH updates and server/process/unavailable persistence. Backend owns design/storage/migration/publication. Authoritative contract unchanged. No commit. |
+| TH-05 | Synchronization and acceptance | Deferred | G1 approved | TH-05: browser-only implementation acceptance complete: rtk npm test 90 passed; TypeScript/production build passed; scoped whitespace checks passed. Fixture-only Vite browser checks at 320/900/1440px, keyboard/focus, RTL, long messages/files, source expansion and persistence; no browser errors/warnings. Preview proxy disabled, temporary fixture config removed/server stopped. Account theme sync/server precedence/partial-save/retry/late-account-response cases await backend-published contract and separately approved deployed acceptance; no speculative wire fields. No live API/model/database/gateway operations, no commit/push/G4 closure. |
+
+## TH-06 Theme controls polish
+
+| ID | Task | Status | Gate | Request / evidence |
+| --- | --- | --- | --- | --- |
+| TH-06 | Settings-only theme picker and SVG action icons | In progress | G1 approved | TH-06: User requested 2026-10-17. Existing App/DocumentsPanel/styles only; remove header picker, retain Settings picker/cache and replace Refresh/Close account panel/Refresh account text with inline SVG icons, accessible labels and tooltips. No new module/dependency/API (G2 not triggered). Validate existing regressions, TypeScript/build and whitespace. TH-01–04 local commit explicitly approved separately. |

@@ -1,5 +1,7 @@
+/// <reference types="vite/client" />
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 import type {ReactElement} from 'react'
+import themeHtml from '../index.html?raw'
 
 // Exercise component state, effects and delayed requests without a DOM dependency.
 const hooks = vi.hoisted(() => ({slots: [] as unknown[], cursor: 0, effects: [] as Array<() => void>}))
@@ -33,7 +35,7 @@ vi.mock('./api', async (original) => ({
     getAuthSession: vi.fn(), logout: vi.fn(), getLoginOptions: vi.fn(), devLogin: vi.fn(),
 }))
 
-import App from './App'
+import App, {readTheme, applyTheme, themeOptions} from './App'
 import {archiveSession, getSession, getSessions, renameSession, streamChat, getWorkspaces, getAccountProfile, getAccountPreferences, saveAccountPreferences, getAuthSession, clearAuthentication, logout, getLoginOptions, devLogin, type AccountProfile, type ChatSessionDetail, type StreamHandlers} from './api'
 
 type Element = ReactElement<Record<string, any>>
@@ -80,8 +82,9 @@ beforeEach(async () => {
     hooks.slots = []; hooks.cursor = 0
     hooks.effects = []
     vi.resetAllMocks()
-    vi.stubGlobal('window', {confirm: vi.fn(() => true), setTimeout, clearTimeout, location: {assign: vi.fn()}})
-    vi.stubGlobal('document', {visibilityState: 'visible', addEventListener: vi.fn(), removeEventListener: vi.fn()})
+    const cache = new Map<string, string>()
+    vi.stubGlobal('window', {localStorage: {getItem: vi.fn((key: string) => cache.get(key) ?? null), setItem: vi.fn((key: string, value: string) => cache.set(key, value))}, confirm: vi.fn(() => true), setTimeout, clearTimeout, location: {assign: vi.fn()}})
+    vi.stubGlobal('document', {documentElement: {dataset: {}, style: {}}, querySelector: vi.fn(() => ({setAttribute: vi.fn()})), visibilityState: 'visible', addEventListener: vi.fn(), removeEventListener: vi.fn()})
     vi.mocked(getWorkspaces).mockResolvedValue({principalDisplayName: 'Ada', workspaces: [{workspaceId: 'local', displayName: 'Local', role: 'owner'}]})
     vi.mocked(getAccountProfile).mockResolvedValue(profile)
     vi.mocked(getAccountPreferences).mockResolvedValue({preferences: {recent_chat_limit: 10}, persistence: 'server'})
@@ -349,5 +352,81 @@ describe('FP-16 account actions', () => {
         expect(getWorkspaces).toHaveBeenCalledTimes(2)
         expect(nodes().some((n) => n.props['aria-label'] === 'User menu')).toBe(true)
         expect(streamChat).not.toHaveBeenCalled()
+    })
+})
+
+describe('TH-03 theme selection', () => {
+    it.each(['dark', 'white', 'new-age', 'invalid', '', null])('validates cached preference %s', (cached) => {
+        vi.mocked(window.localStorage.getItem).mockReturnValue(cached)
+        expect(readTheme()).toBe(themeOptions.includes(cached as typeof themeOptions[number]) ? cached : 'dark')
+    })
+
+    it('applies a theme even when cosmetic storage is blocked', () => {
+        vi.mocked(window.localStorage.getItem).mockImplementation(() => {throw new Error('blocked')})
+        expect(readTheme()).toBe('dark')
+        vi.mocked(window.localStorage.setItem).mockImplementation(() => {throw new Error('blocked')})
+        expect(applyTheme('white')).toBe(false)
+        expect(document.documentElement.dataset.theme).toBe('white')
+        expect(document.documentElement.style.colorScheme).toBe('light')
+    })
+
+    it('offers exactly three native radio choices in both pickers and keeps them in sync', () => {
+        openAccount('Settings')
+        for (const location of ['header', 'settings']) {
+            expect(nodes().filter((n) => n.type === 'input' && n.props.name === `theme-${location}`).map((n) => n.props.value)).toEqual(['dark', 'white', 'new-age'])
+        }
+        find((n) => n.type === 'input' && n.props.name === 'theme-header' && n.props.value === 'white').props.onChange(); render()
+        expect(document.documentElement.dataset.theme).toBe('white')
+        expect(find((n) => n.type === 'input' && n.props.name === 'theme-settings' && n.props.value === 'white').props.checked).toBe(true)
+        expect(window.localStorage.setItem).toHaveBeenLastCalledWith('rag-dev-plane.theme', 'white')
+        expect(saveAccountPreferences).not.toHaveBeenCalled()
+    })
+
+    it('preserves a draft and workspace when changing theme, and retains the cosmetic choice after auth loss', () => {
+        draft('טיוטה — a long unsent question')
+        find((n) => n.type === 'input' && n.props.value === 'new-age').props.onChange(); render()
+        expect(find((n) => n.type === 'textarea').props.value).toBe('טיוטה — a long unsent question')
+        expect(find((n) => n.props['aria-label'] === 'Workspace').props.value).toBe('local')
+        clearAuthentication(); render()
+        expect(document.documentElement.dataset.theme).toBe('new-age')
+        expect(find((n) => n.type === 'input' && n.props.value === 'new-age').props.checked).toBe(true)
+        expect(button('Sign in')).toBeDefined()
+    })
+
+    it('does not abort a streaming response or change selected history when changing theme', async () => {
+        vi.mocked(streamChat).mockImplementationOnce(async (_request, handlers) => handlers.onMeta({sessionId: 'old', grounded: true, sources: []}))
+        vi.mocked(getSession).mockResolvedValue(session)
+        draft('First'); submit(); await flush()
+        const answer = deferred<void>()
+        vi.mocked(streamChat).mockImplementationOnce(() => answer.promise)
+        draft('Next'); submit()
+        const signal = vi.mocked(streamChat).mock.calls[1][2]
+        find((n) => n.type === 'input' && n.props.value === 'white').props.onChange(); render()
+        expect(signal.aborted).toBe(false)
+        expect(nodes().some((n) => n.type === 'h1' && n.props.children === 'Old chat')).toBe(true)
+        answer.resolve(); await flush()
+    })
+
+    it('keeps the header picker available when account services fail and reports a failed cache write honestly', async () => {
+        openAccount('Settings')
+        vi.mocked(getAccountProfile).mockRejectedValueOnce(new Error('unavailable'))
+        button('Refresh account').props.onClick(); await flush()
+        vi.mocked(window.localStorage.setItem).mockImplementationOnce(() => {throw new Error('blocked')})
+        find((n) => n.type === 'input' && n.props.name === 'theme-header' && n.props.value === 'white').props.onChange(); render(); render()
+        expect(document.documentElement.dataset.theme).toBe('white')
+        expect(nodes().some((n) => n.props.children === 'Applied for this visit only. Browser storage is unavailable.')).toBe(true)
+    })
+
+    it.each(['dark', 'white', 'new-age', 'invalid', null, 'blocked'])('applies cached %s before React and stylesheet initialization', (cached) => {
+        const html = themeHtml
+        const script = html.match(/<script id="theme-bootstrap">([\s\S]*?)<\/script>/)![1]
+        const root = {dataset: {} as Record<string, string>, style: {} as Record<string, string>}
+        const meta = {setAttribute: vi.fn()}
+        new Function('window', 'document', script)({localStorage: {getItem: () => {if (cached === 'blocked') throw new Error('blocked'); return cached}}}, {documentElement: root, querySelector: () => meta})
+        const expected = ['dark', 'white', 'new-age'].includes(cached ?? '') ? cached : 'dark'
+        expect(root.dataset.theme).toBe(expected)
+        expect(root.style.colorScheme).toBe(expected === 'white' ? 'light' : 'dark')
+        expect(html.indexOf('id="theme-bootstrap"')).toBeLessThan(html.indexOf('type="module"'))
+        expect(meta.setAttribute).toHaveBeenCalledWith('content', expected === 'white' ? '#f6f8fc' : expected === 'new-age' ? '#0b0f17' : '#0c1322')
     })
 })
