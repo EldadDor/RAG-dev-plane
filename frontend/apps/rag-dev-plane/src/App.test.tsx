@@ -53,7 +53,7 @@ function find(predicate: (element: Element) => boolean) {
     if (!result) throw new Error('Expected UI element missing')
     return result
 }
-function button(label: string) { return find((n) => n.type === 'button' && n.props.children === label) }
+function button(label: string) { return find((n) => n.type === 'button' && (n.props['aria-label'] ?? n.props.children) === label) }
 function draft(value: string) {
     find((n) => n.type === 'textarea').props.onChange({target: {value}})
     render()
@@ -370,12 +370,11 @@ describe('TH-03 theme selection', () => {
         expect(document.documentElement.style.colorScheme).toBe('light')
     })
 
-    it('offers exactly three native radio choices in both pickers and keeps them in sync', () => {
+    it('offers exactly three native radio choices only in Settings', () => {
         openAccount('Settings')
-        for (const location of ['header', 'settings']) {
-            expect(nodes().filter((n) => n.type === 'input' && n.props.name === `theme-${location}`).map((n) => n.props.value)).toEqual(['dark', 'white', 'new-age'])
-        }
-        find((n) => n.type === 'input' && n.props.name === 'theme-header' && n.props.value === 'white').props.onChange(); render()
+        expect(nodes().some((n) => n.props['aria-label'] === 'Header appearance')).toBe(false)
+        expect(nodes().filter((n) => n.type === 'input' && n.props.name === 'theme-settings').map((n) => n.props.value)).toEqual(['dark', 'white', 'new-age'])
+        find((n) => n.type === 'input' && n.props.name === 'theme-settings' && n.props.value === 'white').props.onChange(); render()
         expect(document.documentElement.dataset.theme).toBe('white')
         expect(find((n) => n.type === 'input' && n.props.name === 'theme-settings' && n.props.value === 'white').props.checked).toBe(true)
         expect(window.localStorage.setItem).toHaveBeenLastCalledWith('rag-dev-plane.theme', 'white')
@@ -383,13 +382,14 @@ describe('TH-03 theme selection', () => {
     })
 
     it('preserves a draft and workspace when changing theme, and retains the cosmetic choice after auth loss', () => {
+        openAccount('Settings')
         draft('טיוטה — a long unsent question')
         find((n) => n.type === 'input' && n.props.value === 'new-age').props.onChange(); render()
         expect(find((n) => n.type === 'textarea').props.value).toBe('טיוטה — a long unsent question')
         expect(find((n) => n.props['aria-label'] === 'Workspace').props.value).toBe('local')
         clearAuthentication(); render()
         expect(document.documentElement.dataset.theme).toBe('new-age')
-        expect(find((n) => n.type === 'input' && n.props.value === 'new-age').props.checked).toBe(true)
+        expect(nodes().some((n) => n.type === 'input' && n.props.name === 'theme-settings')).toBe(false)
         expect(button('Sign in')).toBeDefined()
     })
 
@@ -401,18 +401,19 @@ describe('TH-03 theme selection', () => {
         vi.mocked(streamChat).mockImplementationOnce(() => answer.promise)
         draft('Next'); submit()
         const signal = vi.mocked(streamChat).mock.calls[1][2]
+        openAccount('Settings')
         find((n) => n.type === 'input' && n.props.value === 'white').props.onChange(); render()
         expect(signal.aborted).toBe(false)
         expect(nodes().some((n) => n.type === 'h1' && n.props.children === 'Old chat')).toBe(true)
         answer.resolve(); await flush()
     })
 
-    it('keeps the header picker available when account services fail and reports a failed cache write honestly', async () => {
+    it('keeps the Settings picker available when account services fail and reports a failed cache write honestly', async () => {
         openAccount('Settings')
         vi.mocked(getAccountProfile).mockRejectedValueOnce(new Error('unavailable'))
         button('Refresh account').props.onClick(); await flush()
         vi.mocked(window.localStorage.setItem).mockImplementationOnce(() => {throw new Error('blocked')})
-        find((n) => n.type === 'input' && n.props.name === 'theme-header' && n.props.value === 'white').props.onChange(); render(); render()
+        find((n) => n.type === 'input' && n.props.name === 'theme-settings' && n.props.value === 'white').props.onChange(); render(); render()
         expect(document.documentElement.dataset.theme).toBe('white')
         expect(nodes().some((n) => n.props.children === 'Applied for this visit only. Browser storage is unavailable.')).toBe(true)
     })

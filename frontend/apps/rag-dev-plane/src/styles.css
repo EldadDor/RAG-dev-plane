@@ -326,3 +326,6 @@ button { background: var(--surface); color: var(--text); border: 1px solid var(-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+.icon-button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; inline-size: 2.75rem; block-size: 2.75rem; padding: .65rem; }
+.icon-button svg { display: block; inline-size: 1.25rem; block-size: 1.25rem; pointer-events: none; }

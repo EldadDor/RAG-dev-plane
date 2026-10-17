@@ -1,7 +1,7 @@
 # Next Frontend Phases
 
 **Last reviewed:** 2026-10-17
-**Status:** Candidates only; Browser theme implementation is complete; account theme synchronization is the next dependency-bound candidate. Delivery/closure of prior work remains separate. Activate a selected item through G1. FR-02 review 2026-10-17: dependency unchanged; no theme extension published in the API contract or backend response handoff.
+**Status:** Candidates only; Browser theme implementation is complete; account theme synchronization is the next dependency-bound candidate. TH-01–04 committed locally as 70f50ca; TH-06 Settings-only picker/SVG polish complete and uncommitted. Push and closure remain separate. Activate a selected item through G1. FR-02 review 2026-10-17: dependency unchanged; no theme extension published in the API contract or backend response handoff.
 
 | Order | Phase | Objective | Key dependency |
 | --- | --- | --- | --- |

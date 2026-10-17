@@ -36,14 +36,14 @@ export default function App() {
     const [themeStored, setThemeStored] = useState(true)
     useEffect(() => { setThemeStored(applyTheme(theme)) }, [theme])
 
-    function renderThemePicker(location: 'header' | 'settings') {
-        return <fieldset className="theme-picker" aria-label={`${location === 'header' ? 'Header' : 'Settings'} appearance`}>
-            <legend className={location === 'header' ? 'sr-only' : undefined}>Theme</legend>
+    function renderThemePicker() {
+        return <fieldset className="theme-picker" aria-label="Settings appearance">
+            <legend>Theme</legend>
             <div className="theme-options">{themeOptions.map((choice) => <label className="theme-option" key={choice}>
-                <input className="sr-only" type="radio" name={`theme-${location}`} value={choice} checked={theme === choice} onChange={() => setTheme(choice)}/>
+                <input className="sr-only" type="radio" name="theme-settings" value={choice} checked={theme === choice} onChange={() => setTheme(choice)}/>
                 <span className="theme-choice"><span className="theme-preview" data-preview={choice} aria-hidden="true"><span/></span><span>{themeLabels[choice]}</span></span>
             </label>)}</div>
-            <p className="theme-status" aria-live={location === 'settings' ? 'polite' : 'off'}>{themeStored ? 'Saved in this browser only' : 'Applied for this visit only. Browser storage is unavailable.'}</p>
+            <p className="theme-status" aria-live="polite">{themeStored ? 'Saved in this browser only' : 'Applied for this visit only. Browser storage is unavailable.'}</p>
         </fieldset>
     }
     const [activePane, setActivePane] = useState<Pane>('sessions')
@@ -530,7 +530,7 @@ export default function App() {
         <header className="topbar">
             <a className="brand" href="/" aria-label="Developer knowledge home">Developer knowledge</a>
             <div className="topbar-actions">
-                {renderThemePicker('header')}
+
                 <label className="workspace-picker"><span>Workspace</span><select aria-label="Workspace" disabled={workspaceStatus !== 'ready'} value={workspaceId} onChange={(event) => {
                     invalidateConversation();
                     setActiveSession(null);
@@ -560,9 +560,9 @@ export default function App() {
             {!signedOut && !accountBusy && (!accountReady || (account?.capabilities.preferences.read && !preferences) || (accountMessage && accountMessage !== 'Settings saved.')) && <button type="button" onClick={() => void loadAccount()}>Retry account</button>}
             {loginOptions && <div aria-label="Local test identities"><p>Choose a local test identity</p>{loginOptions.identities.map((choice) => <button type="button" key={choice.identity} disabled={accountBusy} onClick={() => void signIn(choice.identity)}>{choice.display_name}</button>)}</div>}
             {accountPane && <div className="account-panel" role="region" aria-label={accountPane === 'profile' ? 'Profile' : 'Settings'}>
-                <div className="account-heading"><h2>{accountPane === 'profile' ? 'Profile' : 'Settings'}</h2><button type="button" disabled={accountBusy} onClick={() => void loadAccount()}>Refresh account</button><button type="button" onClick={() => setAccountPane(null)}>Close account panel</button></div>
+                <div className="account-heading"><h2>{accountPane === 'profile' ? 'Profile' : 'Settings'}</h2><button className="secondary icon-button" type="button" aria-label="Refresh account" title="Refresh account" disabled={accountBusy} onClick={() => void loadAccount()}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 1 0-2.34 5.66M20 7l-2.34-2.66"/></svg></button><button className="secondary icon-button" type="button" aria-label="Close account panel" title="Close account panel" onClick={() => setAccountPane(null)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
                 {accountPane === 'settings' && <section className="theme-settings" aria-label="Appearance settings">
-                    {renderThemePicker('settings')}
+                    {renderThemePicker()}
                     <p className="muted">Account theme sync is not available yet.</p>
                 </section>}
                 {account && accountPane === 'profile' && <>

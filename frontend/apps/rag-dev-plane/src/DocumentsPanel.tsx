@@ -64,7 +64,7 @@ export default function DocumentsPanel({ workspaceId, onAccessDenied }: { worksp
   }, [workspaceId])
 
   return <aside className="documents-pane" aria-labelledby="documents-heading" aria-busy={busy}>
-    <div className="documents-heading"><h2 id="documents-heading">Recent documents</h2><button type="button" className="secondary" disabled={!workspaceId || busy} onClick={() => void load()}>Refresh</button></div>
+    <div className="documents-heading"><h2 id="documents-heading">Recent documents</h2><button type="button" className="secondary icon-button" aria-label="Refresh documents" title="Refresh documents" disabled={!workspaceId || busy} onClick={() => void load()}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 1 0-2.34 5.66M20 7l-2.34-2.66"/></svg></button></div>
     <p className="muted">Newly ingested knowledge, newest first.</p>
     <details className="document-legend"><summary>Chunk size guide</summary><ul>{documentSizeBadges.map((badge, index) => <li key={badge.label}><Badge badge={badge} description="Document size"/> <span>{index === 0 ? '0' : (documentSizeBadges[index - 1].maxChunks + 1).toLocaleString()}{Number.isFinite(badge.maxChunks) ? `–${badge.maxChunks.toLocaleString()}` : '+'} chunks</span></li>)}</ul></details>
     {!workspaceId && <p className="muted">Select a workspace to view documents.</p>}
